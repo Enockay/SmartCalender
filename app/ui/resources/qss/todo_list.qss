@@ -1,0 +1,113 @@
+QWidget#TodoListRoot {
+    /* Slightly darker, softer background so the sheet shadow reads as depth. */
+    background: #E2E8F0;
+}
+
+QFrame#TodoSheet {
+    background: #FFFFFF;
+    /* Slightly softer border so the stronger drop shadow from code
+       becomes the primary separation from the background. */
+    border: 1px solid #E2E8F0;
+    border-radius: 18px;
+}
+
+QTableWidget#TodoListTable {
+    /* Keep table background light so colored meetings remain visible.
+       Time column background is controlled per-cell in the widget code. */
+    background: #FFFFFF;
+    border: none;
+    outline: none;
+    color: #334155;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 20px;
+    gridline-color: #E2E8F0;
+    selection-background-color: rgba(37, 99, 235, 0.10);
+    selection-color: #0F172A;
+}
+
+QTableWidget#TodoListTable::item {
+    padding: 0px 14px;
+    border: none;
+    /* Let per-cell backgrounds set in Python (setBackground / QBrush)
+       show through instead of being overridden by a solid item fill. */
+    background-color: transparent;
+}
+
+QTableWidget#TodoListTable::item:selected {
+    border-top: 1px solid rgba(37, 99, 235, 0.18);
+    border-bottom: 1px solid rgba(37, 99, 235, 0.18);
+}
+
+QHeaderView::section {
+    background:rgb(44, 100, 230);
+    color: #E2E8F0;
+    border: none;
+    border-bottom: 1px solidrgb(55, 87, 228);
+    padding: 12px 12px;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+QHeaderView::section:first {
+    border-top-left-radius: 12px;
+}
+
+QHeaderView::section:last {
+    border-top-right-radius: 12px;
+}
+
+QTableCornerButton::section {
+    background: #0F172A;
+    border: none;
+}
+
+QScrollBar:vertical {
+    background: transparent;
+    width: 12px;
+    margin: 6px 6px 6px 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: #CBD5E1;
+    border-radius: 6px;
+    min-height: 30px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #94A3B8;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical,
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: none;
+    border: none;
+}
+
+QScrollBar:horizontal {
+    background: transparent;
+    height: 12px;
+    margin: 0px 6px 6px 6px;
+}
+
+QScrollBar::handle:horizontal {
+    background: #CBD5E1;
+    border-radius: 6px;
+    min-width: 30px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background: #94A3B8;
+}
+
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal,
+QScrollBar::add-page:horizontal,
+QScrollBar::sub-page:horizontal {
+    background: none;
+    border: none;
+}

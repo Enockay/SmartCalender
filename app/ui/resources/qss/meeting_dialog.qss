@@ -1,0 +1,256 @@
+/* =========================================================
+   MEETING DIALOG - PROFESSIONAL WHITE UI
+   ========================================================= */
+
+QDialog#MeetingDialogRoot {
+    /* Simple, clean white dialog like the reference */
+    background-color: #F5F7FF;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    color: #1F2937;
+    font-size: 15px;
+}
+
+
+/* Section / row labels such as "Reminder:" */
+QLabel#SectionTitle {
+    color: #111827;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 0px;
+    margin: 0px 4px 0px 0px;
+}
+
+/* Inline validation error labels under inputs */
+QLabel#FieldErrorLabel {
+    color: #B91C1C;
+    font-size: 11px;
+    font-weight: 400;
+    padding-top: 0px;
+    margin-top: 0px;
+}
+
+/* Divider */
+QFrame#DialogDivider {
+    background-color: #E5E7EB;
+    border: none;
+    min-height: 1px;
+    max-height: 1px;
+}
+
+/* Form labels */
+QDialog#MeetingDialogRoot QLabel {
+    color: #374151;
+    font-size: 15px;
+    font-weight: 600;
+    background: transparent;
+}
+
+/* Inputs */
+QDialog#MeetingDialogRoot QLineEdit,
+QDialog#MeetingDialogRoot QDateEdit,
+QDialog#MeetingDialogRoot QTimeEdit,
+QDialog#MeetingDialogRoot QComboBox,
+QDialog#MeetingDialogRoot QTextEdit,
+QDialog#MeetingDialogRoot QSpinBox {
+    /* Compact, Outlook-style fields so rows do not visually overlap */
+    background-color: #F9FAFB;
+    color: #1E293B;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    /* Slimmer padding for compact, desktop-style fields */
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding: 2px 8px;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    selection-background-color: #DCEBFF;
+    selection-color: #111827;
+}
+
+/* Standard field heights */
+QDialog#MeetingDialogRoot QLineEdit,
+QDialog#MeetingDialogRoot QDateEdit,
+QDialog#MeetingDialogRoot QTimeEdit,
+QDialog#MeetingDialogRoot QComboBox,
+QDialog#MeetingDialogRoot QSpinBox {
+    /* Shorter fields for a compact layout */
+    min-height: 24px;
+}
+
+/* Text area */
+QDialog#MeetingDialogRoot QTextEdit {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+/* Placeholder text */
+QDialog#MeetingDialogRoot QLineEdit[placeholderText=""],
+QDialog#MeetingDialogRoot QTextEdit[placeholderText=""] {
+    color: #9CA3AF;
+}
+
+/* Focus states */
+QDialog#MeetingDialogRoot QLineEdit:focus,
+QDialog#MeetingDialogRoot QDateEdit:focus,
+QDialog#MeetingDialogRoot QTimeEdit:focus,
+QDialog#MeetingDialogRoot QComboBox:focus,
+QDialog#MeetingDialogRoot QTextEdit:focus {
+    border: 1px solid #93C5FD;
+    background-color: #FFFFFF;
+}
+
+/* Hover states */
+QDialog#MeetingDialogRoot QLineEdit:hover,
+QDialog#MeetingDialogRoot QDateEdit:hover,
+QDialog#MeetingDialogRoot QTimeEdit:hover,
+QDialog#MeetingDialogRoot QComboBox:hover,
+QDialog#MeetingDialogRoot QTextEdit:hover {
+    border: 1px solid #BFC7D4;
+}
+
+/* Combo dropdown */
+QDialog#MeetingDialogRoot QComboBox {
+    padding-right: 30px;
+}
+
+/* Combo popup list (category, recurrence, etc.) */
+QDialog#MeetingDialogRoot QComboBox QAbstractItemView {
+    background-color: #FFFFFF;
+    color: #111827;
+    border: 1px solid #D1D5DB;
+    selection-background-color: #DBEAFE;
+    selection-color: #111827;
+}
+
+QDialog#MeetingDialogRoot QComboBox QAbstractItemView::item {
+    padding: 4px 8px;
+}
+
+QDialog#MeetingDialogRoot QComboBox QAbstractItemView::item:selected {
+    background-color: #DBEAFE;
+    color: #111827;
+}
+
+QDialog#MeetingDialogRoot QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 28px;
+    border: none;
+    background: transparent;
+}
+
+QDialog#MeetingDialogRoot QComboBox::down-arrow {
+    width: 10px;
+    height: 10px;
+}
+
+/* DateEdit / TimeEdit spin buttons */
+QDialog#MeetingDialogRoot QDateEdit::up-button,
+QDialog#MeetingDialogRoot QDateEdit::down-button,
+QDialog#MeetingDialogRoot QTimeEdit::up-button,
+QDialog#MeetingDialogRoot QTimeEdit::down-button {
+    width: 10px;
+    border: none;
+    background: transparent;
+}
+
+QDialog#MeetingDialogRoot QDateEdit::up-button:hover,
+QDialog#MeetingDialogRoot QDateEdit::down-button:hover,
+QDialog#MeetingDialogRoot QTimeEdit::up-button:hover,
+QDialog#MeetingDialogRoot QTimeEdit::down-button:hover {
+    background: #F3F4F6;
+    border-radius: 4px;
+}
+
+/* Calendar popup */
+QCalendarWidget QWidget {
+    background-color: #FFFFFF;
+    color: #111827;
+}
+
+QCalendarWidget QToolButton {
+    color: #111827;
+    background-color: transparent;
+    border: none;
+    font-weight: 600;
+    min-height: 28px;
+}
+
+QCalendarWidget QMenu {
+    background-color: #FFFFFF;
+    color: #111827;
+    border: 1px solid #D1D5DB;
+}
+
+QCalendarWidget QSpinBox {
+    background-color: #FFFFFF;
+    color: #111827;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    padding: 2px 2px;
+}
+
+QCalendarWidget QAbstractItemView {
+    selection-background-color: #DBEAFE;
+    selection-color: #111827;
+    background-color: #FFFFFF;
+    color: #111827;
+    outline: none;
+}
+
+/* Buttons */
+QDialogButtonBox#MeetingDialogButtons {
+    background: transparent;
+}
+
+QDialog#MeetingDialogRoot QDialogButtonBox QPushButton {
+    min-width: 88px;
+    min-height: 30px;
+    padding: 4px 14px;
+    border-radius: 8px;
+    border: 1px solid #D1D5DB;
+    background-color: #FFFFFF;
+    color: #1E293B;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+QDialog#MeetingDialogRoot QDialogButtonBox QPushButton:hover {
+    background-color: #F9FAFB;
+    border: 1px solid #CBD5E1;
+}
+
+QDialog#MeetingDialogRoot QDialogButtonBox QPushButton:pressed {
+    background-color: #F3F4F6;
+}
+
+/* Make the OK button feel primary if Qt marks it */
+QDialog#MeetingDialogRoot QDialogButtonBox QPushButton:default {
+    /* Primary action in a cool blue tone */
+    background-color: #2563EB;
+    color: #FFFFFF;
+    border: 1px solid #2563EB;
+}
+
+QDialog#MeetingDialogRoot QDialogButtonBox QPushButton:default:hover {
+    background-color: #1D4ED8;
+    border: 1px solid #1D4ED8;
+}
+
+QDialog#MeetingDialogRoot QDialogButtonBox QPushButton:default:pressed {
+    background-color: #1E40AF;
+    border: 1px solid #1E40AF;
+}
+
+/* Disabled */
+QDialog#MeetingDialogRoot QLineEdit:disabled,
+QDialog#MeetingDialogRoot QDateEdit:disabled,
+QDialog#MeetingDialogRoot QTimeEdit:disabled,
+QDialog#MeetingDialogRoot QComboBox:disabled,
+QDialog#MeetingDialogRoot QTextEdit:disabled,
+QDialog#MeetingDialogRoot QDialogButtonBox QPushButton:disabled {
+    background-color: #F3F4F6;
+    color: #9CA3AF;
+    border: 1px solid #E5E7EB;
+}

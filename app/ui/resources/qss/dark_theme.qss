@@ -1,0 +1,119 @@
+QMainWindow, QWidget {
+    background-color: #020617;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+}
+
+QCalendarWidget {
+    background-color: #111827;
+    border: 1px solid #1F2937;
+    color: #F9FAFB;
+}
+
+QCalendarWidget QToolButton {
+    font-size: 15px;
+}
+
+QCalendarWidget QAbstractItemView {
+    font-size: 14px;
+    min-height: 26px;
+}
+
+QListWidget {
+    background-color: #111827;
+    border: 1px solid #1F2937;
+    color: #F9FAFB;
+}
+
+QLabel[viewTitle="true"] {
+    font-size: 18px;
+    font-weight: 600;
+    padding: 12px 16px;
+    color: #F9FAFB;
+}
+
+#LeftSidebar {
+    background-color: #020617;
+    border-right: 1px solid #1F2937;
+}
+
+QLabel#AppTitle {
+    color: #E5E7EB;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+QListWidget#NavList {
+    background: transparent;
+    border: none;
+    color: #9CA3AF;
+}
+
+QListWidget#NavList::item {
+    padding: 8px 10px;
+    border-radius: 6px;
+}
+
+QListWidget#NavList::item:selected {
+    background-color: #4F46E5;
+    color: #FFFFFF;
+}
+
+QLabel#HeaderDateLabel {
+    font-size: 20px;
+    font-weight: 600;
+    color: #E5E7EB;
+}
+
+QPushButton#SegmentButton {
+    background-color: #111827;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 999px;
+    color: #E5E7EB;
+}
+
+QPushButton#SegmentButton:checked {
+    background-color: #4F46E5;
+    color: #FFFFFF;
+}
+
+QPushButton#PrimaryButton {
+    background-color: #6366F1;
+    color: #FFFFFF;
+    border-radius: 999px;
+    padding: 6px 16px;
+}
+
+QPushButton#PrimaryButton:hover {
+    background-color: #4F46E5;
+}
+
+QPushButton#SecondaryIconButton {
+    background-color: transparent;
+    border: none;
+    padding: 6px;
+}
+
+QPushButton#SecondaryIconButton:hover {
+    background-color: #111827;
+    border-radius: 999px;
+}
+
+#UpcomingSidebar {
+    background-color: #020617;
+    border-left: 1px solid #1F2937;
+}
+
+QLabel#UpcomingTitle {
+    font-size: 14px;
+    font-weight: 600;
+    padding: 4px 4px 8px 4px;
+    color: #E5E7EB;
+}
+
+QListWidget#DayScheduleList {
+    border: none;
+    background-color: transparent;
+    color: #F9FAFB;
+}

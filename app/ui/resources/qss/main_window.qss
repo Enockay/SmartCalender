@@ -1,0 +1,188 @@
+/* =========================
+   MAIN WINDOW
+   ========================= */
+QMainWindow {
+   background-color: #0F1F45;
+}
+
+
+/* =========================
+   TOP HEADER BAR
+   ========================= */
+QWidget#HeaderBar {
+    background: qlineargradient(
+        x1:0, y1:0, x2:1, y2:0,
+        stop:0 #142F5C,
+        stop:0.4 #1A3B75,
+        stop:0.7 #1E4384,
+        stop:1 #18386F
+    );
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Header app logo and title (live in HeaderBar, not in the sidebar) */
+QLabel#AppLogo {
+    font-size: 24px;
+    padding-left: 4px;
+    padding-right: 2px;
+}
+
+QLabel#AppTitle {
+    color: #F3F6FA;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+QPushButton#SegmentButton {
+    min-width: 100px;
+    min-height: 30px;
+    padding: 4px 4px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: rgba(91, 132, 210, 0.20);
+    color: #F4F7FB;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+QPushButton#SegmentButton:checked {
+    background: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0 #5BA9FF,
+        stop:1 #1E87FF
+    );
+    border: 1px solid rgba(255,255,255,0.14);
+    color: white;
+}
+
+QPushButton#SegmentButton:hover:!checked {
+    background-color: rgba(91, 132, 210, 0.30);
+}
+/* =========================
+   DATE LABEL
+   ========================= */
+QLabel#HeaderDateLabel {
+    color: #FFFFFF;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    padding: 4px 2px;
+}
+/* =========================
+   CONTENT SURFACE
+   Use this on your main central widget if possible
+   ========================= */
+QWidget#MainContent,
+QFrame#MainContent {
+    background-color: #F8FAFC;
+}
+
+/* Ensure day-view todo table rows can use per-cell colors set in Python.
+   This overrides any default item fills so meeting blocks render correctly. */
+QTableWidget#TodoListTable::item {
+    background-color: transparent;
+}
+
+
+/* =========================
+   SECTION / CARD SURFACE
+   ========================= */
+QWidget#SurfaceCard,
+QFrame#SurfaceCard {
+    background-color: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+}
+
+
+/* =========================
+   SEGMENTED BUTTONS
+   ========================= */
+
+QPushButton#SegmentButton:hover {
+    background-color: rgba(255, 255, 255, 0.14);
+    color: #FFFFFF;
+}
+
+QPushButton#SegmentButton:checked {
+    background-color: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0 #5EA2FF,
+        stop:1 #2F7EF7
+    );
+    color: #FFFFFF;
+    border: 1px solid #3D8BFF;
+}
+
+QPushButton#SegmentButton:pressed {
+    background-color: #2563EB;
+}
+
+
+/* =========================
+   PRIMARY BUTTON
+   ========================= */
+QPushButton#PrimaryButton {
+    background-color: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0 #4A90FF,
+        stop:1 #2563EB
+    );
+    color: #FFFFFF;
+    border: 1px solid #2D6FEA;
+    border-radius: 10px;
+    padding: 8px 18px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+QPushButton#PrimaryButton:hover {
+    background-color: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0 #63A4FF,
+        stop:1 #347CF0
+    );
+}
+
+QPushButton#PrimaryButton:pressed {
+    background-color: #1E56D8;
+}
+
+
+/* =========================
+   SECONDARY ICON BUTTON
+   ========================= */
+QPushButton#SecondaryIconButton {
+    background-color: transparent;
+    border: none;
+    border-radius: 8px;
+    padding: 6px;
+}
+
+QPushButton#SecondaryIconButton:hover {
+    background-color: rgba(255, 255, 255, 0.10);
+}
+
+QPushButton#SecondaryIconButton:pressed {
+    background-color: rgba(255, 255, 255, 0.16);
+}
+
+
+/* =========================
+   GENERIC LABELS INSIDE LIGHT CONTENT
+   ========================= */
+QWidget#MainContent QLabel,
+QFrame#MainContent QLabel {
+    color: #1F2937;
+}
+
+
+/* =========================
+   OPTIONAL TOOLBAR / PANEL BUTTONS
+   ========================= */
+QPushButton {
+    outline: none;
+}

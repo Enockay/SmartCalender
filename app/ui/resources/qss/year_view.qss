@@ -1,0 +1,105 @@
+QWidget#YearViewRoot {
+    background: #F3F4F6;
+}
+
+QLabel[viewTitle="true"] {
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 30px;
+    font-weight: 800;
+    color: #0F172A;
+    padding: 6px 14px 4px 14px;
+    margin-bottom: 2px;
+}
+
+QPushButton#YearNavButton {
+    background: transparent;
+    border: none;
+    color: #0F172A;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 4px 8px;
+}
+
+QPushButton#YearNavButton:hover {
+    background: rgba(15, 23, 42, 0.06);
+    border-radius: 999px;
+}
+
+QPushButton#YearNavButton:pressed {
+    background: rgba(15, 23, 42, 0.12);
+}
+
+QTableWidget#YearGrid {
+    background: transparent;
+    border: none;
+}
+
+QTableWidget#YearGrid::item {
+    background: transparent;
+    border: none;
+}
+
+QWidget#MonthCellContainer {
+    background: transparent;
+}
+
+QFrame#MonthCard {
+    background: qlineargradient(
+        x1: 0, y1: 0, x2: 1, y2: 1,
+        stop: 0 #FFFFFF,
+        stop: 1 #F8FAFC
+    );
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+}
+
+QFrame#MonthCard[active="true"] {
+    background: qlineargradient(
+        x1: 0, y1: 0, x2: 1, y2: 1,
+        stop: 0 #1D4ED8,
+        stop: 1 #1E40AF
+    );
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+QLabel#MonthName {
+    background: transparent;
+    color: #0F172A;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+}
+
+QFrame#MonthCard[active="true"] QLabel#MonthName {
+    color: #FFFFFF;
+}
+
+QLabel#MeetingBadge {
+    background: #EEF2FF;
+    color: #3730A3;
+    border: 1px solid #C7D2FE;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+QFrame#MonthCard[active="true"] QLabel#MeetingBadge {
+    background: rgba(255, 255, 255, 0.18);
+    color: #FFFFFF;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+QLabel#MonthMeta {
+    background: transparent;
+    color: #64748B;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+QFrame#MonthCard[active="true"] QLabel#MonthMeta {
+    color: rgba(255, 255, 255, 0.88);
+}

@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+.DS_Store
+dist/
+build/
+*.spec
+*.log
+data/app.db
+data/backups/
+data/exports/
+

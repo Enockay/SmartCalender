@@ -1,0 +1,51 @@
+/* =========================================================
+   NEW MEETING HEADER
+   ========================================================= */
+
+QWidget#NewMeetingWidgetRoot {
+    /* Soft gradient header to make the dialog feel more alive */
+    background: qlineargradient(
+        x1: 0, y1: 0, x2: 1, y2: 1,
+        stop: 0 #EEF2FF,
+        stop: 1 #DBEAFE
+    );
+    border: 1px solid #E0EAFF;
+    border-radius: 16px;
+}
+
+QWidget#NewMeetingWidgetRoot:hover {
+    border: 1px solid #C7D2FE;
+}
+
+/* Title */
+QLabel#NewMeetingTitle {
+    /* Rich blue title instead of pure black */
+    color: #1E3A8A;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    background: transparent;
+    border: none;
+    padding: 0px;
+    margin: 0px;
+}
+
+/* Subtitle */
+QLabel#NewMeetingSubtitle {
+    color: #6B7280;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    background: transparent;
+    border: none;
+    padding: 0px;
+    margin: 0px;
+}
+
+/* Bottom separator */
+QFrame#NewMeetingSeparator {
+    background-color: #E5E7EB;
+    border: none;
+    min-height: 1px;
+    max-height: 1px;
+}

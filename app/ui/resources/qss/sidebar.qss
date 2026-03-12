@@ -1,0 +1,122 @@
+/* =========================
+   LEFT SIDEBAR CONTAINER
+   ========================= */
+QWidget#LeftSidebar {
+    background-color: #102A5A;
+    border-right: 1px solid rgba(255,255,255,0.06);
+}
+
+
+/* =========================
+   NAVIGATION LIST
+   ========================= */
+QListWidget#NavList,
+QListView#NavList {
+    background-color: transparent;
+    border: none;
+    padding: 0; /* let items touch the edges */
+    color: #E5E7EB;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    outline: none;
+}
+
+
+/* =========================
+   NAV ITEMS
+   ========================= */
+QListWidget#NavList::item,
+QListView#NavList::item {
+    padding: 12px 18px;
+    margin: 0;
+    border-radius: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+
+/* Hover */
+QListWidget#NavList::item:hover:!selected,
+QListView#NavList::item:hover:!selected {
+    background-color: rgba(255,255,255,0.06);
+    color: #FFFFFF;
+}
+
+
+/* Selected item */
+QListWidget#NavList::item:selected,
+QListView#NavList::item:selected {
+    background-color: qlineargradient(
+        x1:0, y1:0, x2:1, y2:0,
+        stop:0 #2D8CFF,
+        stop:1 #1F6FF2
+    );
+    color: #FFFFFF;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+}
+
+
+/* Selected + Hover */
+QListWidget#NavList::item:selected:hover,
+QListView#NavList::item:selected:hover {
+    background-color: qlineargradient(
+        x1:0, y1:0, x2:1, y2:0,
+        stop:0 #3B96FF,
+        stop:1 #2A7AF5
+    );
+}
+
+
+/* =========================
+   VIEWPORT
+   ========================= */
+QListWidget#NavList::viewport {
+    background-color: transparent;
+}
+
+
+/* =========================
+   MINI CALENDAR HOLDER
+   ========================= */
+QWidget#MiniCalendarRoot {
+    background-color: rgba(255,255,255,0.03);
+    border: 2px solid rgba(255,255,255,0.85);
+    border-radius: 14px;
+    padding: 4px;
+    margin: 6px 8px 4px 8px;
+}
+
+
+/* =========================
+   CALENDAR TEXT
+   ========================= */
+QCalendarWidget#MiniCalendar {
+    background-color: transparent;
+    border: none;
+    font-size: 15px;
+}
+
+QCalendarWidget#MiniCalendar QAbstractItemView {
+    font-size: 15px;
+    font-weight: 600;
+    color: #F1F5F9;
+}
+
+
+/* =========================
+   USER AREA
+   ========================= */
+QWidget#SidebarUserArea QLabel {
+    color: #C7D2E4;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+QWidget#SidebarUserArea {
+    border-top: 1px solid rgba(255,255,255,0.25);
+    margin-top: 6px;
+}
+

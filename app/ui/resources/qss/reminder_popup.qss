@@ -1,0 +1,57 @@
+QDialog#ReminderPopupRoot {
+    background-color: #111827;
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    color: #F9FAFB;
+}
+
+QLabel#ReminderIcon {
+    font-size: 28px;
+}
+
+QLabel#ReminderTitleLabel {
+    font-size: 14px;
+    font-weight: 600;
+    color: #E5E7EB;
+}
+
+QLabel#ReminderMainText {
+    font-size: 16px;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+QLabel#ReminderSubText {
+    font-size: 13px;
+    color: #E5E7EB;
+}
+
+QPushButton#ReminderSnoozeButton,
+QPushButton#ReminderDismissButton {
+    min-width: 92px;
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+QPushButton#ReminderSnoozeButton {
+    background-color: #374151;
+    color: #E5E7EB;
+    border: 1px solid #4B5563;
+}
+
+QPushButton#ReminderSnoozeButton:hover {
+    background-color: #4B5563;
+}
+
+QPushButton#ReminderDismissButton {
+    background-color: #2563EB;
+    color: #FFFFFF;
+    border: 1px solid #2563EB;
+}
+
+QPushButton#ReminderDismissButton:hover {
+    background-color: #1D4ED8;
+}
+
