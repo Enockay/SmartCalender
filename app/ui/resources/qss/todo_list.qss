@@ -25,19 +25,6 @@ QTableWidget#TodoListTable {
     selection-color: #0F172A;
 }
 
-QTableWidget#TodoListTable::item {
-    padding: 0px 14px;
-    border: none;
-    /* Let per-cell backgrounds set in Python (setBackground / QBrush)
-       show through instead of being overridden by a solid item fill. */
-    background-color: transparent;
-}
-
-QTableWidget#TodoListTable::item:selected {
-    border-top: 1px solid rgba(37, 99, 235, 0.18);
-    border-bottom: 1px solid rgba(37, 99, 235, 0.18);
-}
-
 QHeaderView::section {
     background:rgb(44, 100, 230);
     color: #E2E8F0;

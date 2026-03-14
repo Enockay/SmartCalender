@@ -2,8 +2,11 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
+import html
+import re
 
 from PySide6.QtCore import QDate, QTime, Qt
+from PySide6.QtGui import QTextCursor, QTextOption
 from PySide6.QtWidgets import (
     QComboBox,
     QDateEdit,
@@ -14,8 +17,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QMessageBox,
-    QSizePolicy,
+    QPushButton,
     QSpinBox,
     QTextEdit,
     QTimeEdit,
@@ -23,15 +25,18 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+
 class MeetingDialog(QDialog):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        # Match Outlook-style caption
+
         self.setWindowTitle("New Meeting")
         self.setObjectName("MeetingDialogRoot")
-        # Fixed, compact size similar to the reference dialog
         self.setFixedSize(500, 500)
         self.setAttribute(Qt.WA_StyledBackground, True)
+
+        # Guard against recursive textChanged when formatting links
+        self._applying_link_formatting = False
 
         self._build_ui()
         self._load_qss()
@@ -39,6 +44,7 @@ class MeetingDialog(QDialog):
     def _build_ui(self) -> None:
         self._title_edit = QLineEdit(self)
         self._title_edit.setPlaceholderText("Enter meeting title")
+
         self._title_error = QLabel("", self)
         self._title_error.setObjectName("FieldErrorLabel")
         self._title_error.setVisible(False)
@@ -49,11 +55,9 @@ class MeetingDialog(QDialog):
         self._date_edit.setDate(QDate.currentDate())
 
         self._time_edit = QTimeEdit(self)
-        # Default to the current system time and use a clear 24h display
         self._time_edit.setDisplayFormat("HH:mm")
         self._time_edit.setTime(QTime.currentTime())
 
-        # Duration: numeric value + unit (minutes or hours)
         self._duration_spin = QSpinBox(self)
         self._duration_spin.setRange(1, 1440)
         self._duration_spin.setValue(60)
@@ -74,7 +78,6 @@ class MeetingDialog(QDialog):
         self._category_combo = QComboBox(self)
         self._category_combo.addItems(["Work", "Personal", "Urgent"])
 
-        # Meeting color gradient (stored in DB and used for rendering)
         self._color_combo = QComboBox(self)
         self._color_combo.setObjectName("MeetingColorCombo")
         self._color_combo.addItem("Blue", "linear:#2D8CFF:#1F6FF2")
@@ -90,14 +93,30 @@ class MeetingDialog(QDialog):
         self._description_edit.setPlaceholderText(
             "Add notes, agenda, location, or extra meeting details..."
         )
-        self._description_edit.setMinimumHeight(120)
 
-        # Main wrapper – body area only; we rely on the native macOS titlebar
+        # Compact height: start small, grow up to 100px, then scroll
+        self._description_min_height = 60
+        self._description_max_height = 100
+        self._description_edit.setMinimumHeight(self._description_min_height)
+        self._description_edit.setMaximumHeight(self._description_max_height)
+        self._description_edit.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        # Normal widget-width wrapping
+        self._description_edit.setLineWrapMode(QTextEdit.WidgetWidth)
+
+        doc = self._description_edit.document()
+        doc.setDocumentMargin(2)
+
+        text_option = doc.defaultTextOption()
+        text_option.setWrapMode(QTextOption.WordWrap)
+        doc.setDefaultTextOption(text_option)
+
+        self._description_edit.textChanged.connect(self._on_description_changed)
+
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(18, 18, 18, 16)
         main_layout.setSpacing(10)
 
-        # Form layout
         form = QFormLayout()
         form.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
         form.setLabelAlignment(Qt.AlignLeft | Qt.AlignVCenter)
@@ -105,7 +124,6 @@ class MeetingDialog(QDialog):
         form.setHorizontalSpacing(12)
         form.setVerticalSpacing(8)
 
-        # Wrap inputs that can show inline errors in a vertical layout
         title_field = QWidget(self)
         title_layout = QVBoxLayout(title_field)
         title_layout.setContentsMargins(0, 0, 0, 0)
@@ -130,8 +148,6 @@ class MeetingDialog(QDialog):
 
         form.addRow("Title:", title_field)
         form.addRow("Date:", self._date_edit)
-
-        # Time field row
         form.addRow("Time:", self._time_edit)
         form.addRow("Duration:", duration_field)
         form.addRow("Category:", self._category_combo)
@@ -141,14 +157,12 @@ class MeetingDialog(QDialog):
 
         main_layout.addLayout(form)
 
-        # Divider
         divider = QFrame(self)
         divider.setObjectName("DialogDivider")
         divider.setFrameShape(QFrame.HLine)
         divider.setFixedHeight(1)
         main_layout.addWidget(divider)
 
-        # Reminder row (simple label + existing reminder widget)
         reminder_row = QHBoxLayout()
         reminder_row.setContentsMargins(0, 0, 0, 0)
         reminder_row.setSpacing(10)
@@ -164,24 +178,22 @@ class MeetingDialog(QDialog):
 
         main_layout.addLayout(reminder_row)
 
-        # Button box
         buttons = QDialogButtonBox(parent=self)
         buttons.setObjectName("MeetingDialogButtons")
 
-        # Explicit "Save" and "Cancel" buttons to match the reference dialog
-        from PySide6.QtWidgets import QPushButton
-
         save_button = QPushButton("Save", self)
         cancel_button = QPushButton("Cancel", self)
+
         buttons.addButton(save_button, QDialogButtonBox.AcceptRole)
         buttons.addButton(cancel_button, QDialogButtonBox.RejectRole)
 
+        save_button.setDefault(True)
         save_button.clicked.connect(self._on_save_clicked)
         cancel_button.clicked.connect(self.reject)
+
         main_layout.addWidget(buttons)
 
     def get_data(self) -> tuple[str, datetime, int, str, str, str, str | None, int] | None:
-        # Clear previous error messages
         self._title_error.setVisible(False)
         self._duration_error.setVisible(False)
 
@@ -191,7 +203,6 @@ class MeetingDialog(QDialog):
             self._title_error.setVisible(True)
             return None
 
-        # Duration: convert value + unit into minutes
         duration_value = self._duration_spin.value()
         if duration_value <= 0:
             self._duration_error.setText("Duration must be greater than 0.")
@@ -199,10 +210,7 @@ class MeetingDialog(QDialog):
             return None
 
         unit = self._duration_unit.currentText()
-        if unit == "hours":
-            duration_minutes = duration_value * 60
-        else:
-            duration_minutes = duration_value
+        duration_minutes = duration_value * 60 if unit == "hours" else duration_value
 
         qdate = self._date_edit.date()
         qtime = self._time_edit.time()
@@ -218,7 +226,6 @@ class MeetingDialog(QDialog):
         color_gradient = self._color_combo.currentData()
         recurrence = self._recurrence_combo.currentText()
         description = self._description_edit.toPlainText().strip()
-        # Per-meeting reminder offset in minutes from the reminder widget.
         reminder_minutes = getattr(self._reminder_widget, "reminder_minutes", lambda: 10)()
 
         return (
@@ -233,11 +240,92 @@ class MeetingDialog(QDialog):
         )
 
     def _on_save_clicked(self) -> None:
-        """Validate inputs before allowing the dialog to close."""
         if self.get_data() is None:
-            # Validation failed; keep dialog open
             return
         self.accept()
+
+    def _on_description_changed(self) -> None:
+        if self._applying_link_formatting:
+            return
+
+        self._apply_link_formatting()
+        self._auto_resize_description()
+
+    def _auto_resize_description(self) -> None:
+        doc = self._description_edit.document()
+        viewport_width = self._description_edit.viewport().width()
+
+        # Match document width to visible editor width
+        doc.setTextWidth(max(0, viewport_width - 4))
+        content_height = int(doc.documentLayout().documentSize().height()) + 8
+
+        new_height = max(
+            self._description_min_height,
+            min(self._description_max_height, content_height),
+        )
+
+        self._description_edit.setFixedHeight(new_height)
+
+        if new_height >= self._description_max_height:
+            self._description_edit.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        else:
+            self._description_edit.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+    def _apply_link_formatting(self) -> None:
+        if self._applying_link_formatting:
+            return
+
+        plain_text = self._description_edit.toPlainText()
+        if not plain_text:
+            return
+
+        self._applying_link_formatting = True
+        try:
+            cursor = self._description_edit.textCursor()
+            cursor_position = cursor.position()
+
+            escaped_text = html.escape(plain_text)
+
+            # Match http:// or https:// links
+            url_pattern = r"(https?://[^\s<]+)"
+
+            def replace_url(match: re.Match[str]) -> str:
+                url = match.group(1)
+                return (
+                    f'<a href="{url}" '
+                    'style="color:#2563EB; text-decoration:none; font-weight:600;">'
+                    f"{url}"
+                    "</a>"
+                )
+
+            styled_html = re.sub(url_pattern, replace_url, escaped_text)
+            styled_html = styled_html.replace("\n", "<br>")
+
+            full_html = (
+                "<html><body style='margin:0; padding:0; "
+                "font-family:\"Segoe UI\",\"Inter\",\"Helvetica Neue\",Arial,sans-serif; "
+                "font-size:15px; color:#1E293B; line-height:1.25;'>"
+                f"{styled_html}"
+                "</body></html>"
+            )
+
+            self._description_edit.blockSignals(True)
+            self._description_edit.setHtml(full_html)
+
+            new_cursor = self._description_edit.textCursor()
+            new_cursor.setPosition(min(cursor_position, len(self._description_edit.toPlainText())))
+            self._description_edit.setTextCursor(new_cursor)
+            self._description_edit.blockSignals(False)
+
+            doc = self._description_edit.document()
+            doc.setDocumentMargin(2)
+
+            text_option = doc.defaultTextOption()
+            text_option.setWrapMode(QTextOption.WordWrap)
+            doc.setDefaultTextOption(text_option)
+
+        finally:
+            self._applying_link_formatting = False
 
     def _clear_title_error(self, text: str) -> None:
         if text.strip():

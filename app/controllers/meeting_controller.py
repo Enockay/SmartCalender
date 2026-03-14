@@ -74,14 +74,14 @@ class MeetingController:
         starts = self._generate_recurrence_starts(start, recurrence)
         for s in starts:
             end = s + timedelta(minutes=duration_minutes)
-            self._service.create_meeting(
-                title=title,
+        self._service.create_meeting(
+            title=title,
                 start_time=s,
-                end_time=end,
-                description=description or None,
-                color_gradient=color_gradient,
+            end_time=end,
+            description=description or None,
+            color_gradient=color_gradient,
                 reminder_minutes=reminder_minutes,
-            )
+        )
         if self.on_meetings_changed:
             self.on_meetings_changed()
 

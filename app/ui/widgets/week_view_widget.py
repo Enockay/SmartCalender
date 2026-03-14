@@ -63,6 +63,7 @@ class WeekViewWidget(QWidget):
         self._service = MeetingService()
         self._week_start: date = date.today()
         self._meetings: List[MeetingModel] = []
+        self._focused_date: date | None = None
         self._build_grid()
 
     def set_date(self, d: date) -> None:
@@ -107,6 +108,19 @@ class WeekViewWidget(QWidget):
             labels.append(d.strftime("%a %d"))
         self._table.setHorizontalHeaderLabels(labels)
 
+        # Optionally highlight a focused day (used when navigating from month view).
+        if self._focused_date is not None:
+            try:
+                day_idx = (self._focused_date - self._week_start).days
+            except Exception:
+                day_idx = -1
+            if 0 <= day_idx < 7:
+                item = self._table.horizontalHeaderItem(1 + day_idx)
+                if item is not None:
+                    font = item.font()
+                    font.setBold(True)
+                    item.setFont(font)
+
     def _clear_spans_and_cells(self) -> None:
         self._table.clearSpans()
         # Ensure any leftover selection highlight is removed so that
@@ -122,6 +136,11 @@ class WeekViewWidget(QWidget):
                 it.setData(Qt.UserRole, None)
                 it.setBackground(QBrush(QColor("#FFFFFF")))
                 it.setForeground(QBrush(QColor("#334155")))
+
+    def focus_day(self, d: date) -> None:
+        """Highlight the header for the given date within the current week."""
+        self._focused_date = d
+        self._update_headers()
 
     def _brush_for_gradient(self, raw: str | None) -> QBrush:
         if raw and isinstance(raw, str) and raw.startswith("linear:"):
@@ -154,10 +173,18 @@ class WeekViewWidget(QWidget):
             end_row_excl = min(24, max(start_row + 1, end_hour))
             span_rows = max(1, end_row_excl - start_row)
 
-            item = self._table.item(start_row, col)
-            # Skip if this slot already has a meeting rendered
-            if item.data(Qt.UserRole):
+            # If any cell in the intended span already has data, skip this
+            # meeting to avoid overlapping spans (Qt warns if spans overlap).
+            overlap = False
+            for r in range(start_row, end_row_excl):
+                cell = self._table.item(r, col)
+                if cell is not None and cell.data(Qt.UserRole):
+                    overlap = True
+                    break
+            if overlap:
                 continue
+
+            item = self._table.item(start_row, col)
 
             # Only create a span if it actually covers multiple rows; this
             # avoids Qt warnings about single-cell spans.
@@ -168,7 +195,13 @@ class WeekViewWidget(QWidget):
             item.setTextAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
             item.setForeground(QBrush(QColor("#FFFFFF")))
             item.setBackground(self._brush_for_gradient(getattr(m, "color_gradient", None)))
-            item.setData(Qt.UserRole, m)
+            # Mark all rows in this span as occupied; the top cell stores the meeting.
+            for r in range(start_row, end_row_excl):
+                cell = self._table.item(r, col)
+                if cell is None:
+                    cell = QTableWidgetItem("")
+                    self._table.setItem(r, col, cell)
+                cell.setData(Qt.UserRole, m if r == start_row else True)
 
     def _on_cell_double_clicked(self, row: int, col: int) -> None:
         if col == 0:
@@ -180,9 +213,23 @@ class WeekViewWidget(QWidget):
             self.meetingActivated.emit(meeting)
 
     def _on_cell_clicked(self, row: int, col: int) -> None:
-        """Single-click navigates to the specific day and emits the exact slot."""
+        """Single-click navigates to the specific day.
+
+        If the cell already contains a meeting, treat this as selecting that meeting
+        for editing (same behaviour as a double-click). If it's an empty slot,
+        emit the timeSlotSelected signal so callers can create a new meeting there.
+        """
         if col == 0:
             return
+
+        item = self._table.item(row, col)
+        payload = item.data(Qt.UserRole) if item else None
+        # Top cell of a span stores the MeetingModel; other rows in the span
+        # store a simple truthy marker. We only want to edit if we got a model.
+        if isinstance(payload, MeetingModel):
+            self.meetingActivated.emit(payload)
+            return
+
         target_date = self._week_start + timedelta(days=col - 1)
         self.daySelected.emit(target_date)
 

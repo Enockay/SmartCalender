@@ -145,6 +145,11 @@ class TodoListWidget(QWidget):
                 normalized[t] = TodoEvent(text=str(value))
 
         self._events = normalized
+        # Debug: inspect which hours the day view thinks have events
+        print(
+            "DAY VIEW _events:",
+            sorted((str(t), e.text, e.color) for t, e in self._events.items()),
+        )
         self._refresh_rows()
 
     def _clear_row_style(self, row: int) -> None:
@@ -166,22 +171,30 @@ class TodoListWidget(QWidget):
         if not time_item or not event_item:
             return
 
-        # Gray-200 for the time column background, with slightly lighter
-        # gray for past rows. Event side stays white for a clean writing area.
+        # Soft gradient for the time column background to give it a lifted,
+        # "pill-like" feel, with slightly lighter tone for future hours.
         if is_past:
             time_fg = QColor("#94A3B8")
             event_fg = QColor("#94A3B8")
-            time_bg = QColor("#E5E7EB")   # gray-200
+            grad = QLinearGradient(0, 0, 1, 0)
+            grad.setCoordinateMode(QLinearGradient.ObjectBoundingMode)
+            grad.setColorAt(0.0, QColor("#CBD5E1"))   # darker on the left
+            grad.setColorAt(1.0, QColor("#E5E7EB"))   # lighter on the right
+            time_bg = QBrush(grad)
             event_bg = QColor("#F8FAFC")
         else:
             time_fg = QColor("#475569")
             event_fg = QColor("#334155")
-            time_bg = QColor("#E5E7EB")   # gray-200
+            grad = QLinearGradient(0, 0, 1, 0)
+            grad.setCoordinateMode(QLinearGradient.ObjectBoundingMode)
+            grad.setColorAt(0.0, QColor("#E2E8F0"))
+            grad.setColorAt(1.0, QColor("#F8FAFC"))
+            time_bg = QBrush(grad)
             event_bg = QColor("#FFFFFF")
 
         time_item.setForeground(QBrush(time_fg))
         event_item.setForeground(QBrush(event_fg))
-        time_item.setBackground(QBrush(time_bg))
+        time_item.setBackground(time_bg)
         event_item.setBackground(QBrush(event_bg))
 
     def _event_brush(self, raw: str) -> QBrush:
@@ -200,25 +213,19 @@ class TodoListWidget(QWidget):
     def _apply_event_row_style(self, row: int, event: TodoEvent) -> None:
         time_item = self._table.item(row, 0)
         event_item = self._table.item(row, 1)
-
         if not time_item or not event_item:
             return
-
+        # Use the event's configured colors; support solid or linear gradients.
         row_fg = QColor(event.text_color or "#FFFFFF")
         row_bg = self._event_brush(event.color or "#3B82F6")
+
+        # Debug: verify that event rows are actually being styled.
+        print(f"DAY VIEW painting row {row} for {event.text!r} with color {event.color!r}")
 
         time_item.setForeground(QBrush(row_fg))
         event_item.setForeground(QBrush(row_fg))
         time_item.setBackground(row_bg)
         event_item.setBackground(row_bg)
-
-        time_font = time_item.font()
-        time_font.setBold(True)
-        time_item.setFont(time_font)
-
-        event_font = event_item.font()
-        event_font.setBold(True)
-        event_item.setFont(event_font)
 
     def _refresh_rows(self) -> None:
         current_hour = datetime.now().hour
@@ -238,7 +245,12 @@ class TodoListWidget(QWidget):
             event = self._events.get(row_time)
 
             time_item.setText(row_time.strftime("%H:%M"))
-            event_item.setText(f"  {event.text}" if event else "")
+            if event:
+                # Prefix with a subtle reminder bell to indicate this slot
+                # has an associated meeting/reminder.
+                event_item.setText(f"  🔔 {event.text}")
+            else:
+                event_item.setText("")
 
             self._clear_row_style(row)
 
@@ -260,28 +272,16 @@ class TodoListWidget(QWidget):
                 return
             span_rows = end_row_exclusive - current_group_start
             if span_rows > 1:
-                # Span just the "Plan" column.
+                # Span just the "Plan" column so consecutive hours for the
+                # same meeting appear as a single block. We no longer repaint
+                # backgrounds here; per-row styling from _apply_event_row_style
+                # should remain in effect.
                 self._table.setSpan(current_group_start, 1, span_rows, 1)
-                # Paint **all** rows in the span with the meeting color so
-                # the whole block is visually the meeting, not just the row
-                # that originally held the event.
-                row_fg = QColor(current_group_event.text_color or "#FFFFFF")
-                row_bg = self._event_brush(current_group_event.color or "#3B82F6")
-
-                for r in range(current_group_start, end_row_exclusive):
-                    time_item = self._table.item(r, 0)
+                # Only show the title on the first row of the span so the text
+                # doesn't repeat inside the merged block.
+                for r in range(current_group_start + 1, end_row_exclusive):
                     event_item = self._table.item(r, 1)
-                    if not time_item or not event_item:
-                        continue
-
-                    time_item.setForeground(QBrush(row_fg))
-                    event_item.setForeground(QBrush(row_fg))
-                    time_item.setBackground(row_bg)
-                    event_item.setBackground(row_bg)
-
-                    # Only show the title on the first row of the span so the
-                    # text doesn't repeat inside the merged block.
-                    if r > current_group_start:
+                    if event_item:
                         event_item.setText("")
             current_group_start = None
             current_group_event = None

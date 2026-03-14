@@ -3,15 +3,13 @@
    ========================================================= */
 
 QDialog#MeetingDialogRoot {
-    /* Simple, clean white dialog like the reference */
     background-color: #F5F7FF;
     font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
     color: #1F2937;
     font-size: 15px;
 }
 
-
-/* Section / row labels such as "Reminder:" */
+/* Section / row labels */
 QLabel#SectionTitle {
     color: #111827;
     font-size: 15px;
@@ -20,7 +18,7 @@ QLabel#SectionTitle {
     margin: 0px 4px 0px 0px;
 }
 
-/* Inline validation error labels under inputs */
+/* Inline validation labels */
 QLabel#FieldErrorLabel {
     color: #B91C1C;
     font-size: 11px;
@@ -37,7 +35,7 @@ QFrame#DialogDivider {
     max-height: 1px;
 }
 
-/* Form labels */
+/* Generic labels */
 QDialog#MeetingDialogRoot QLabel {
     color: #374151;
     font-size: 15px;
@@ -52,12 +50,10 @@ QDialog#MeetingDialogRoot QTimeEdit,
 QDialog#MeetingDialogRoot QComboBox,
 QDialog#MeetingDialogRoot QTextEdit,
 QDialog#MeetingDialogRoot QSpinBox {
-    /* Compact, Outlook-style fields so rows do not visually overlap */
     background-color: #F9FAFB;
     color: #1E293B;
     border: 1px solid #D1D5DB;
     border-radius: 8px;
-    /* Slimmer padding for compact, desktop-style fields */
     margin-top: 0px;
     margin-bottom: 0px;
     padding: 2px 8px;
@@ -73,20 +69,15 @@ QDialog#MeetingDialogRoot QDateEdit,
 QDialog#MeetingDialogRoot QTimeEdit,
 QDialog#MeetingDialogRoot QComboBox,
 QDialog#MeetingDialogRoot QSpinBox {
-    /* Shorter fields for a compact layout */
     min-height: 24px;
 }
 
-/* Text area */
+/* Description area */
 QDialog#MeetingDialogRoot QTextEdit {
-    padding-top: 10px;
-    padding-bottom: 10px;
-}
-
-/* Placeholder text */
-QDialog#MeetingDialogRoot QLineEdit[placeholderText=""],
-QDialog#MeetingDialogRoot QTextEdit[placeholderText=""] {
-    color: #9CA3AF;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 8px;
+    padding-right: 8px;
 }
 
 /* Focus states */
@@ -94,7 +85,8 @@ QDialog#MeetingDialogRoot QLineEdit:focus,
 QDialog#MeetingDialogRoot QDateEdit:focus,
 QDialog#MeetingDialogRoot QTimeEdit:focus,
 QDialog#MeetingDialogRoot QComboBox:focus,
-QDialog#MeetingDialogRoot QTextEdit:focus {
+QDialog#MeetingDialogRoot QTextEdit:focus,
+QDialog#MeetingDialogRoot QSpinBox:focus {
     border: 1px solid #93C5FD;
     background-color: #FFFFFF;
 }
@@ -104,7 +96,8 @@ QDialog#MeetingDialogRoot QLineEdit:hover,
 QDialog#MeetingDialogRoot QDateEdit:hover,
 QDialog#MeetingDialogRoot QTimeEdit:hover,
 QDialog#MeetingDialogRoot QComboBox:hover,
-QDialog#MeetingDialogRoot QTextEdit:hover {
+QDialog#MeetingDialogRoot QTextEdit:hover,
+QDialog#MeetingDialogRoot QSpinBox:hover {
     border: 1px solid #BFC7D4;
 }
 
@@ -113,7 +106,6 @@ QDialog#MeetingDialogRoot QComboBox {
     padding-right: 30px;
 }
 
-/* Combo popup list (category, recurrence, etc.) */
 QDialog#MeetingDialogRoot QComboBox QAbstractItemView {
     background-color: #FFFFFF;
     color: #111827;
@@ -144,7 +136,7 @@ QDialog#MeetingDialogRoot QComboBox::down-arrow {
     height: 10px;
 }
 
-/* DateEdit / TimeEdit spin buttons */
+/* Date / Time spin buttons */
 QDialog#MeetingDialogRoot QDateEdit::up-button,
 QDialog#MeetingDialogRoot QDateEdit::down-button,
 QDialog#MeetingDialogRoot QTimeEdit::up-button,
@@ -225,9 +217,7 @@ QDialog#MeetingDialogRoot QDialogButtonBox QPushButton:pressed {
     background-color: #F3F4F6;
 }
 
-/* Make the OK button feel primary if Qt marks it */
 QDialog#MeetingDialogRoot QDialogButtonBox QPushButton:default {
-    /* Primary action in a cool blue tone */
     background-color: #2563EB;
     color: #FFFFFF;
     border: 1px solid #2563EB;

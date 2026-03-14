@@ -46,15 +46,22 @@ class MeetingService:
             repo = MeetingRepository(session)
             created = repo.create(model)
 
-            # automatically create a reminder using either the per-meeting
-            # setting or the global default reminder time
+            # Automatically create a reminder using either the per-meeting
+            # setting, the global default, or a hard-coded fallback.
             if reminder_minutes is not None:
                 minutes_before = reminder_minutes
             else:
-                minutes_before = 10
+                # If a settings service is provided, prefer its default;
+                # otherwise fall back to 10 minutes before.
                 if self._settings_service is not None:
                     minutes_before = self._settings_service.get_default_reminder_minutes()
-            ReminderService(self._db).create_for_meeting(created, minutes_before=minutes_before)
+                else:
+                    minutes_before = 10
+
+            ReminderService(self._db).create_for_meeting(
+                created,
+                minutes_before=minutes_before,
+            )
 
             return created
         finally:

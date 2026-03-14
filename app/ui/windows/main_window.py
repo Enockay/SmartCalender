@@ -17,6 +17,9 @@ from PySide6.QtWidgets import (
     QStackedWidget,
     QPushButton,
     QSizePolicy,
+    QMessageBox,
+    QDialog,
+    QFrame,
 )
 
 from app.controllers.meeting_controller import MeetingController
@@ -78,6 +81,75 @@ class MainWindow(QMainWindow):
         x = available.right() - frame.width()
         y = available.top()
         self.move(x, y)
+
+    # --- Inline notice helpers ----------------------------------------------
+
+    def _show_inline_notice(self, title: str, message: str, detail: str | None = None) -> None:
+        """Show a small, styled in-app notice centered over the main window."""
+        from PySide6.QtCore import Qt
+
+        dlg = QDialog(self)
+        dlg.setObjectName("InlineInfoDialog")
+        dlg.setModal(True)
+        dlg.setWindowFlag(Qt.FramelessWindowHint, True)
+        dlg.setAttribute(Qt.WA_TranslucentBackground, True)
+
+        outer = QVBoxLayout(dlg)
+        outer.setContentsMargins(0, 0, 0, 0)
+
+        card = QFrame(dlg)
+        card.setObjectName("InlineInfoCard")
+        card.setMinimumWidth(420)
+
+        # Layout mimics the earlier system alert: icon on the left,
+        # stacked text on the right, actions row below.
+        main_row = QHBoxLayout(card)
+        main_row.setContentsMargins(20, 16, 20, 16)
+        main_row.setSpacing(14)
+
+        icon_label = QLabel("⚠️", card)
+        icon_label.setObjectName("InlineInfoIcon")
+        main_row.addWidget(icon_label, 0, Qt.AlignTop)
+
+        text_col = QVBoxLayout()
+        text_col.setSpacing(6)
+
+        title_label = QLabel(title, card)
+        title_label.setObjectName("InlineInfoTitle")
+        title_label.setWordWrap(True)
+        text_col.addWidget(title_label)
+
+        body_label = QLabel(message, card)
+        body_label.setObjectName("InlineInfoBody")
+        body_label.setWordWrap(True)
+        text_col.addWidget(body_label)
+
+        if detail:
+            detail_label = QLabel(detail, card)
+            detail_label.setObjectName("InlineInfoDetail")
+            detail_label.setWordWrap(True)
+            text_col.addWidget(detail_label)
+
+        button_row = QHBoxLayout()
+        button_row.addStretch(1)
+        ok_button = QPushButton("OK", card)
+        ok_button.setObjectName("InlineInfoPrimaryButton")
+        ok_button.clicked.connect(dlg.accept)
+        button_row.addWidget(ok_button)
+        text_col.addLayout(button_row)
+
+        main_row.addLayout(text_col, 1)
+        outer.addWidget(card)
+
+        dlg.adjustSize()
+        # Center over the main window
+        parent_geo = self.frameGeometry()
+        dlg_geo = dlg.frameGeometry()
+        dlg.move(
+            parent_geo.center().x() - dlg_geo.width() // 2,
+            parent_geo.center().y() - dlg_geo.height() // 2,
+        )
+        dlg.exec()
 
     def _init_central_layout(self) -> None:
         central = QWidget(self)
@@ -428,6 +500,16 @@ class MainWindow(QMainWindow):
             start_dt = m.start_time
             end_dt = m.end_time
 
+            # Debug: inspect raw meetings coming into the Day view
+            print(
+                "DAY MEETING:",
+                getattr(m, "title", "?"),
+                "from",
+                start_dt,
+                "to",
+                end_dt,
+            )
+
             start_hour = start_dt.time().replace(minute=0, second=0, microsecond=0)
             end_hour_value = end_dt.hour
             if end_dt.minute or end_dt.second:
@@ -452,6 +534,12 @@ class MainWindow(QMainWindow):
             t: TodoEvent(text=txt, color=_meeting_to_color(self._meetings_by_hour[t][0]))
             for t, txt in events_text.items()
         }
+
+        # Debug: inspect the hourly slots that will be colored in Day view
+        print(
+            "DAY EVENT SLOTS:",
+            sorted((str(t), e.text) for t, e in day_events.items()),
+        )
         week_events = day_events
         month_events = day_events
         year_events = day_events
@@ -464,34 +552,13 @@ class MainWindow(QMainWindow):
         self._year_view.set_date(d)
 
     def _on_year_month_selected(self, target: date) -> None:
-        """When a month cell is clicked in the year view, jump near that month's meetings.
-
-        If the month has meetings, we navigate to the first meeting date so the
-        user lands "where the meetings are". Otherwise we fall back to the first
-        day of the month.
-        """
-        # Determine the date to focus: first meeting in that month if any.
+        """When a month cell is clicked in the year view, jump to that month view."""
         start = date(target.year, target.month, 1)
-        if target.month == 12:
-            end = date(target.year + 1, 1, 1)
-        else:
-            end = date(target.year, target.month + 1, 1)
-
-        meetings = self._meeting_service.list_meetings_between(
-            datetime.combine(start, time.min),
-            datetime.combine(end, time.min),
-        )
-
-        if meetings:
-            focus_date = meetings[0].start_time.date()
-        else:
-            focus_date = start
-
-        qdate = QDate(focus_date.year, focus_date.month, focus_date.day)
+        qdate = QDate(start.year, start.month, start.day)
         # This will trigger _on_sidebar_date_changed which refreshes all views.
         self._mini_calendar.setSelectedDate(qdate)
-        # Switch to week view focused on that date.
-        self._set_view(1)
+        # Switch to month view focused on that month.
+        self._set_view(2)
 
     def _on_week_day_selected(self, target: date) -> None:
         """When a day is clicked in the week grid, jump to that specific day."""
@@ -508,6 +575,8 @@ class MainWindow(QMainWindow):
         self._reload_current_day()
         # Switch to week view so the user sees that exact day/meeting in context.
         self._set_view(1)
+        # Visually highlight the focused day in the week header.
+        self._week_view.focus_day(target)
 
     def _on_week_slot_selected(self, slot_dt: datetime) -> None:
         """When a specific time cell is clicked in the week grid, jump to that day/time and open the add-meeting dialog."""
@@ -615,6 +684,21 @@ class MainWindow(QMainWindow):
     def _on_time_slot_activated(self, scope: str, slot_time: time, existing_text: str) -> None:
         """Open an existing meeting for editing, or create a new one for that slot."""
         from PySide6.QtCore import QDate, QTime
+
+        # Block editing/creating meetings in the past. For days before today,
+        # the whole day is read‑only; for today, hours earlier than now are
+        # also treated as read‑only. Show a compact, styled inline dialog.
+        today = date.today()
+        now = datetime.now()
+        if self._current_date < today or (
+            self._current_date == today and slot_time.hour < now.hour
+        ):
+            self._show_inline_notice(
+                "Past time",
+                "You can't create or edit meetings in the past.",
+                "Please choose a future time slot.",
+            )
+            return
 
         # If there is already a meeting in this hour, open it for editing instead.
         meetings_at_time = getattr(self, "_meetings_by_hour", {}).get(

@@ -15,7 +15,8 @@ class NewMeetingWidget(QWidget):
         self.setAttribute(Qt.WA_StyledBackground, True)
 
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.setFixedHeight(120)
+        # Match dialog more closely with a slightly shorter header
+        self.setFixedHeight(100)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(18, 14, 18, 12)
