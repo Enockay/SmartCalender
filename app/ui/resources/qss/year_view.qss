@@ -1,105 +1,155 @@
+/* =========================================================
+   Year View – Professional Calendar Grid
+   Theme: Matches Smart Calendar periwinkle‑frost palette
+   ========================================================= */
+
 QWidget#YearViewRoot {
-    background: #F3F4F6;
-}
-
-QLabel[viewTitle="true"] {
-    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
-    font-size: 30px;
-    font-weight: 800;
-    color: #0F172A;
-    padding: 6px 14px 4px 14px;
-    margin-bottom: 2px;
-}
-
-QPushButton#YearNavButton {
-    background: transparent;
-    border: none;
-    color: #0F172A;
-    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    padding: 4px 8px;
-}
-
-QPushButton#YearNavButton:hover {
-    background: rgba(15, 23, 42, 0.06);
-    border-radius: 999px;
-}
-
-QPushButton#YearNavButton:pressed {
-    background: rgba(15, 23, 42, 0.12);
-}
-
-QTableWidget#YearGrid {
-    background: transparent;
-    border: none;
-}
-
-QTableWidget#YearGrid::item {
-    background: transparent;
-    border: none;
-}
-
-QWidget#MonthCellContainer {
     background: transparent;
 }
 
-QFrame#MonthCard {
+/* ── Header bar ── */
+QWidget#YearHeader {
     background: qlineargradient(
-        x1: 0, y1: 0, x2: 1, y2: 1,
-        stop: 0 #FFFFFF,
-        stop: 1 #F8FAFC
+        x1:0, y1:0, x2:1, y2:0,
+        stop:0 #142F5C,
+        stop:0.5 #1A3B75,
+        stop:1 #1E4384
     );
-    border: 1px solid #E5E7EB;
-    border-radius: 10px;
+    border-bottom: 1px solid rgba(200, 210, 235, 0.30);
 }
 
-QFrame#MonthCard[active="true"] {
-    background: qlineargradient(
-        x1: 0, y1: 0, x2: 1, y2: 1,
-        stop: 0 #1D4ED8,
-        stop: 1 #1E40AF
-    );
-    border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-QLabel#MonthName {
-    background: transparent;
-    color: #0F172A;
+QLabel#YearTitle {
     font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 800;
-}
-
-QFrame#MonthCard[active="true"] QLabel#MonthName {
     color: #FFFFFF;
+    letter-spacing: 1px;
 }
 
-QLabel#MeetingBadge {
-    background: #EEF2FF;
-    color: #3730A3;
-    border: 1px solid #C7D2FE;
-    border-radius: 999px;
-    padding: 6px 12px;
-    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-QFrame#MonthCard[active="true"] QLabel#MeetingBadge {
-    background: rgba(255, 255, 255, 0.18);
-    color: #FFFFFF;
-    border: 1px solid rgba(255, 255, 255, 0.22);
-}
-
-QLabel#MonthMeta {
-    background: transparent;
-    color: #64748B;
+QLabel#YearSummary {
     font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
     font-size: 13px;
     font-weight: 500;
+    color: rgba(255, 255, 255, 0.75);
 }
 
-QFrame#MonthCard[active="true"] QLabel#MonthMeta {
-    color: rgba(255, 255, 255, 0.88);
+QPushButton#YearNavBtn {
+    background: rgba(255, 255, 255, 0.10);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    color: #FFFFFF;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+QPushButton#YearNavBtn:hover {
+    background: rgba(255, 255, 255, 0.20);
+}
+
+QPushButton#YearNavBtn:pressed {
+    background: rgba(255, 255, 255, 0.30);
+}
+
+/* ── Scroll area ── */
+QScrollArea#YearScroll {
+    background: transparent;
+    border: none;
+}
+
+QWidget#YearGridArea {
+    background: transparent;
+}
+
+/* ── Month cards ── */
+QFrame#YearMonthCard {
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+}
+
+QFrame#YearMonthCard:hover {
+    background: #FFFFFF;
+    border: 1px solid #CBD5E1;
+}
+
+/* Current month highlight */
+QFrame#YearMonthCard[current="true"] {
+    background: qlineargradient(
+        x1:0, y1:0, x2:1, y2:1,
+        stop:0 #EFF6FF,
+        stop:1 #DBEAFE
+    );
+    border: 1.5px solid #93C5FD;
+}
+
+QFrame#YearMonthCard[current="true"]:hover {
+    border: 1.5px solid #60A5FA;
+}
+
+/* Month name label */
+QLabel#YearMonthName {
+    background: transparent;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #334155;
+}
+
+QFrame#YearMonthCard[current="true"] QLabel#YearMonthName {
+    color: #1D4ED8;
+}
+
+/* Meeting count badge */
+QLabel#YearMeetingBadge {
+    background: #2563EB;
+    color: #FFFFFF;
+    border-radius: 12px;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* Meeting summary lines */
+QLabel#YearMeetingLine {
+    background: transparent;
+    color: #475569;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 0px 0px 0px 2px;
+}
+
+QLabel#YearMeetingMore {
+    background: transparent;
+    color: #2563EB;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 0px 0px 0px 2px;
+}
+
+/* ── Scroll bars ── */
+QScrollBar:vertical {
+    background: transparent;
+    width: 8px;
+    margin: 4px 2px 4px 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: #CBD5E1;
+    border-radius: 4px;
+    min-height: 30px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #94A3B8;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical,
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: none;
+    border: none;
 }

@@ -27,8 +27,8 @@ def main() -> int:
     window.show()
 
     notification_service = NotificationService(window, settings)
-    if settings.get_notifications_enabled():
-        ReminderWorker(notification_service, window)
+    # Always start the reminder worker – it checks notification settings internally
+    ReminderWorker(notification_service, window)
 
     QTimer.singleShot(0, lambda: logger.info("Smart Calender  started"))
 

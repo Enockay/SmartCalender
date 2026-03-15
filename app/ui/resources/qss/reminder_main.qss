@@ -1,0 +1,366 @@
+/* ═══════════════════════════════════════════
+   REMINDER MAIN SCREEN – Two-Column Layout
+   ═══════════════════════════════════════════ */
+
+QWidget#ReminderRoot {
+    background-color: #F0F2F8;
+}
+
+/* ── Header ─────────────────────────────── */
+QWidget#ReminderHeader {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #142F5C, stop:0.6 #1E4384, stop:1 #3B6BC4);
+    border-bottom: 1px solid rgba(100, 160, 255, 0.15);
+}
+QLabel#ReminderHeaderTitle {
+    color: #FFFFFF;
+    font-size: 20px;
+    font-weight: 800;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+}
+QPushButton#ReminderAddBtn {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #3B82F6, stop:1 #60A5FA);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 22px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+}
+QPushButton#ReminderAddBtn:hover {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #2563EB, stop:1 #3B82F6);
+}
+QPushButton#ReminderAddBtn:pressed {
+    background: #1D4ED8;
+}
+
+/* ── Search + Combo in header ──────────── */
+QLineEdit#ReminderSearchField {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: #FFFFFF;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+}
+QLineEdit#ReminderSearchField::placeholder {
+    color: rgba(255,255,255,0.5);
+}
+QLineEdit#ReminderSearchField:focus {
+    border: 1px solid rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.18);
+}
+QComboBox#ReminderCatCombo {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: #FFFFFF;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+    min-width: 100px;
+}
+QComboBox#ReminderCatCombo::drop-down {
+    border: none;
+    width: 20px;
+}
+QComboBox#ReminderCatCombo QAbstractItemView {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    selection-background-color: #DBEAFE;
+    selection-color: #1D4ED8;
+    padding: 4px;
+    color: #334155;
+}
+
+/* ── Filter tabs bar ───────────────────── */
+QWidget#ReminderFilterBar {
+    background: #FFFFFF;
+    border-bottom: 1px solid #E2E8F0;
+}
+QPushButton#ReminderFilterBtn {
+    background: transparent;
+    color: #64748B;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 5px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+}
+QPushButton#ReminderFilterBtn:hover {
+    background: #F1F5F9;
+    color: #334155;
+}
+QPushButton#ReminderFilterBtn:checked {
+    background: transparent;
+    color: #1E293B;
+    border-bottom: 2px solid #3B82F6;
+    border-radius: 0px;
+    font-weight: 700;
+}
+QLabel#ReminderTodayBadge {
+    background: #3B82F6;
+    color: #FFFFFF;
+    border-radius: 9px;
+    min-width: 18px;
+    max-width: 22px;
+    min-height: 18px;
+    max-height: 18px;
+    font-size: 10px;
+    font-weight: 700;
+    qproperty-alignment: AlignCenter;
+}
+
+/* ── Two-column body ───────────────────── */
+QWidget#ReminderBody {
+    background: transparent;
+}
+QWidget#ReminderLeftCol {
+    background: transparent;
+}
+QWidget#ReminderRightCol {
+    background: #FFFFFF;
+    border-left: 1px solid #E2E8F0;
+}
+
+/* ── Section header ────────────────────── */
+QLabel#ReminderSectionHeader {
+    color: #1E293B;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+    padding: 4px 24px 6px 24px;
+}
+
+/* ── List scroll ───────────────────────── */
+QScrollArea#ReminderListScroll {
+    background: transparent;
+    border: none;
+}
+QWidget#ReminderListContainer {
+    background: transparent;
+    max-width: 500px;
+    width: 500px;
+}
+
+/* ── Reminder card ─────────────────────── */
+QFrame#ReminderCard {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    max-width: 400px;
+    width: 400px;
+}
+QFrame#ReminderCard:hover {
+    border: 1px solid #93C5FD;
+    background: #FAFBFF;
+}
+
+QLabel#ReminderCardTitle {
+    color: #1E293B;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+    border: none;
+}
+QLabel#ReminderCardTimeBadge {
+    color: #475569;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+    background: #F1F5F9;
+    border-radius: 6px;
+    padding: 3px 10px;
+    border: 1px solid #E2E8F0;
+}
+QLabel#ReminderCardInfo {
+    color: #64748B;
+    font-size: 11px;
+    font-weight: 500;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+    border: none;
+    padding-left: 18px;
+}
+QLabel#ReminderBadgeInline {
+    border: none;
+}
+
+/* ── Card action buttons ───────────────── */
+QPushButton#ReminderCardActionBtn {
+    background: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #475569;
+}
+QPushButton#ReminderCardActionBtn:hover {
+    background: #DBEAFE;
+    border: 1px solid #93C5FD;
+    color: #1D4ED8;
+}
+QPushButton#ReminderActionBtnDanger {
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #DC2626;
+}
+QPushButton#ReminderActionBtnDanger:hover {
+    background: #FEE2E2;
+    border: 1px solid #F87171;
+}
+
+/* ── Stats pills ───────────────────────── */
+QWidget#ReminderStatsFrame {
+    background: transparent;
+}
+QLabel#ReminderPill_active {
+    background: #E0F2FE;
+    color: #0369A1;
+    border-radius: 8px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+    border: 1px solid #BAE6FD;
+}
+QLabel#ReminderPill_today {
+    background: #E0F2FE;
+    color: #0369A1;
+    border-radius: 8px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+    border: 1px solid #BAE6FD;
+}
+QLabel#ReminderPill_completed {
+    background: #D1FAE5;
+    color: #059669;
+    border-radius: 8px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+    border: 1px solid #A7F3D0;
+}
+QLabel#ReminderPill_overdue {
+    background: #FEE2E2;
+    color: #DC2626;
+    border-radius: 8px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+    border: 1px solid #FECACA;
+}
+QLabel#ReminderPill_alert {
+    background: #FEF3C7;
+    color: #92400E;
+    border-radius: 8px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+    border: 1px solid #FDE68A;
+}
+
+/* ── Mini Calendar ─────────────────────── */
+QWidget#ReminderMiniCal {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    max-height: 200px;
+}
+
+/* ── Category filter sidebar ───────────── */
+QFrame#ReminderCategoryFrame {
+    background: transparent;
+    border: none;
+}
+QPushButton#ReminderSideFilterBtn {
+    background: transparent;
+    color: #475569;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+    text-align: left;
+}
+QPushButton#ReminderSideFilterBtn:hover {
+    background: #F1F5F9;
+    color: #1E293B;
+}
+QPushButton#ReminderSideFilterBtn:checked {
+    background: #EFF6FF;
+    color: #1D4ED8;
+    font-weight: 700;
+    border-left: 3px solid #3B82F6;
+}
+
+/* ── Right panel search ────────────────── */
+QWidget#ReminderRightCol QLineEdit#ReminderSearchField {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    color: #334155;
+}
+QWidget#ReminderRightCol QLineEdit#ReminderSearchField::placeholder {
+    color: #94A3B8;
+}
+QWidget#ReminderRightCol QLineEdit#ReminderSearchField:focus {
+    border: 1px solid #3B82F6;
+    background: #FFFFFF;
+}
+QWidget#ReminderRightCol QComboBox#ReminderCatCombo {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    color: #334155;
+}
+QWidget#ReminderRightCol QComboBox#ReminderCatCombo::drop-down {
+    border: none;
+    width: 20px;
+}
+QWidget#ReminderRightCol QComboBox#ReminderCatCombo QAbstractItemView {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    selection-background-color: #DBEAFE;
+    selection-color: #1D4ED8;
+    padding: 4px;
+    color: #334155;
+}
+
+/* ── Empty state ───────────────────────── */
+QLabel#ReminderEmptyLabel {
+    color: #94A3B8;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+    padding: 40px;
+}
+
+/* ── Scrollbar ─────────────────────────── */
+QScrollArea#ReminderListScroll QScrollBar:vertical {
+    width: 8px;
+    background: transparent;
+}
+QScrollArea#ReminderListScroll QScrollBar::handle:vertical {
+    background: #CBD5E1;
+    border-radius: 4px;
+    min-height: 30px;
+}
+QScrollArea#ReminderListScroll QScrollBar::handle:vertical:hover {
+    background: #94A3B8;
+}
+QScrollArea#ReminderListScroll QScrollBar::add-line:vertical,
+QScrollArea#ReminderListScroll QScrollBar::sub-line:vertical {
+    height: 0px;
+}

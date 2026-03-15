@@ -6,12 +6,14 @@ from pathlib import Path
 from typing import Dict
 
 from PySide6.QtCore import Qt, QTimer, Signal
-from PySide6.QtGui import QColor, QBrush, QFont, QLinearGradient
+from PySide6.QtGui import QColor, QBrush, QFont, QLinearGradient, QPainter
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QFrame,
-    QGraphicsDropShadowEffect,
     QHeaderView,
+    QStyle,
+    QStyledItemDelegate,
+    QStyleOptionViewItem,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -26,6 +28,33 @@ class TodoEvent:
     text_color: str = "#FFFFFF"
 
 
+class PreserveColorDelegate(QStyledItemDelegate):
+    """Custom delegate that preserves item background colors even when selected."""
+    
+    def paint(self, painter: QPainter, option: QStyleOptionViewItem, index) -> None:
+        # Get the item's background color from the model
+        bg_data = index.data(Qt.BackgroundRole)
+        
+        # In PySide6, index.data() can return QBrush directly or None
+        if bg_data is not None:
+            # Check if it's already a QBrush
+            if isinstance(bg_data, QBrush):
+                bg_brush = bg_data
+            else:
+                # Try to convert if it's something else
+                bg_brush = QBrush(bg_data) if bg_data else None
+            
+            # If we have a valid brush with a color, use it instead of selection
+            if bg_brush and isinstance(bg_brush, QBrush) and bg_brush.style() != Qt.NoBrush:
+                # Paint the custom background
+                painter.fillRect(option.rect, bg_brush)
+                # Remove selected state so selection highlight doesn't override
+                option.state &= ~QStyle.State_Selected
+        
+        # Call parent paint to draw text and other elements
+        super().paint(painter, option, index)
+
+
 class TodoListWidget(QWidget):
     """Modern day schedule / todo list with strong hour visibility and colored meeting rows."""
 
@@ -36,21 +65,11 @@ class TodoListWidget(QWidget):
         self.setObjectName("TodoListRoot")
 
         outer_layout = QVBoxLayout(self)
-        # Slightly tighter outer padding so the sheet uses more of the view.
-        outer_layout.setContentsMargins(8, 8, 8, 8)
+        outer_layout.setContentsMargins(0, 0, 0, 0)
         outer_layout.setSpacing(0)
 
         self._sheet = QFrame(self)
         self._sheet.setObjectName("TodoSheet")
-
-        # Add a soft but more prominent drop shadow so the day sheet
-        # visually "floats" above the background, similar to other views.
-        shadow = QGraphicsDropShadowEffect(self)
-        # Increase blur/offset so the card feels gently lifted off the canvas.
-        shadow.setBlurRadius(50)
-        shadow.setOffset(0, 10)
-        shadow.setColor(QColor(15, 23, 42, 55))  # deeper, but still soft
-        self._sheet.setGraphicsEffect(shadow)
 
         sheet_layout = QVBoxLayout(self._sheet)
         sheet_layout.setContentsMargins(0, 0, 0, 0)
@@ -67,7 +86,7 @@ class TodoListWidget(QWidget):
         self._table.horizontalHeader().setStretchLastSection(True)
         self._table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)
         self._table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-        self._table.setColumnWidth(0, 118)
+        self._table.setColumnWidth(0, 80)
 
         self._table.setShowGrid(True)
         self._table.setGridStyle(Qt.SolidLine)
@@ -80,15 +99,21 @@ class TodoListWidget(QWidget):
         self._table.setSelectionMode(QAbstractItemView.SingleSelection)
         self._table.setFocusPolicy(Qt.NoFocus)
         self._table.setCornerButtonEnabled(False)
+        
+        # Use custom delegate to preserve background colors when selected
+        self._table.setItemDelegate(PreserveColorDelegate(self._table))
 
         self._table.cellDoubleClicked.connect(self._on_cell_clicked)
         self._table.cellClicked.connect(self._on_cell_clicked)
+        # Reapply event colors when selection changes to preserve background colors
+        self._table.itemSelectionChanged.connect(self._on_selection_changed)
 
         sheet_layout.addWidget(self._table)
         outer_layout.addWidget(self._sheet)
 
         self._row_times: list[time] = []
         self._events: Dict[time, TodoEvent] = {}
+        self._last_selected_rows: set[int] = set()  # Track previously selected rows
 
         self._build_rows()
         self._load_qss()
@@ -99,11 +124,10 @@ class TodoListWidget(QWidget):
         self._timer.start(60_000)
 
     def _build_rows(self) -> None:
-        # Time column: larger, bold labels
-        time_font = QFont("Segoe UI", 13)
+        time_font = QFont("Segoe UI", 10)
         time_font.setBold(True)
 
-        event_font = QFont("Segoe UI", 13)
+        event_font = QFont("Segoe UI", 11)
         event_font.setBold(False)
 
         for row in range(24):
@@ -122,7 +146,7 @@ class TodoListWidget(QWidget):
 
             self._table.setItem(row, 0, time_item)
             self._table.setItem(row, 1, event_item)
-            self._table.setRowHeight(row, 58)
+            self._table.setRowHeight(row, 48)
 
     def _load_qss(self) -> None:
         root = Path(__file__).resolve().parents[2]
@@ -145,12 +169,24 @@ class TodoListWidget(QWidget):
                 normalized[t] = TodoEvent(text=str(value))
 
         self._events = normalized
-        # Debug: inspect which hours the day view thinks have events
-        print(
-            "DAY VIEW _events:",
-            sorted((str(t), e.text, e.color) for t, e in self._events.items()),
-        )
         self._refresh_rows()
+        # Auto-scroll to the first meeting after a short delay (allow table to lay out)
+        QTimer.singleShot(50, self._scroll_to_first_event)
+
+    def _scroll_to_first_event(self) -> None:
+        """Scroll the table so the first meeting/event row is visible near the top."""
+        if not self._events:
+            # No events — scroll to the current hour instead
+            current_hour = datetime.now().hour
+            target_row = max(0, current_hour - 1)
+        else:
+            # Find the earliest event hour
+            earliest = min(self._events.keys(), key=lambda t: t.hour)
+            target_row = max(0, earliest.hour - 1)  # show one row above for context
+
+        item = self._table.item(target_row, 0)
+        if item:
+            self._table.scrollToItem(item, QAbstractItemView.PositionAtTop)
 
     def _clear_row_style(self, row: int) -> None:
         time_item = self._table.item(row, 0)
@@ -219,13 +255,15 @@ class TodoListWidget(QWidget):
         row_fg = QColor(event.text_color or "#FFFFFF")
         row_bg = self._event_brush(event.color or "#3B82F6")
 
-        # Debug: verify that event rows are actually being styled.
-        print(f"DAY VIEW painting row {row} for {event.text!r} with color {event.color!r}")
-
         time_item.setForeground(QBrush(row_fg))
         event_item.setForeground(QBrush(row_fg))
         time_item.setBackground(row_bg)
         event_item.setBackground(row_bg)
+        
+        # Force update to ensure colors are applied
+        time_item.setData(Qt.BackgroundRole, row_bg)
+        event_item.setData(Qt.BackgroundRole, row_bg)
+        self._table.update()
 
     def _refresh_rows(self) -> None:
         current_hour = datetime.now().hour
@@ -346,8 +384,47 @@ class TodoListWidget(QWidget):
         self._events.clear()
         self._refresh_rows()
 
+    def _on_selection_changed(self) -> None:
+        """Reapply event colors when selection changes to preserve background colors."""
+        # Use a timer to ensure selection styling is applied first, then we override it
+        QTimer.singleShot(10, self._reapply_selected_event_colors)
+    
+    def _reapply_selected_event_colors(self) -> None:
+        """Reapply event colors for currently selected rows and previously selected rows."""
+        current_selected_rows = set()
+        for item in self._table.selectedItems():
+            current_selected_rows.add(item.row())
+        
+        # Reapply colors for both current selection and previous selection
+        rows_to_update = current_selected_rows | self._last_selected_rows
+        
+        # Reapply event styling for rows that have events
+        for row in rows_to_update:
+            if row < len(self._row_times):
+                row_time = self._row_times[row]
+                event = self._events.get(row_time)
+                if event:
+                    # Reapply the event colors to override selection styling
+                    self._apply_event_row_style(row, event)
+                    # Force update of the specific cells
+                    self._table.update(self._table.visualItemRect(self._table.item(row, 0)))
+                    self._table.update(self._table.visualItemRect(self._table.item(row, 1)))
+                else:
+                    # If no event, reapply base styling
+                    current_hour = datetime.now().hour
+                    is_past = row_time.hour < current_hour
+                    self._base_empty_row_style(row, is_past)
+        
+        # Update the last selected rows for next time
+        self._last_selected_rows = current_selected_rows.copy()
+        
+        # Force a full repaint
+        self._table.viewport().update()
+
     def _on_cell_clicked(self, row: int, column: int) -> None:
         row_time = self._row_times[row]
         event = self._events.get(row_time)
         text = event.text if event else ""
+        # Immediately reapply event colors after click to preserve background
+        QTimer.singleShot(10, self._reapply_selected_event_colors)
         self.eventClicked.emit(row_time, text)

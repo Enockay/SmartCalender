@@ -60,6 +60,96 @@ QPushButton#SegmentButton:checked {
 QPushButton#SegmentButton:hover:!checked {
     background-color: rgba(91, 132, 210, 0.30);
 }
+
+QPushButton#AddTaskButton {
+    min-width: 100px;
+    min-height: 30px;
+    padding: 4px 16px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background-color: #3B82F6;
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+}
+
+QPushButton#AddTaskButton:hover {
+    background-color: #2563EB;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+QPushButton#AddTaskButton:pressed {
+    background-color: #1D4ED8;
+}
+
+/* =========================
+   SEARCH BAR
+   ========================= */
+QWidget#SearchContainer {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    min-width: 180px;
+    max-width: 180px;
+}
+
+QLabel#SearchIcon {
+    color: #A0B4D0;
+    font-size: 14px;
+    background: transparent;
+    border: none;
+    padding: 0px;
+}
+
+QLineEdit#SearchInput {
+    background: transparent;
+    border: none;
+    color: #F3F6FA;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    padding: 0px;
+}
+
+QLineEdit#SearchInput::placeholder {
+    color: #A0B4D0;
+}
+
+QLineEdit#SearchInput:focus {
+    outline: none;
+}
+
+/* =========================
+   USER ICON
+   ========================= */
+QWidget#UserContainer {
+    background: transparent;
+    border: none;
+}
+
+QLabel#UserIconEmoji {
+    font-size: 18px;
+    background: transparent;
+    border: none;
+    padding: 0px;
+    min-width: 20px;
+}
+
+QLabel#UserInitial {
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    border-radius: 14px;
+    color: #F3F6FA;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    min-width: 28px;
+    max-width: 28px;
+    min-height: 28px;
+    max-height: 28px;
+}
+
 /* =========================
    DATE LABEL
    ========================= */

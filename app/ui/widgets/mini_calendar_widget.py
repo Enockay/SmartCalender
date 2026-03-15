@@ -4,32 +4,30 @@ from pathlib import Path
 
 from PySide6.QtCore import Qt, QDate
 from PySide6.QtGui import QFont, QTextCharFormat, QColor
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QCalendarWidget
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QCalendarWidget, QLabel
 
 
 class MiniCalendarWidget(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("MiniCalendarRoot")
-        # Keep the mini calendar card at a fixed size so it
-        # doesn't get stretched and lose its visual proportions.
-        self.setFixedSize(230, 260)
+        self.setFixedSize(224, 240)
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(8, 6, 8, 6)
+        layout.setSpacing(0)
 
         self._calendar = QCalendarWidget(self)
         self._calendar.setObjectName("MiniCalendar")
         self._calendar.setGridVisible(False)
-        # Use single-letter day names so they fit cleanly
-        # in the compact mini calendar header.
         self._calendar.setHorizontalHeaderFormat(QCalendarWidget.SingleLetterDayNames)
         self._calendar.setFirstDayOfWeek(Qt.Sunday)
         self._calendar.setSelectedDate(QDate.currentDate())
+        self._calendar.setNavigationBarVisible(True)
 
-        font = QFont("Avenir Next", 13)
+        font = QFont("Segoe UI", 12)
         if not font.exactMatch():
-            font = QFont("Helvetica Neue", 13)
+            font = QFont("Helvetica Neue", 12)
         self._calendar.setFont(font)
 
         layout.addWidget(self._calendar)
@@ -49,9 +47,9 @@ class MiniCalendarWidget(QWidget):
             self.setStyleSheet(style)
 
     def _configure_formats(self) -> None:
-        # Header weekdays white
         header_format = QTextCharFormat()
-        header_format.setForeground(QColor("#E5E7EB"))
+        header_format.setForeground(QColor("#94A3B8"))
+        header_format.setFont(QFont("Helvetica Neue", 10, QFont.DemiBold))
         for weekday in (
             Qt.Monday,
             Qt.Tuesday,
@@ -75,10 +73,15 @@ class MiniCalendarWidget(QWidget):
         month = self._calendar.monthShown()
 
         normal = QTextCharFormat()
-        normal.setForeground(QColor("#FFFFFF"))  # upcoming / today
+        normal.setForeground(QColor("#E2E8F0"))
 
         past = QTextCharFormat()
-        past.setForeground(QColor("#9CA3AF"))  # already passed
+        past.setForeground(QColor("#475569"))
+
+        today_fmt = QTextCharFormat()
+        today_fmt.setForeground(QColor("#FFFFFF"))
+        today_fmt.setBackground(QColor("#3B82F6"))
+        today_fmt.setFont(QFont("Helvetica Neue", 12, QFont.Bold))
 
         first_of_month = QDate(year, month, 1)
         fdow = self._calendar.firstDayOfWeek()
@@ -89,11 +92,10 @@ class MiniCalendarWidget(QWidget):
 
         for i in range(42):
             d = start.addDays(i)
-            # All days from previous weeks / previous month,
-            # and any day before "today", are shown in a greyish color.
-            if d < today or d.month() != month:
+            if d == today and d.month() == month:
+                fmt = today_fmt
+            elif d < today or d.month() != month:
                 fmt = past
             else:
                 fmt = normal
             self._calendar.setDateTextFormat(d, fmt)
-

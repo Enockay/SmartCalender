@@ -1,0 +1,356 @@
+{
+  "exported_at": "2026-03-14T20:53:11.239985",
+  "app": "Smart Calendar",
+  "version": "1.0",
+  "settings": {
+    "theme": "light",
+    "language": "English",
+    "default_category": "Work",
+    "reminder_frequency": "Weekly",
+    "default_view": "week",
+    "weather_city": "Nairobi",
+    "notifications_enabled": "true",
+    "email_alerts": "true",
+    "sound_alerts": "true",
+    "quiet_hours_start": "22:00",
+    "quiet_hours_end": "07:00",
+    "auto_backup": "true",
+    "backup_schedule": "Daily",
+    "default_reminder_minutes": "12"
+  },
+  "meetings": [
+    {
+      "id": 1,
+      "title": "june",
+      "description": null,
+      "start_time": "2026-03-10T17:33:00",
+      "end_time": "2026-03-10T18:03:00",
+      "location": null,
+      "color_gradient": null
+    },
+    {
+      "id": 2,
+      "title": "june",
+      "description": null,
+      "start_time": "2026-03-11T17:34:00",
+      "end_time": "2026-03-11T18:04:00",
+      "location": null,
+      "color_gradient": null
+    },
+    {
+      "id": 3,
+      "title": "june",
+      "description": null,
+      "start_time": "2026-03-10T17:35:00",
+      "end_time": "2026-03-10T18:05:00",
+      "location": null,
+      "color_gradient": null
+    },
+    {
+      "id": 4,
+      "title": "june",
+      "description": null,
+      "start_time": "2026-03-10T17:36:00",
+      "end_time": "2026-03-10T18:26:00",
+      "location": null,
+      "color_gradient": null
+    },
+    {
+      "id": 5,
+      "title": "june",
+      "description": null,
+      "start_time": "2026-03-10T17:41:00",
+      "end_time": "2026-03-10T18:21:00",
+      "location": null,
+      "color_gradient": null
+    },
+    {
+      "id": 6,
+      "title": "odau",
+      "description": null,
+      "start_time": "2026-03-10T17:44:00",
+      "end_time": "2026-03-10T18:14:00",
+      "location": null,
+      "color_gradient": null
+    },
+    {
+      "id": 7,
+      "title": "june",
+      "description": null,
+      "start_time": "2026-03-10T17:48:00",
+      "end_time": "2026-03-10T18:27:00",
+      "location": null,
+      "color_gradient": null
+    },
+    {
+      "id": 8,
+      "title": "today",
+      "description": null,
+      "start_time": "2026-03-10T17:58:00",
+      "end_time": "2026-03-10T18:58:00",
+      "location": null,
+      "color_gradient": null
+    },
+    {
+      "id": 9,
+      "title": "class meeting",
+      "description": "meeting on friday for system analysis",
+      "start_time": "2026-03-10T18:40:00",
+      "end_time": "2026-03-10T19:40:00",
+      "location": null,
+      "color_gradient": null
+    },
+    {
+      "id": 10,
+      "title": "church meeting",
+      "description": "chuecj",
+      "start_time": "2026-03-11T20:00:00",
+      "end_time": "2026-03-11T21:00:00",
+      "location": null,
+      "color_gradient": null
+    },
+    {
+      "id": 11,
+      "title": "Church meeting",
+      "description": "church meeting",
+      "start_time": "2026-03-11T00:00:00",
+      "end_time": "2026-03-11T02:00:00",
+      "location": null,
+      "color_gradient": null
+    },
+    {
+      "id": 12,
+      "title": "Church meeting",
+      "description": null,
+      "start_time": "2026-03-11T20:00:00",
+      "end_time": "2026-03-11T21:00:00",
+      "location": null,
+      "color_gradient": null
+    },
+    {
+      "id": 13,
+      "title": "Zoom meeting today with hillary",
+      "description": "hillary meeting today",
+      "start_time": "2026-03-12T01:00:00",
+      "end_time": "2026-03-12T03:00:00",
+      "location": null,
+      "color_gradient": "linear:#F87171:#EF4444"
+    },
+    {
+      "id": 14,
+      "title": "Church meeting",
+      "description": null,
+      "start_time": "2026-03-11T11:00:00",
+      "end_time": "2026-03-11T12:00:00",
+      "location": null,
+      "color_gradient": "linear:#2D8CFF:#1F6FF2"
+    },
+    {
+      "id": 15,
+      "title": "Testing meeting",
+      "description": "tesing meeting",
+      "start_time": "2026-03-12T13:30:00",
+      "end_time": "2026-03-12T14:30:00",
+      "location": null,
+      "color_gradient": "linear:#FB923C:#F97316"
+    },
+    {
+      "id": 16,
+      "title": "Zoom Meeting",
+      "description": null,
+      "start_time": "2026-03-12T15:00:00",
+      "end_time": "2026-03-12T16:00:00",
+      "location": null,
+      "color_gradient": "linear:#FB923C:#F97316"
+    },
+    {
+      "id": 17,
+      "title": "Zoom Meeting",
+      "description": "https://blackienetworks.com",
+      "start_time": "2026-03-13T15:00:00",
+      "end_time": "2026-03-13T16:00:00",
+      "location": null,
+      "color_gradient": "linear:#22C55E:#16A34A"
+    },
+    {
+      "id": 18,
+      "title": "Zoom Meeting",
+      "description": null,
+      "start_time": "2026-03-14T15:00:00",
+      "end_time": "2026-03-14T16:00:00",
+      "location": null,
+      "color_gradient": "linear:#2D8CFF:#1F6FF2"
+    },
+    {
+      "id": 19,
+      "title": "Zoom Meeting",
+      "description": null,
+      "start_time": "2026-03-15T15:00:00",
+      "end_time": "2026-03-15T16:00:00",
+      "location": null,
+      "color_gradient": "linear:#2D8CFF:#1F6FF2"
+    },
+    {
+      "id": 20,
+      "title": "Zoom Meeting",
+      "description": null,
+      "start_time": "2026-03-16T15:00:00",
+      "end_time": "2026-03-16T16:00:00",
+      "location": null,
+      "color_gradient": "linear:#2D8CFF:#1F6FF2"
+    },
+    {
+      "id": 21,
+      "title": "Zoom Meeting",
+      "description": null,
+      "start_time": "2026-03-17T15:00:00",
+      "end_time": "2026-03-17T16:00:00",
+      "location": null,
+      "color_gradient": "linear:#2D8CFF:#1F6FF2"
+    },
+    {
+      "id": 22,
+      "title": "Zoom Meeting",
+      "description": null,
+      "start_time": "2026-03-18T15:00:00",
+      "end_time": "2026-03-18T16:00:00",
+      "location": null,
+      "color_gradient": "linear:#2D8CFF:#1F6FF2"
+    },
+    {
+      "id": 23,
+      "title": "Zoom Meeting",
+      "description": null,
+      "start_time": "2026-03-19T15:00:00",
+      "end_time": "2026-03-19T16:00:00",
+      "location": null,
+      "color_gradient": "linear:#2D8CFF:#1F6FF2"
+    },
+    {
+      "id": 24,
+      "title": "Zoom Meeting",
+      "description": null,
+      "start_time": "2026-03-20T15:00:00",
+      "end_time": "2026-03-20T16:00:00",
+      "location": null,
+      "color_gradient": "linear:#2D8CFF:#1F6FF2"
+    },
+    {
+      "id": 25,
+      "title": "Zoom Meeting",
+      "description": null,
+      "start_time": "2026-03-21T15:00:00",
+      "end_time": "2026-03-21T16:00:00",
+      "location": null,
+      "color_gradient": "linear:#2D8CFF:#1F6FF2"
+    },
+    {
+      "id": 26,
+      "title": "Reminder test",
+      "description": null,
+      "start_time": "2026-03-12T13:02:00",
+      "end_time": "2026-03-12T14:02:00",
+      "location": null,
+      "color_gradient": "linear:#2D8CFF:#1F6FF2"
+    },
+    {
+      "id": 27,
+      "title": "Travelling",
+      "description": null,
+      "start_time": "2026-03-12T13:40:00",
+      "end_time": "2026-03-12T14:40:00",
+      "location": null,
+      "color_gradient": "linear:#8B5CF6:#7C3AED"
+    },
+    {
+      "id": 28,
+      "title": "metting",
+      "description": null,
+      "start_time": "2026-03-12T15:00:00",
+      "end_time": "2026-03-12T16:00:00",
+      "location": null,
+      "color_gradient": "linear:#2D8CFF:#1F6FF2"
+    },
+    {
+      "id": 29,
+      "title": "saturday  meeting",
+      "description": "https://meetimg.com\non saturday",
+      "start_time": "2026-03-14T17:00:00",
+      "end_time": "2026-03-14T21:00:00",
+      "location": null,
+      "color_gradient": "linear:#FB923C:#F97316"
+    }
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Go to market",
+      "description": "attending market",
+      "deadline": "2026-03-21T00:00:00",
+      "task_date": "2026-03-14T00:00:00",
+      "priority": "Medium",
+      "status": "completed",
+      "progress": 100.0
+    },
+    {
+      "id": 2,
+      "name": "go to work",
+      "description": "my work",
+      "deadline": "2026-03-21T00:00:00",
+      "task_date": "2026-03-14T00:00:00",
+      "priority": "Medium",
+      "status": "in_progress",
+      "progress": 50.0
+    },
+    {
+      "id": 3,
+      "name": "debug code today",
+      "description": "i will have to debug hillary code and push to github for the day and create diffrent widget",
+      "deadline": "2026-03-21T14:51:00",
+      "task_date": "2026-03-14T00:00:00",
+      "priority": "High",
+      "status": "in_progress",
+      "progress": 50.0
+    },
+    {
+      "id": 4,
+      "name": "task 1",
+      "description": "testing tasks",
+      "deadline": "2026-03-13T15:04:00",
+      "task_date": "2026-03-14T00:00:00",
+      "priority": "High",
+      "status": "completed",
+      "progress": 100.0
+    },
+    {
+      "id": 5,
+      "name": "task 2",
+      "description": "check the task",
+      "deadline": "2026-03-21T15:05:00",
+      "task_date": "2026-03-14T00:00:00",
+      "priority": "Medium",
+      "status": "completed",
+      "progress": 100.0
+    },
+    {
+      "id": 6,
+      "name": "task3",
+      "description": "check on the code debug",
+      "deadline": "2026-03-21T15:05:00",
+      "task_date": "2026-03-14T00:00:00",
+      "priority": "Medium",
+      "status": "in_progress",
+      "progress": 50.0
+    },
+    {
+      "id": 7,
+      "name": "task",
+      "description": "check",
+      "deadline": "2026-03-13T15:06:00",
+      "task_date": "2026-03-14T00:00:00",
+      "priority": "Medium",
+      "status": "backlog",
+      "progress": 0.0
+    }
+  ]
+}

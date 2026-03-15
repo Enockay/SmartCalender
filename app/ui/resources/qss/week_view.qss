@@ -1,27 +1,104 @@
+/* =========================================================
+   Week View – Professional Calendar Grid
+   Theme: Matches Smart Calendar periwinkle‑frost palette
+   ========================================================= */
+
 QWidget#WeekViewRoot {
-    background-color: transparent;
+    background: transparent;
 }
 
-QLabel[viewTitle="true"] {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    padding: 10px 15px;
-    color: #1E1B1B;
-}
-
-/* Week grid header (Time, Mon, Tue, ...). Match main header background and larger font */
-QHeaderView#WeekHeader::section {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    color: #FFFFFF;
+/* ── Header bar ── */
+QWidget#WeekHeader {
     background: qlineargradient(
         x1:0, y1:0, x2:1, y2:0,
         stop:0 #142F5C,
-        stop:0.4 #1A3B75,
-        stop:0.7 #1E4384,
-        stop:1 #18386F
+        stop:0.5 #1A3B75,
+        stop:1 #1E4384
     );
-    padding: 6px 4px;
+    border-bottom: 1px solid rgba(200, 210, 235, 0.30);
+}
+
+QLabel#WeekTitle {
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: #FFFFFF;
+    letter-spacing: 0.5px;
+}
+
+QLabel#WeekSummary {
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.70);
+}
+
+/* ── Table grid ── */
+QTableWidget#WeekGrid {
+    background: #FFFFFF;
+    border: none;
+    outline: none;
+    gridline-color: #E2E8F0;
+    selection-background-color: transparent;
+    selection-color: #0F172A;
+}
+
+QTableWidget#WeekGrid::item {
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    padding: 2px 3px;
+}
+
+QTableWidget#WeekGrid::item:selected {
+    background: transparent;
+}
+
+/* ── Column headers (day names) ── */
+QHeaderView#WeekGridHeader::section {
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #FFFFFF;
+    background: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0 #1E3A6E,
+        stop:1 #142F5C
+    );
+    border: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+    padding: 6px 2px;
+}
+
+QHeaderView#WeekGridHeader::section:first {
+    border-top-left-radius: 0px;
+}
+
+QHeaderView#WeekGridHeader::section:last {
+    border-right: none;
+}
+
+/* ── Scroll bars ── */
+QScrollBar:vertical {
+    background: transparent;
+    width: 8px;
+    margin: 2px 2px 2px 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: #CBD5E1;
+    border-radius: 4px;
+    min-height: 30px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #94A3B8;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical,
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: none;
+    border: none;
 }

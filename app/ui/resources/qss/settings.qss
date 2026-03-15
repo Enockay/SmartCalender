@@ -1,0 +1,617 @@
+/* ═══════════════════════════════════════════
+   SETTINGS – Modern Professional Styling
+   ═══════════════════════════════════════════ */
+
+QWidget#SettingsDialog {
+    background-color: #F0F2F8;
+    border: none;
+}
+
+/* ── Header bar (gradient blending sidebar → body) ── */
+QWidget#SettingsHeader {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #142F5C,
+        stop:0.4 #1E4384,
+        stop:0.8 #2B5BA8,
+        stop:1.0 #4A7FD4);
+    border-bottom: 2px solid rgba(74, 127, 212, 0.3);
+    min-height: 52px;
+}
+
+QLabel#SettingsTitle {
+    color: #FFFFFF;
+    font-size: 20px;
+    font-weight: 800;
+    font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+    letter-spacing: 0.5px;
+}
+
+QLabel#SettingsSubtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    font-weight: 400;
+    font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+}
+
+QLabel#SettingsVersionBadge {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 3px 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* ── Scroll area ── */
+QScrollArea#SettingsScrollArea {
+    background: transparent;
+    border: none;
+}
+
+/* ── Tab bar ── */
+QTabWidget#SettingsTabs::pane {
+    background-color: #F0F2F8;
+    border: none;
+    border-top: 1px solid #E2E8F0;
+}
+
+QTabWidget#SettingsTabs > QTabBar {
+    background-color: #EDF0F7;
+}
+
+QTabWidget#SettingsTabs QTabBar {
+    background-color: #EDF0F7;
+}
+
+QTabWidget#SettingsTabs QTabBar::tab {
+    background-color: #EDF0F7;
+    color: #64748B;
+    padding: 12px 18px;
+    margin: 0;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+QTabWidget#SettingsTabs QTabBar::tab:hover {
+    color: #1E293B;
+    background-color: #E2E6F0;
+    border-bottom: 3px solid rgba(37, 99, 235, 0.3);
+}
+
+QTabWidget#SettingsTabs QTabBar::tab:selected {
+    color: #2563EB;
+    border-bottom: 3px solid #2563EB;
+    background-color: #FFFFFF;
+    font-weight: 700;
+}
+
+/* ── Page background ── */
+QWidget#SettingsPage {
+    background-color: transparent;
+}
+
+/* ── Card (new unified style) ── */
+QFrame#SettingsCard {
+    background-color: #FFFFFF;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: 12px;
+}
+
+QFrame#SettingsCard:hover {
+    border: 1px solid rgba(147, 197, 253, 0.5);
+}
+
+QLabel#SettingsCardTitle {
+    color: #0F172A;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+QLabel#SettingsCardDesc {
+    color: #94A3B8;
+    font-size: 12px;
+    font-weight: 400;
+    margin-bottom: 4px;
+}
+
+/* ── Section labels ── */
+QLabel#SettingsSectionLabel {
+    color: #0F172A;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+QLabel#SettingsFieldLabel {
+    color: #475569;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+QLabel#SettingsDesc {
+    color: #64748B;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+QLabel#SettingsHint {
+    color: #94A3B8;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+/* ── Separator ── */
+QFrame#SettingsSep {
+    background-color: #E2E8F0;
+    border: none;
+    max-height: 1px;
+}
+
+/* ── Theme toggle buttons ── */
+QPushButton#ThemeToggleDark,
+QPushButton#ThemeToggleLight {
+    background-color: #F1F5F9;
+    color: #64748B;
+    border: 1px solid #E2E8F0;
+    padding: 7px 28px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 0;
+}
+
+QPushButton#ThemeToggleDark {
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-right: none;
+}
+
+QPushButton#ThemeToggleLight {
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+QPushButton#ThemeToggleDark:checked,
+QPushButton#ThemeToggleLight:checked {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #2563EB,
+        stop:1 #3B82F6);
+    color: #FFFFFF;
+    border: 1px solid #2563EB;
+    font-weight: 700;
+}
+
+QPushButton#ThemeToggleDark:hover:!checked,
+QPushButton#ThemeToggleLight:hover:!checked {
+    background-color: #E2E8F0;
+    color: #334155;
+}
+
+/* ── Combo boxes ── */
+QComboBox#SettingsCombo {
+    background-color: #FFFFFF;
+    color: #1E293B;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+QComboBox#SettingsCombo:hover {
+    border: 1px solid #93C5FD;
+}
+
+QComboBox#SettingsCombo:focus {
+    border: 1px solid #3B82F6;
+}
+
+QComboBox#SettingsCombo::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 30px;
+    border-left: 1px solid #E2E8F0;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    background: transparent;
+}
+
+QComboBox#SettingsCombo QAbstractItemView {
+    background-color: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    color: #1E293B;
+    selection-background-color: #EEF2FF;
+    selection-color: #2563EB;
+    padding: 4px;
+    font-size: 13px;
+}
+
+/* ── Line edits ── */
+QLineEdit#SettingsInput {
+    background-color: #FFFFFF;
+    color: #1E293B;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+QLineEdit#SettingsInput:hover {
+    border: 1px solid #93C5FD;
+}
+
+QLineEdit#SettingsInput:focus {
+    border: 2px solid #3B82F6;
+    padding: 6px 13px;
+}
+
+/* ── Radio buttons ── */
+QRadioButton#SettingsRadio {
+    color: #334155;
+    font-size: 13px;
+    font-weight: 500;
+    spacing: 8px;
+}
+
+QRadioButton#SettingsRadio::indicator {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #CBD5E1;
+    border-radius: 10px;
+    background: #FFFFFF;
+}
+
+QRadioButton#SettingsRadio::indicator:checked {
+    background: qradialgradient(cx:0.5, cy:0.5, radius:0.35,
+        fx:0.5, fy:0.5,
+        stop:0 #3B82F6, stop:0.8 #3B82F6, stop:0.81 #FFFFFF, stop:1 #FFFFFF);
+    border: 2px solid #3B82F6;
+}
+
+QRadioButton#SettingsRadio::indicator:hover {
+    border: 2px solid #93C5FD;
+}
+
+/* ── Checkboxes ── */
+QCheckBox#SettingsCheckbox {
+    color: #334155;
+    font-size: 13px;
+    font-weight: 500;
+    spacing: 10px;
+}
+
+QCheckBox#SettingsCheckbox::indicator {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #CBD5E1;
+    border-radius: 5px;
+    background: #FFFFFF;
+}
+
+QCheckBox#SettingsCheckbox::indicator:checked {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+        stop:0 #2563EB, stop:1 #3B82F6);
+    border: 2px solid #2563EB;
+    border-radius: 5px;
+    image: url(app/ui/resources/icons/check_white.svg);
+}
+
+QCheckBox#SettingsCheckbox::indicator:hover {
+    border: 2px solid #93C5FD;
+}
+
+/* ── Spin box ── */
+QSpinBox#SettingsSpin {
+    background-color: #FFFFFF;
+    color: #1E293B;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 5px 12px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+QSpinBox#SettingsSpin:hover {
+    border: 1px solid #93C5FD;
+}
+
+QSpinBox#SettingsSpin:focus {
+    border: 2px solid #3B82F6;
+}
+
+/* ── Time edit ── */
+QTimeEdit#SettingsTimeEdit {
+    background-color: #FFFFFF;
+    color: #1E293B;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 5px 12px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+QTimeEdit#SettingsTimeEdit:hover {
+    border: 1px solid #93C5FD;
+}
+
+QTimeEdit#SettingsTimeEdit:focus {
+    border: 2px solid #3B82F6;
+}
+
+/* ── Info panel ── */
+QFrame#SettingsInfoPanel {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #EEF2FF, stop:1 #F0F4FF);
+    border: 1px solid #C7D2FE;
+    border-radius: 12px;
+    margin-top: 4px;
+}
+
+QLabel#SettingsInfoText {
+    color: #3730A3;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* ── Bottom bar ── */
+QWidget#SettingsBottomBar {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #FFFFFF, stop:1 #F8FAFC);
+    border-top: 1px solid #E2E8F0;
+}
+
+QLabel#SettingsSaveStatus {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+QPushButton#SettingsSaveBtn {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #2563EB,
+        stop:1 #3B82F6);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 28px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+QPushButton#SettingsSaveBtn:hover {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #1D4ED8,
+        stop:1 #2563EB);
+}
+
+QPushButton#SettingsSaveBtn:pressed {
+    background: #1E40AF;
+}
+
+QPushButton#SettingsResetBtn {
+    background-color: transparent;
+    color: #94A3B8;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+QPushButton#SettingsResetBtn:hover {
+    color: #EF4444;
+    border: 1px solid #FECACA;
+    background-color: #FEF2F2;
+}
+
+/* ── Action buttons (Backup/Restore/Export) ── */
+QPushButton#SettingsActionBtn {
+    background-color: #FFFFFF;
+    color: #334155;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 9px 22px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+QPushButton#SettingsActionBtn:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #EEF2FF, stop:1 #DBEAFE);
+    border: 1px solid #93C5FD;
+    color: #2563EB;
+}
+
+QPushButton#SettingsActionBtn:pressed {
+    background-color: #DBEAFE;
+}
+
+/* ── Account tab ── */
+QLabel#AccountAvatar {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+        stop:0 #2563EB,
+        stop:0.5 #7C3AED,
+        stop:1 #EC4899);
+    color: #FFFFFF;
+    font-size: 22px;
+    font-weight: 800;
+    border-radius: 28px;
+    border: 3px solid rgba(37, 99, 235, 0.25);
+}
+
+QLabel#AccountName {
+    color: #0F172A;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+QLabel#AccountStatus {
+    color: #10B981;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+QLabel#AccountStat {
+    color: #64748B;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+QLabel#AccountStatSep {
+    color: #CBD5E1;
+    font-size: 11px;
+}
+
+QLabel#SubscriptionBadge {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #DCFCE7, stop:1 #D1FAE5);
+    color: #166534;
+    border-radius: 12px;
+    padding: 4px 14px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* ── Danger zone ── */
+QFrame#DangerCard {
+    background-color: #FFFBFB;
+    border: 1px solid #FECACA;
+    border-radius: 12px;
+}
+
+QLabel#DangerIcon {
+    font-size: 16px;
+}
+
+QLabel#DangerLabel {
+    color: #DC2626;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+QLabel#DangerDesc {
+    color: #9CA3AF;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+QPushButton#DangerButton {
+    background-color: #FEF2F2;
+    color: #B91C1C;
+    border: 1px solid #FECACA;
+    border-radius: 10px;
+    padding: 8px 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+QPushButton#DangerButton:hover {
+    background-color: #FEE2E2;
+    border: 1px solid #F87171;
+}
+
+QPushButton#DangerButtonRed {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #DC2626, stop:1 #EF4444);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+QPushButton#DangerButtonRed:hover {
+    background: #B91C1C;
+}
+
+/* ── Backup stats ── */
+QLabel#BackupStatLabel {
+    color: #475569;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* ── Scroll bars ── */
+QScrollBar:vertical {
+    background: transparent;
+    width: 8px;
+    margin: 2px 1px;
+}
+
+QScrollBar::handle:vertical {
+    background: #CBD5E1;
+    border-radius: 4px;
+    min-height: 24px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #94A3B8;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical,
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: none;
+    border: none;
+    height: 0;
+}
+
+/* ═══════════════════════════════════════════
+   MESSAGE BOX – Styled Dialogs
+   ═══════════════════════════════════════════ */
+
+QMessageBox {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #0D2147, stop:0.5 #132D5B, stop:1 #1A3A6E);
+    border: 1px solid rgba(100, 160, 255, 0.2);
+}
+
+QMessageBox QLabel {
+    color: #E8EDF5;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+    padding: 10px 6px;
+    background: transparent;
+}
+
+QMessageBox QPushButton {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #3B82F6, stop:1 #60A5FA);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 24px;
+    font-size: 13px;
+    font-weight: 700;
+    min-width: 72px;
+    min-height: 32px;
+}
+
+QMessageBox QPushButton:hover {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #2563EB, stop:1 #3B82F6);
+}
+
+QMessageBox QPushButton:pressed {
+    background: #1D4ED8;
+}
+
+/* "No" / "Cancel" style buttons */
+QMessageBox QPushButton[text="No"],
+QMessageBox QPushButton[text="Cancel"] {
+    background: rgba(255, 255, 255, 0.08);
+    color: #CBD5E1;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+QMessageBox QPushButton[text="No"]:hover,
+QMessageBox QPushButton[text="Cancel"]:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #FFFFFF;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}

@@ -13,7 +13,7 @@ QLabel#ReminderLabel {
 }
 
 QComboBox#ReminderSoundCombo {
-    min-width: 180px;
+    max-width: 180px;
     padding: 8px 14px;
     border-radius: 999px;
     border: 1px solid #CBD5E1;

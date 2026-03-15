@@ -1,65 +1,66 @@
 QWidget#TodoListRoot {
-    /* Slightly darker, softer background so the sheet shadow reads as depth. */
-    background: #E2E8F0;
+    background: transparent;
 }
 
 QFrame#TodoSheet {
     background: #FFFFFF;
-    /* Slightly softer border so the stronger drop shadow from code
-       becomes the primary separation from the background. */
-    border: 1px solid #E2E8F0;
-    border-radius: 18px;
+    border: none;
+    border-radius: 0px;
 }
 
 QTableWidget#TodoListTable {
-    /* Keep table background light so colored meetings remain visible.
-       Time column background is controlled per-cell in the widget code. */
     background: #FFFFFF;
     border: none;
     outline: none;
     color: #334155;
     font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
-    font-size: 20px;
+    font-size: 14px;
     gridline-color: #E2E8F0;
-    selection-background-color: rgba(37, 99, 235, 0.10);
+    selection-background-color: transparent;
     selection-color: #0F172A;
 }
 
-QHeaderView::section {
-    background:rgb(44, 100, 230);
-    color: #E2E8F0;
+QTableWidget#TodoListTable::item:selected {
+    background: transparent;
+    border: 2px solid rgba(37, 99, 235, 0.35);
+}
+
+QTableWidget#TodoListTable QHeaderView::section {
+    background: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0 #1E3A6E,
+        stop:1 #142F5C
+    );
+    color: rgba(255, 255, 255, 0.92);
     border: none;
-    border-bottom: 1px solidrgb(55, 87, 228);
-    padding: 12px 12px;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+    padding: 8px 10px;
     font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
-    font-size: 12px;
-    font-weight: 800;
+    font-size: 11px;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
-QHeaderView::section:first {
-    border-top-left-radius: 12px;
-}
-
-QHeaderView::section:last {
-    border-top-right-radius: 12px;
+QTableWidget#TodoListTable QHeaderView::section:last {
+    border-right: none;
 }
 
 QTableCornerButton::section {
-    background: #0F172A;
+    background: #142F5C;
     border: none;
 }
 
 QScrollBar:vertical {
     background: transparent;
-    width: 12px;
-    margin: 6px 6px 6px 0px;
+    width: 8px;
+    margin: 2px 2px 2px 0px;
 }
 
 QScrollBar::handle:vertical {
     background: #CBD5E1;
-    border-radius: 6px;
+    border-radius: 4px;
     min-height: 30px;
 }
 
@@ -77,13 +78,13 @@ QScrollBar::sub-page:vertical {
 
 QScrollBar:horizontal {
     background: transparent;
-    height: 12px;
-    margin: 0px 6px 6px 6px;
+    height: 8px;
+    margin: 0px 2px 2px 2px;
 }
 
 QScrollBar::handle:horizontal {
     background: #CBD5E1;
-    border-radius: 6px;
+    border-radius: 4px;
     min-width: 30px;
 }
 

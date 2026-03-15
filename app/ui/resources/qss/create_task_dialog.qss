@@ -1,0 +1,562 @@
+/* =========================================================
+   Create Task Dialog - Smart Calendar
+   ========================================================= */
+
+QDialog#CreateTaskDialog {
+    background-color: #102A5A;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    color: #E5E7EB;
+    border-radius: 12px;
+}
+
+QDialog#CreateTaskDialog QWidget {
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ---------------- Header ---------------- */
+
+QFrame#DialogHeader {
+    background: qlineargradient(
+        x1:0, y1:0, x2:1, y2:0,
+        stop:0 #2D8CFF,
+        stop:1 #1F6FF2
+    );
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+QLabel#DialogTitle {
+    font-size: 18px;
+    font-weight: 800;
+    color: #FFFFFF;
+    letter-spacing: 0.5px;
+}
+
+QLabel#FieldLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: #C7D2E4;
+    padding: 2px 0px;
+}
+
+QLabel#SectionLabel {
+    font-size: 13px;
+    font-weight: 700;
+    color: #FFFFFF;
+    padding: 8px 0px 3px 0px;
+}
+
+/* ---------------- Inputs ---------------- */
+
+QDialog#CreateTaskDialog QLineEdit,
+QDialog#CreateTaskDialog QTextEdit,
+QDialog#CreateTaskDialog QDateEdit,
+QDialog#CreateTaskDialog QTimeEdit,
+QDialog#CreateTaskDialog QComboBox {
+    background-color: rgba(255, 255, 255, 0.95);
+    color: #1E293B;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-size: 13px;
+    selection-background-color: #2D8CFF;
+    selection-color: #FFFFFF;
+}
+
+QDialog#CreateTaskDialog QLineEdit:focus,
+QDialog#CreateTaskDialog QTextEdit:focus,
+QDialog#CreateTaskDialog QDateEdit:focus,
+QDialog#CreateTaskDialog QTimeEdit:focus,
+QDialog#CreateTaskDialog QComboBox:focus {
+    border: 1px solid #2D8CFF;
+    background-color: #FFFFFF;
+}
+
+QDialog#CreateTaskDialog QTextEdit {
+    padding: 8px;
+}
+
+QDialog#CreateTaskDialog QDateEdit::drop-down {
+    border: none;
+    width: 28px;
+    background-color: transparent;
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0 4px 4px 0;
+}
+
+QDialog#CreateTaskDialog QDateEdit::drop-down:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+QDialog#CreateTaskDialog QDateEdit::drop-down:pressed {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+QDialog#CreateTaskDialog QDateEdit::down-arrow {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #475569;
+    border-bottom: none;
+    image: none;
+}
+
+QDialog#CreateTaskDialog QTimeEdit::up-button,
+QDialog#CreateTaskDialog QTimeEdit::down-button {
+    background-color: #E5E7EB;
+    border: 1px solid #CBD5E1;
+    border-radius: 0 4px 4px 0;
+    width: 24px;
+    min-width: 24px;
+}
+
+QDialog#CreateTaskDialog QTimeEdit::up-button {
+    border-radius: 0 4px 0 0;
+    border-bottom: none;
+}
+
+QDialog#CreateTaskDialog QTimeEdit::down-button {
+    border-radius: 0 0 4px 0;
+    border-top: 1px solid #CBD5E1;
+}
+
+QDialog#CreateTaskDialog QTimeEdit::up-button:hover,
+QDialog#CreateTaskDialog QTimeEdit::down-button:hover {
+    background-color: #D1D5DB;
+}
+
+QDialog#CreateTaskDialog QTimeEdit::up-button:pressed,
+QDialog#CreateTaskDialog QTimeEdit::down-button:pressed {
+    background-color: #9CA3AF;
+}
+
+QDialog#CreateTaskDialog QTimeEdit::up-arrow,
+QDialog#CreateTaskDialog QTimeEdit::down-arrow {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+}
+
+QDialog#CreateTaskDialog QTimeEdit::up-arrow {
+    border-bottom: 6px solid #475569;
+    border-top: none;
+}
+
+QDialog#CreateTaskDialog QTimeEdit::down-arrow {
+    border-top: 6px solid #475569;
+    border-bottom: none;
+}
+
+QDialog#CreateTaskDialog QComboBox::drop-down {
+    border: none;
+    width: 28px;
+    background: transparent;
+}
+
+QDialog#CreateTaskDialog QComboBox::down-arrow {
+    image: none;
+    width: 0;
+    height: 0;
+}
+
+/* ---------------- Scroll Area ---------------- */
+
+QScrollArea#DialogScrollArea {
+    background-color: #102A5A;
+    border: none;
+}
+
+QScrollArea#DialogScrollArea QWidget#viewport {
+    background-color: #102A5A;
+}
+
+QWidget#DialogFormWidget {
+    background-color: #102A5A;
+}
+
+QWidget#AttachmentsContainer {
+    background-color: #102A5A;
+}
+
+/* ---------------- Scrollbar ---------------- */
+
+QScrollBar:vertical {
+    background-color: rgba(255, 255, 255, 0.05);
+    width: 8px;
+    border: none;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    min-height: 20px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+/* ---------------- Attachment Items ---------------- */
+
+QFrame#AttachmentItem {
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+}
+
+QFrame#AttachmentItem:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+QLabel#AttachmentLabel {
+    color: #C7D2E4;
+    font-size: 12px;
+    background-color: transparent;
+}
+
+/* ---------------- Labels in attachment/subtask sections ---------------- */
+
+QDialog#CreateTaskDialog QHBoxLayout QLabel {
+    color: #C7D2E4;
+    font-size: 13px;
+}
+
+/* ---------------- Subtask input fields ---------------- */
+
+QDialog#CreateTaskDialog QHBoxLayout QLineEdit {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #E5E7EB;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+}
+
+QDialog#CreateTaskDialog QHBoxLayout QLineEdit:focus {
+    border: 1px solid #2D8CFF;
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* ---------------- Calendar popup ---------------- */
+
+QDialog#CreateTaskDialog QCalendarWidget {
+    background-color: #1A3B75;
+    color: #E5E7EB;
+}
+
+QDialog#CreateTaskDialog QCalendarWidget QWidget {
+    background-color: #1A3B75;
+    color: #E5E7EB;
+}
+
+QDialog#CreateTaskDialog QCalendarWidget QToolButton {
+    color: #E5E7EB;
+    background-color: transparent;
+    border: none;
+    font-weight: 600;
+}
+
+QDialog#CreateTaskDialog QCalendarWidget QMenu {
+    background-color: #1A3B75;
+    color: #E5E7EB;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+QDialog#CreateTaskDialog QCalendarWidget QSpinBox {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #E5E7EB;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+}
+
+QDialog#CreateTaskDialog QCalendarWidget QAbstractItemView {
+    selection-background-color: #2D8CFF;
+    selection-color: #FFFFFF;
+    background-color: #1A3B75;
+    color: #E5E7EB;
+    outline: none;
+}
+
+QDialog#CreateTaskDialog QComboBox {
+    padding-right: 30px;
+}
+
+QDialog#CreateTaskDialog QComboBox QAbstractItemView {
+    background-color: #1A3B75;
+    color: #E5E7EB;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    selection-background-color: #2D8CFF;
+    selection-color: #FFFFFF;
+    outline: none;
+    padding: 4px;
+}
+
+QDialog#CreateTaskDialog QComboBox QAbstractItemView::item {
+    background-color: transparent;
+    color: #E5E7EB;
+    padding: 8px 12px;
+    border-radius: 4px;
+    min-height: 32px;
+}
+
+QDialog#CreateTaskDialog QComboBox QAbstractItemView::item:hover {
+    background-color: #2D8CFF;
+    color: #FFFFFF;
+}
+
+QDialog#CreateTaskDialog QComboBox QAbstractItemView::item:selected {
+    background-color: #2D8CFF;
+    color: #FFFFFF;
+}
+
+QDialog#CreateTaskDialog QComboBox QAbstractItemView::item:checked {
+    background-color: #2D8CFF;
+    color: #FFFFFF;
+}
+
+/* ---------------- Divider ---------------- */
+
+QFrame#DialogDivider {
+    background-color: rgba(255, 255, 255, 0.15);
+    border: none;
+    min-height: 1px;
+    max-height: 1px;
+}
+
+/* ---------------- Add / Utility Buttons ---------------- */
+
+QPushButton#AddButton {
+    background-color: rgba(45, 140, 255, 0.2);
+    color: #93C5FD;
+    border: 1px solid rgba(45, 140, 255, 0.3);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+QPushButton#AddButton:hover {
+    background-color: rgba(45, 140, 255, 0.3);
+    border: 1px solid rgba(45, 140, 255, 0.5);
+    color: #BFDBFE;
+}
+
+QPushButton#DeleteButton {
+    background-color: transparent;
+    border: none;
+    color: #94A3B8;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 6px;
+    min-width: 24px;
+    min-height: 24px;
+}
+
+QPushButton#DeleteButton:hover {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #FCA5A5;
+}
+
+/* ---------------- Checkboxes ---------------- */
+
+QDialog#CreateTaskDialog QCheckBox {
+    font-size: 14px;
+    color: #C7D2E4;
+    spacing: 8px;
+}
+
+QDialog#CreateTaskDialog QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+QDialog#CreateTaskDialog QCheckBox::indicator:hover {
+    border-color: #2D8CFF;
+}
+
+QDialog#CreateTaskDialog QCheckBox::indicator:checked {
+    background-color: #2D8CFF;
+    border-color: #2D8CFF;
+    image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOSIgdmlld0JveD0iMCAwIDEyIDkiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDQuNUw0LjUgOEwxMSAxIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4=);
+}
+
+/* ---------------- Dialog Buttons ---------------- */
+
+QDialogButtonBox#DialogButtonBox {
+    background-color: #102A5A;
+    padding: 8px;
+}
+
+QDialogButtonBox#DialogButtonBox QPushButton {
+    min-width: 70px;
+    min-height: 32px;
+    padding: 2px 4px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #C7D2E4;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+QDialogButtonBox#DialogButtonBox QPushButton:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #E5E7EB;
+}
+
+QDialogButtonBox#DialogButtonBox QPushButton:pressed {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Cancel Button - Red */
+QDialogButtonBox#DialogButtonBox QPushButton#CancelButton {
+    background-color: #DC2626;
+    color: #FFFFFF;
+    border: 1px solid #DC2626;
+}
+
+QDialogButtonBox#DialogButtonBox QPushButton#CancelButton:hover {
+    background-color: #EF4444;
+    border: 1px solid #EF4444;
+}
+
+QDialogButtonBox#DialogButtonBox QPushButton#CancelButton:pressed {
+    background-color: #B91C1C;
+    border: 1px solid #B91C1C;
+}
+
+/* Save Button - Green */
+QDialogButtonBox#DialogButtonBox QPushButton#SaveButton {
+    background-color: #059669;
+    color: #FFFFFF;
+    border: 1px solid #059669;
+}
+
+QDialogButtonBox#DialogButtonBox QPushButton#SaveButton:hover {
+    background-color: #10B981;
+    border: 1px solid #10B981;
+}
+
+QDialogButtonBox#DialogButtonBox QPushButton#SaveButton:pressed {
+    background-color: #047857;
+    border: 1px solid #047857;
+}
+
+/* =========================================================
+   Task Card Widget - Smart Calendar
+   Apply this stylesheet globally or in the board/container
+   ========================================================= */
+
+QFrame#TaskCard {
+    background-color: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 14px;
+}
+
+QFrame#TaskCard:hover {
+    border: 1px solid #C7D2FE;
+    background-color: #FAFBFF;
+}
+
+QLabel#TaskName {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0F172A;
+}
+
+QPushButton#TaskDeleteButton {
+    background-color: transparent;
+    border: none;
+    color: #94A3B8;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 6px;
+}
+
+QPushButton#TaskDeleteButton:hover {
+    background-color: #FEE2E2;
+    color: #DC2626;
+}
+
+QLabel#TaskAssignee,
+QLabel#TaskDeadline,
+QLabel#TaskDescription,
+QLabel#TaskSubtasks,
+QLabel#TaskAttachments,
+QLabel#TaskProgressLabel,
+QLabel#TaskProgressValue {
+    font-size: 12px;
+    color: #64748B;
+}
+
+QLabel#TaskDescription {
+    color: #475569;
+    line-height: 1.3;
+}
+
+QLabel#TaskTag {
+    background-color: #EEF2FF;
+    color: #4338CA;
+    border: 1px solid #C7D2FE;
+    border-radius: 10px;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+QLabel#TaskPriorityLow {
+    background-color: #ECFDF5;
+    color: #059669;
+    border: 1px solid #A7F3D0;
+    border-radius: 10px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+QLabel#TaskPriorityMedium {
+    background-color: #FEF3C7;
+    color: #B45309;
+    border: 1px solid #FCD34D;
+    border-radius: 10px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+QLabel#TaskPriorityHigh {
+    background-color: #FEE2E2;
+    color: #DC2626;
+    border: 1px solid #FCA5A5;
+    border-radius: 10px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+QProgressBar#TaskProgressBar {
+    background-color: #E5E7EB;
+    border: none;
+    border-radius: 5px;
+    min-height: 10px;
+    max-height: 10px;
+    text-align: center;
+}
+
+QProgressBar#TaskProgressBar::chunk {
+    background-color: #2563EB;
+    border-radius: 5px;
+}

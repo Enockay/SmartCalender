@@ -1,0 +1,135 @@
+/* ═══════════════════════════════════════════
+   REMINDER CREATE / EDIT DIALOG
+   ═══════════════════════════════════════════ */
+
+QWidget#ReminderFormPanel {
+    background: #F8FAFC;
+}
+
+/* ── Header ─────────────────────────────── */
+QWidget#ReminderDialogHeader {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #142F5C, stop:0.6 #1E4384, stop:1 #3B6BC4);
+}
+QLabel#ReminderDialogTitle {
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+}
+QPushButton#ReminderBackBtn {
+    background: rgba(255, 255, 255, 0.12);
+    color: #FFFFFF;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+}
+QPushButton#ReminderBackBtn:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ── Body ───────────────────────────────── */
+QScrollArea#ReminderDialogScroll {
+    background: transparent;
+    border: none;
+}
+QWidget#ReminderDialogBody {
+    background: #F8FAFC;
+}
+
+QLabel#ReminderSectionLabel {
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+    text-transform: uppercase;
+    padding: 0px;
+    margin-bottom: 2px;
+}
+
+QLineEdit#ReminderField,
+QComboBox#ReminderField,
+QDateEdit#ReminderField,
+QTimeEdit#ReminderField {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #1E293B;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+}
+QLineEdit#ReminderField:focus,
+QComboBox#ReminderField:focus,
+QDateEdit#ReminderField:focus,
+QTimeEdit#ReminderField:focus {
+    border: 1px solid #3B82F6;
+}
+
+QTextEdit#ReminderFieldText {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #1E293B;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+}
+QTextEdit#ReminderFieldText:focus {
+    border: 1px solid #3B82F6;
+}
+
+QComboBox#ReminderField::drop-down {
+    border: none;
+    width: 24px;
+}
+QComboBox#ReminderField QAbstractItemView {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    selection-background-color: #DBEAFE;
+    selection-color: #1D4ED8;
+    padding: 4px;
+}
+
+/* ── Footer ─────────────────────────────── */
+QWidget#ReminderDialogFooter {
+    background: #FFFFFF;
+    border-top: 1px solid #E2E8F0;
+}
+QPushButton#ReminderCancelBtn {
+    background: #F1F5F9;
+    color: #475569;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+}
+QPushButton#ReminderCancelBtn:hover {
+    background: #E2E8F0;
+    color: #1E293B;
+}
+QPushButton#ReminderSaveBtn {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #3B82F6, stop:1 #60A5FA);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+}
+QPushButton#ReminderSaveBtn:hover {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #2563EB, stop:1 #3B82F6);
+}
+QPushButton#ReminderSaveBtn:pressed {
+    background: #1D4ED8;
+}

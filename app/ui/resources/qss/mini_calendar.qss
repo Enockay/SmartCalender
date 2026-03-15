@@ -2,9 +2,9 @@
    MINI CALENDAR ROOT
    ========================= */
 QWidget#MiniCalendarRoot {
-    background-color: #132B63;
-    border: 2px solid rgba(255, 255, 255, 0.80);
-    border-radius: 14px;
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
 }
 
 
@@ -13,12 +13,10 @@ QWidget#MiniCalendarRoot {
    ========================= */
 QCalendarWidget#MiniCalendar {
     background-color: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    border-radius: 12px;
-    min-width: 194px;
-    max-width: 214px;
-    /* Let the layout decide the height so the
-       weekday names and all day rows are visible. */
+    border: none;
+    border-radius: 10px;
+    min-width: 200px;
+    max-width: 210px;
     padding-top: 0px;
 }
 
@@ -26,7 +24,7 @@ QCalendarWidget#MiniCalendar {
 /* Remove default widget fills */
 QCalendarWidget#MiniCalendar QWidget {
     background-color: transparent;
-    color: #F3F4F6;
+    color: #E2E8F0;
 }
 
 
@@ -36,10 +34,10 @@ QCalendarWidget#MiniCalendar QWidget {
 QCalendarWidget#MiniCalendar QWidget#qt_calendar_navigationbar {
     background-color: rgba(255, 255, 255, 0.08);
     border: none;
-    border-radius: 10px;
+    border-radius: 8px;
     min-height: 26px;
     max-height: 26px;
-    margin: 4px 8px 2px 8px;
+    margin: 2px 4px 4px 4px;
 }
 
 
@@ -47,50 +45,49 @@ QCalendarWidget#MiniCalendar QWidget#qt_calendar_navigationbar {
 QCalendarWidget#MiniCalendar QToolButton {
     background: transparent;
     border: none;
-    color: #F8FAFC;
-    padding: 4px 8px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    border-radius: 8px;
+    color: #FFFFFF;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 6px;
 }
 
 
 /* Hover */
 QCalendarWidget#MiniCalendar QToolButton:hover {
-    background-color: rgba(255, 255, 255, 0.06);
+    background-color: rgba(59, 130, 246, 0.15);
 }
 
 
 /* Pressed */
 QCalendarWidget#MiniCalendar QToolButton:pressed {
-    background-color: rgba(255, 255, 255, 0.10);
+    background-color: rgba(59, 130, 246, 0.25);
 }
 
 
 /* Prev / Next month buttons */
 QCalendarWidget#MiniCalendar QToolButton#qt_calendar_prevmonth,
 QCalendarWidget#MiniCalendar QToolButton#qt_calendar_nextmonth {
-    min-width: 22px;
-    max-width: 22px;
-    min-height: 22px;
-    max-height: 22px;
-    margin: 5px 6px;
+    min-width: 20px;
+    max-width: 20px;
+    min-height: 20px;
+    max-height: 20px;
+    margin: 3px 4px;
     padding: 0px;
-    border-radius: 6px;
+    border-radius: 5px;
+    color: #FFFFFF;
 }
 
 
-/* Optional: hide the month popup button if you want cleaner header */
 QCalendarWidget#MiniCalendar QToolButton#qt_calendar_monthbutton {
-    min-width: 110px;
+    min-width: 90px;
     font-size: 11px;
     font-weight: 700;
     color: #FFFFFF;
 }
 
 QCalendarWidget#MiniCalendar QToolButton#qt_calendar_yearbutton {
-    min-width: 44px;
+    min-width: 36px;
     font-size: 11px;
     font-weight: 700;
     color: #FFFFFF;
@@ -105,19 +102,14 @@ QCalendarWidget#MiniCalendar QAbstractItemView {
     border: none;
     outline: 0;
     gridline-color: transparent;
-    selection-background-color: transparent;
+    selection-background-color: #3B82F6;
     selection-color: #FFFFFF;
 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
 
-    min-width: 190px;
-
-    /* current month days */
-    color: #F8FAFC;
-
-    /* outside month days */
+    min-width: 196px;
+    color: #E2E8F0;
     alternate-background-color: transparent;
 }
 
@@ -126,14 +118,14 @@ QCalendarWidget#MiniCalendar QAbstractItemView {
 QCalendarWidget#MiniCalendar QAbstractItemView::item {
     padding: 0px;
     margin: 0px;
-    border-radius: 7px;
+    border-radius: 6px;
     background: transparent;
 }
 
 
 /* Hovered day */
 QCalendarWidget#MiniCalendar QAbstractItemView::item:hover {
-    background-color: rgba(255, 255, 255, 0.06);
+    background-color: rgba(59, 130, 246, 0.15);
     color: #FFFFFF;
 }
 
@@ -142,7 +134,7 @@ QCalendarWidget#MiniCalendar QAbstractItemView::item:hover {
 QCalendarWidget#MiniCalendar QAbstractItemView::item:selected {
     background-color: #3B82F6;
     color: #FFFFFF;
-    border-radius: 7px;
+    border-radius: 6px;
 }
 
 
@@ -151,12 +143,12 @@ QCalendarWidget#MiniCalendar QAbstractItemView::item:selected {
    ========================= */
 QCalendarWidget#MiniCalendar QTableView QHeaderView::section {
     background-color: transparent;
-    color: #FFFFFF;
+    color: #64748B;
     border: none;
     padding: 0px 0px 2px 0px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
 
@@ -175,9 +167,9 @@ QCalendarWidget#MiniCalendar QTableView {
    MENU
    ========================= */
 QCalendarWidget#MiniCalendar QMenu {
-    background-color: #1A3776;
+    background-color: #0F2850;
     color: #F8FAFC;
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.10);
     border-radius: 8px;
     padding: 4px;
 }
@@ -188,7 +180,6 @@ QCalendarWidget#MiniCalendar QMenu::item {
 }
 
 QCalendarWidget#MiniCalendar QMenu::item:selected {
-    background-color: rgba(59, 130, 246, 0.22);
+    background-color: rgba(59, 130, 246, 0.25);
     color: #FFFFFF;
 }
-

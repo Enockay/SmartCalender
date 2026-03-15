@@ -5,11 +5,17 @@ from pathlib import Path
 from typing import Dict, List
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QColor, QBrush, QLinearGradient
+from PySide6.QtGui import QColor, QBrush, QFont, QLinearGradient, QPainter
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QFrame,
+    QHBoxLayout,
     QHeaderView,
     QLabel,
+    QPushButton,
+    QStyle,
+    QStyledItemDelegate,
+    QStyleOptionViewItem,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -20,6 +26,19 @@ from app.models.meeting import MeetingModel
 from app.services.meeting_service import MeetingService
 
 
+class _WeekCellDelegate(QStyledItemDelegate):
+    """Ensures programmatic background colors survive QSS styling."""
+
+    def paint(self, painter: QPainter, option: QStyleOptionViewItem, index) -> None:
+        bg = index.data(Qt.BackgroundRole)
+        if bg is not None:
+            brush = bg if isinstance(bg, QBrush) else QBrush(bg)
+            if brush.style() != Qt.NoBrush:
+                painter.fillRect(option.rect, brush)
+                option.state &= ~QStyle.State_Selected
+        super().paint(painter, option, index)
+
+
 class WeekViewWidget(QWidget):
     meetingActivated = Signal(object)  # MeetingModel
     daySelected = Signal(object)       # date
@@ -28,12 +47,31 @@ class WeekViewWidget(QWidget):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.setObjectName("WeekViewRoot")
-        layout = QVBoxLayout(self)
 
-        self._title = QLabel("Week View")
-        self._title.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        self._title.setProperty("viewTitle", True)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
 
+        # ── Header bar (matches year view) ──
+        header = QWidget(self)
+        header.setObjectName("WeekHeader")
+        h_lay = QHBoxLayout(header)
+        h_lay.setContentsMargins(16, 8, 16, 8)
+        h_lay.setSpacing(10)
+
+        self._title = QLabel("Week View", header)
+        self._title.setObjectName("WeekTitle")
+
+        self._summary = QLabel("", header)
+        self._summary.setObjectName("WeekSummary")
+
+        h_lay.addWidget(self._title)
+        h_lay.addStretch()
+        h_lay.addWidget(self._summary)
+
+        outer.addWidget(header)
+
+        # ── Table ──
         self._table = QTableWidget(self)
         self._table.setObjectName("WeekGrid")
         self._table.setColumnCount(8)  # Time + 7 days
@@ -41,22 +79,19 @@ class WeekViewWidget(QWidget):
         self._table.verticalHeader().setVisible(False)
         self._table.horizontalHeader().setVisible(True)
         self._table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self._table.horizontalHeader().setMinimumHeight(34)
-        self._table.setColumnWidth(0, 70)
+        self._table.horizontalHeader().setMinimumHeight(32)
+        self._table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)
+        self._table.setColumnWidth(0, 60)
         self._table.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        # Disable selection so that Qt's selection highlight does not
-        # override the per-meeting background colors we set in _render().
         self._table.setSelectionMode(QAbstractItemView.NoSelection)
         self._table.setSelectionBehavior(QAbstractItemView.SelectItems)
         self._table.setFocusPolicy(Qt.NoFocus)
-        # Give the horizontal header its own object name so QSS can override
-        # generic header styles from other views.
-        self._table.horizontalHeader().setObjectName("WeekHeader")
+        self._table.horizontalHeader().setObjectName("WeekGridHeader")
+        self._table.setItemDelegate(_WeekCellDelegate(self._table))
         self._table.cellDoubleClicked.connect(self._on_cell_double_clicked)
         self._table.cellClicked.connect(self._on_cell_clicked)
 
-        layout.addWidget(self._title)
-        layout.addWidget(self._table)
+        outer.addWidget(self._table, 1)
 
         self._load_qss()
 
@@ -68,15 +103,18 @@ class WeekViewWidget(QWidget):
 
     def set_date(self, d: date) -> None:
         """Set the reference date; widget fetches and renders the whole week."""
-        # Monday as week start
         self._week_start = d - timedelta(days=d.weekday())
         week_end = self._week_start + timedelta(days=7)
         self._title.setText(
-            f"Weekly View – {self._week_start.strftime('%d %b %Y')} to {(week_end - timedelta(days=1)).strftime('%d %b %Y')}"
+            f"{self._week_start.strftime('%d %b')} – {(week_end - timedelta(days=1)).strftime('%d %b %Y')}"
         )
         self._meetings = self._service.list_meetings_between(
             datetime.combine(self._week_start, time.min),
             datetime.combine(week_end, time.min),
+        )
+        total = len(self._meetings)
+        self._summary.setText(
+            f"{total} meeting{'s' if total != 1 else ''}" if total else "No meetings"
         )
         self._render()
 
@@ -87,28 +125,32 @@ class WeekViewWidget(QWidget):
             self.setStyleSheet(qss_path.read_text(encoding="utf-8"))
 
     def _build_grid(self) -> None:
-        # Initialize time column + empty cells
+        time_font = QFont("Segoe UI", 9)
         for r in range(24):
             t = time(hour=r, minute=0)
             time_item = QTableWidgetItem(t.strftime("%H:%M"))
             time_item.setTextAlignment(Qt.AlignCenter)
-            time_item.setForeground(QBrush(QColor("#64748B")))
-            time_item.setBackground(QBrush(QColor("#F8FAFC")))
+            time_item.setData(Qt.ForegroundRole, QBrush(QColor("#64748B")))
+            time_item.setData(Qt.BackgroundRole, QBrush(QColor("#F8FAFC")))
+            time_item.setFont(time_font)
             self._table.setItem(r, 0, time_item)
-            self._table.setRowHeight(r, 52)
+            self._table.setRowHeight(r, 40)
             for c in range(1, 8):
                 self._table.setItem(r, c, QTableWidgetItem(""))
 
         self._update_headers()
 
     def _update_headers(self) -> None:
-        labels = ["Time"]
+        today = date.today()
+        labels = [""]
         for i in range(7):
             d = self._week_start + timedelta(days=i)
-            labels.append(d.strftime("%a %d"))
+            label = d.strftime("%a %d")
+            if d == today:
+                label = f"● {label}"
+            labels.append(label)
         self._table.setHorizontalHeaderLabels(labels)
 
-        # Optionally highlight a focused day (used when navigating from month view).
         if self._focused_date is not None:
             try:
                 day_idx = (self._focused_date - self._week_start).days
@@ -123,9 +165,8 @@ class WeekViewWidget(QWidget):
 
     def _clear_spans_and_cells(self) -> None:
         self._table.clearSpans()
-        # Ensure any leftover selection highlight is removed so that
-        # cell background colors (meeting gradients) remain visible.
         self._table.clearSelection()
+        today = date.today()
         for r in range(24):
             for c in range(1, 8):
                 it = self._table.item(r, c)
@@ -134,11 +175,14 @@ class WeekViewWidget(QWidget):
                     self._table.setItem(r, c, it)
                 it.setText("")
                 it.setData(Qt.UserRole, None)
-                it.setBackground(QBrush(QColor("#FFFFFF")))
-                it.setForeground(QBrush(QColor("#334155")))
+                d = self._week_start + timedelta(days=c - 1)
+                if d == today:
+                    it.setData(Qt.BackgroundRole, QBrush(QColor("#EFF6FF")))
+                else:
+                    it.setData(Qt.BackgroundRole, QBrush(QColor("#FFFFFF")))
+                it.setData(Qt.ForegroundRole, QBrush(QColor("#334155")))
 
     def focus_day(self, d: date) -> None:
-        """Highlight the header for the given date within the current week."""
         self._focused_date = d
         self._update_headers()
 
@@ -168,13 +212,10 @@ class WeekViewWidget(QWidget):
 
             col = 1 + day_idx
             start_row = max(0, start.hour)
-            # round up end hour if has minutes
             end_hour = end.hour + (1 if end.minute or end.second else 0)
             end_row_excl = min(24, max(start_row + 1, end_hour))
             span_rows = max(1, end_row_excl - start_row)
 
-            # If any cell in the intended span already has data, skip this
-            # meeting to avoid overlapping spans (Qt warns if spans overlap).
             overlap = False
             for r in range(start_row, end_row_excl):
                 cell = self._table.item(r, col)
@@ -185,17 +226,15 @@ class WeekViewWidget(QWidget):
                 continue
 
             item = self._table.item(start_row, col)
-
-            # Only create a span if it actually covers multiple rows; this
-            # avoids Qt warnings about single-cell spans.
             if span_rows > 1:
                 self._table.setSpan(start_row, col, span_rows, 1)
 
             item.setText(m.title)
             item.setTextAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
-            item.setForeground(QBrush(QColor("#FFFFFF")))
-            item.setBackground(self._brush_for_gradient(getattr(m, "color_gradient", None)))
-            # Mark all rows in this span as occupied; the top cell stores the meeting.
+            item.setData(Qt.ForegroundRole, QBrush(QColor("#FFFFFF")))
+            item.setData(Qt.BackgroundRole, self._brush_for_gradient(getattr(m, "color_gradient", None)))
+            font = QFont("Segoe UI", 10, QFont.Bold)
+            item.setFont(font)
             for r in range(start_row, end_row_excl):
                 cell = self._table.item(r, col)
                 if cell is None:
@@ -206,26 +245,17 @@ class WeekViewWidget(QWidget):
     def _on_cell_double_clicked(self, row: int, col: int) -> None:
         if col == 0:
             return
-        # If a meeting is stored in this cell, emit it; otherwise emit None and let caller create
         item = self._table.item(row, col)
         meeting = item.data(Qt.UserRole) if item else None
         if meeting:
             self.meetingActivated.emit(meeting)
 
     def _on_cell_clicked(self, row: int, col: int) -> None:
-        """Single-click navigates to the specific day.
-
-        If the cell already contains a meeting, treat this as selecting that meeting
-        for editing (same behaviour as a double-click). If it's an empty slot,
-        emit the timeSlotSelected signal so callers can create a new meeting there.
-        """
         if col == 0:
             return
 
         item = self._table.item(row, col)
         payload = item.data(Qt.UserRole) if item else None
-        # Top cell of a span stores the MeetingModel; other rows in the span
-        # store a simple truthy marker. We only want to edit if we got a model.
         if isinstance(payload, MeetingModel):
             self.meetingActivated.emit(payload)
             return
@@ -233,7 +263,6 @@ class WeekViewWidget(QWidget):
         target_date = self._week_start + timedelta(days=col - 1)
         self.daySelected.emit(target_date)
 
-        # Row index corresponds to the hour (0–23) in this simplified grid.
         slot_time = time(hour=row, minute=0)
         slot_dt = datetime.combine(target_date, slot_time)
         self.timeSlotSelected.emit(slot_dt)

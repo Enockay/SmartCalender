@@ -5,7 +5,12 @@ from pathlib import Path
 from typing import List, Dict
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
+from PySide6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+)
 
 from app.models.meeting import MeetingModel
 from app.ui.widgets.todo_list_widget import TodoListWidget
@@ -15,33 +20,50 @@ class DayViewWidget(QWidget):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.setObjectName("DayViewRoot")
-        layout = QVBoxLayout(self)
 
-        self._title = QLabel("Day View")
-        self._title.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        self._title.setProperty("viewTitle", True)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
 
+        # ── Header bar (matches week / month / year header) ──
+        header = QWidget(self)
+        header.setObjectName("DayHeaderBar")
+        h_lay = QHBoxLayout(header)
+        h_lay.setContentsMargins(16, 8, 16, 8)
+        h_lay.setSpacing(10)
+
+        self._title = QLabel("Day View", header)
+        self._title.setObjectName("DayTitle")
+
+        self._summary = QLabel("", header)
+        self._summary.setObjectName("DaySummary")
+
+        h_lay.addWidget(self._title)
+        h_lay.addStretch()
+        h_lay.addWidget(self._summary)
+
+        outer.addWidget(header)
+
+        # ── Todo table ──
         self._todo_table = TodoListWidget(self)
-
-        layout.addWidget(self._title)
-        layout.addWidget(self._todo_table)
+        outer.addWidget(self._todo_table, 1)
 
         self._load_qss()
 
     @property
     def list_widget(self):
-        # Kept for compatibility with MainWindow._open_meeting_details;
-        # this view no longer uses a QListWidget, so return None.
         return None
 
     def meeting_for_item(self, _item):
-        # Day view is now table-based; double‑click behaviour
-        # can be wired differently later if needed.
         return None
 
     def set_day(self, d: date, meetings: List[MeetingModel]) -> None:
-        """Update only the title; events are set by MainWindow."""
-        self._title.setText(f"Day View – {d.strftime('%a %d %b %Y')}")
+        """Update the title; events are set by MainWindow."""
+        self._title.setText(d.strftime("%A, %d %B %Y"))
+        total = len(meetings)
+        self._summary.setText(
+            f"{total} event{'s' if total != 1 else ''}" if total else "No events"
+        )
 
     def set_events(self, events: Dict[time, object]) -> None:
         self._todo_table.set_events(events)
@@ -54,5 +76,4 @@ class DayViewWidget(QWidget):
         root = Path(__file__).resolve().parents[2]
         qss_path = root / "ui" / "resources" / "qss" / "day_view.qss"
         if qss_path.exists():
-            # Merge with existing app styles
             self.setStyleSheet(qss_path.read_text(encoding="utf-8"))
