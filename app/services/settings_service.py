@@ -22,6 +22,7 @@ class SettingsService:
     # Notifications tab
     EMAIL_ALERTS_KEY = "email_alerts"
     SOUND_ALERTS_KEY = "sound_alerts"
+    REMINDER_SOUND_KEY = "reminder_sound"  # Selected reminder sound name
     QUIET_HOURS_START_KEY = "quiet_hours_start"
     QUIET_HOURS_END_KEY = "quiet_hours_end"
     # Backup tab
@@ -134,6 +135,16 @@ class SettingsService:
 
     def set_sound_alerts(self, enabled: bool) -> None:
         self._set(self.SOUND_ALERTS_KEY, "true" if enabled else "false")
+
+    # --- Reminder sound ----------------------------------------------------
+
+    def get_reminder_sound(self) -> str:
+        """Get the selected reminder sound name. Returns 'Default' if not set."""
+        return self._get(self.REMINDER_SOUND_KEY, "Default")
+
+    def set_reminder_sound(self, sound_name: str) -> None:
+        """Set the selected reminder sound name."""
+        self._set(self.REMINDER_SOUND_KEY, sound_name)
 
     # --- Quiet hours ------------------------------------------------------
 

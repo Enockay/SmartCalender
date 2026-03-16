@@ -390,6 +390,9 @@ class ReminderDashboardWidget(QWidget):
         self._current_filter = "all"
         self._search_query = ""
 
+        # Sync existing meeting reminders on first load
+        QTimer.singleShot(500, self._sync_existing_reminders)
+
         self._build_ui()
         self._load_qss()
         self._refresh()
@@ -640,6 +643,19 @@ class ReminderDashboardWidget(QWidget):
         self.reminderChanged.emit()
 
     # ── Data refresh ──────────────────────────────────────────────
+    def _sync_existing_reminders(self) -> None:
+        """Sync existing reminders that are linked to meetings."""
+        try:
+            count = self._service.sync_existing_meeting_reminders()
+            if count > 0:
+                self._refresh()
+        except Exception:
+            pass  # Silently fail if sync has issues
+
+    def refresh(self) -> None:
+        """Public method to refresh the reminder list."""
+        self._refresh()
+
     def _refresh(self) -> None:
         self._service.update_overdue()
 
@@ -679,6 +695,14 @@ class ReminderDashboardWidget(QWidget):
             reminders = self._service.search(self._search_query)
         else:
             reminders = self._service.get_by_filter(self._current_filter)
+        
+        # Debug logging for overdue filter
+        if self._current_filter == "overdue":
+            from app.core.logger import get_logger
+            logger = get_logger(__name__)
+            logger.info(f"Overdue filter: found {len(reminders)} reminders")
+            for r in reminders[:5]:  # Log first 5
+                logger.info(f"  - ID={r.id}, title='{r.title}', status={r.status}, remind_at={r.remind_at}")
 
         self._section_header.setText(f"{label} ({len(reminders)})")
         self._populate_list(reminders)
@@ -813,7 +837,16 @@ class ReminderDashboardWidget(QWidget):
                 except Exception:
                     pass
             if "Sound" in (r.notification_type or ""):
-                QApplication.beep()
+                try:
+                    from app.services.sound_service import SoundService
+                    sound_service = SoundService()
+                    sound_service.play_sound("Default", repeat=3)
+                except Exception:
+                    # Fallback: beep 3 times
+                    import time
+                    for _ in range(3):
+                        QApplication.beep()
+                        time.sleep(0.3)
             self._service.dismiss(r.id)
 
     # ── QSS ───────────────────────────────────────────────────────

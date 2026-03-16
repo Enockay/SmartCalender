@@ -5,7 +5,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer, Signal, QRectF
-from PySide6.QtGui import QShowEvent, QPainter, QColor, QPen, QFont, QBrush
+from PySide6.QtGui import QShowEvent, QPainter, QColor, QPen, QFont, QBrush, QMouseEvent
 from PySide6.QtWidgets import (
     QFrame,
     QGridLayout,
@@ -20,9 +20,26 @@ from PySide6.QtWidgets import (
 from app.services.task_service import TaskService
 from app.services.meeting_service import MeetingService
 from app.services.weather_service import WeatherService, WeatherData
+from app.services.reminder_service import ReminderService
 from app.database.db_manager import DatabaseManager
 from app.database.schema import User
 from sqlalchemy import select
+
+
+class ClickableItemFrame(QFrame):
+    """A clickable frame widget for dashboard items."""
+    
+    clicked = Signal()
+    
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setCursor(Qt.PointingHandCursor)
+    
+    def mousePressEvent(self, event: QMouseEvent) -> None:
+        """Handle mouse press to emit clicked signal."""
+        if event.button() == Qt.LeftButton:
+            self.clicked.emit()
+        super().mousePressEvent(event)
 
 
 class DonutChartWidget(QWidget):
@@ -146,7 +163,7 @@ class DashboardCard(QFrame):
         self.setAttribute(Qt.WA_StyledBackground, True)
 
         self._main_layout = QVBoxLayout(self)
-        self._main_layout.setContentsMargins(12, 10, 12, 10)
+        self._main_layout.setContentsMargins(8, 6, 8, 6)
         self._main_layout.setSpacing(8)
 
         header_layout = QHBoxLayout()
@@ -179,9 +196,16 @@ class DashboardCard(QFrame):
         self._content_layout.setSpacing(12)
         self._main_layout.addLayout(self._content_layout)
 
-    def set_action_button(self, text: str, callback=None) -> None:
+    def set_action_button(self, text: str, callback=None, button_id: str = None) -> None:
         self._action_button.setText(text)
         self._action_button.setVisible(True)
+        # Set unique object name for styling
+        if button_id:
+            self._action_button.setObjectName(button_id)
+            # Force stylesheet reapplication after changing object name
+            self._action_button.style().unpolish(self._action_button)
+            self._action_button.style().polish(self._action_button)
+            self._action_button.update()
         try:
             if self._action_button.receivers(self._action_button.clicked) > 0:
                 self._action_button.clicked.disconnect()
@@ -237,6 +261,7 @@ class DashboardWidget(QWidget):
 
         self._task_service = TaskService()
         self._meeting_service = MeetingService()
+        self._reminder_service = ReminderService()
         self._weather_service = WeatherService()
         self._db = DatabaseManager()
         self._current_date = date.today()
@@ -312,7 +337,7 @@ class DashboardWidget(QWidget):
         content = QWidget()
         content.setObjectName("DashboardContent")
         content_layout = QVBoxLayout(content)
-        content_layout.setContentsMargins(20, 18, 20, 20)
+        content_layout.setContentsMargins(12, 12, 12, 12)
         content_layout.setSpacing(18)
 
         grid = QGridLayout()
@@ -321,16 +346,16 @@ class DashboardWidget(QWidget):
         grid.setContentsMargins(0, 0, 0, 0)
 
         self._today_tasks_card = DashboardCard("Today's Tasks", "✓", content)
-        self._today_tasks_card.set_action_button("View All", self._on_view_tasks)
+        self._today_tasks_card.set_action_button("View All", self._on_view_tasks, "DashboardCardActionTasks")
 
         self._upcoming_events_card = DashboardCard("Upcoming Events", "🗓️", content)
-        self._upcoming_events_card.set_action_button("View All", self._on_view_events)
+        self._upcoming_events_card.set_action_button("View All", self._on_view_events, "DashboardCardActionEvents")
 
         self._reminders_card = DashboardCard("Reminders", content)
-        self._reminders_card.set_action_button("Show – Today", self._on_manage_reminders)
+        self._reminders_card.set_action_button("Show – Today", self._on_manage_reminders, "DashboardCardActionReminders")
 
         self._overdue_card = DashboardCard("Overdue", content)
-        self._overdue_card.set_action_button("✓ View Report", self._on_review_overdue)
+        self._overdue_card.set_action_button("✓ View Report", self._on_review_overdue, "DashboardCardActionOverdue")
 
         grid.addWidget(self._today_tasks_card, 0, 0)
         grid.addWidget(self._upcoming_events_card, 0, 1)
@@ -362,8 +387,18 @@ class DashboardWidget(QWidget):
         """Get the logged-in user's name, or 'User' if none."""
         try:
             with self._db.session() as session:
-                # Get the first active user (typically user_id=1)
-                user = session.execute(select(User).where(User.is_active == True).limit(1)).scalar_one_or_none()
+                # Prefer the user who is currently logged in.
+                user = session.execute(
+                    select(User)
+                    .where(User.is_logged_in == True)
+                    .order_by(User.last_login_at.desc())
+                    .limit(1)
+                ).scalar_one_or_none()
+                if not user:
+                    # Fallback: first active user
+                    user = session.execute(
+                        select(User).where(User.is_active == True).limit(1)
+                    ).scalar_one_or_none()
                 if user and user.name:
                     return user.name
                 return "User"
@@ -427,14 +462,29 @@ class DashboardWidget(QWidget):
                 self._today_tasks_card.add_content(self._create_empty_box("No tasks for today"))
                 return
 
+            # Add tasks with proper spacing
             for index, task in enumerate(today_tasks):
-                self._today_tasks_card.add_content(self._create_task_item(task, highlighted=True))
+                task_item = self._create_task_item(task, highlighted=True)
+                self._today_tasks_card.add_content(task_item)
+            
+            # If there's only one task, add some bottom spacing for better appearance
+            if len(today_tasks) == 1:
+                self._today_tasks_card.add_stretch()
 
         except Exception:
             self._today_tasks_card.add_content(self._create_empty_box("Unable to load tasks"))
 
     def _create_task_item(self, task, highlighted: bool = False) -> QWidget:
-        item = QFrame()
+        # Use clickable frame if highlighted, otherwise regular frame
+        if highlighted:
+            task_id = getattr(task, "id", None)
+            if task_id is not None:
+                item = ClickableItemFrame()
+                item.clicked.connect(lambda: self.navigateToTask.emit(task_id))
+            else:
+                item = QFrame()
+        else:
+            item = QFrame()
         
         # Set priority-based object name for styling
         priority = getattr(task, "priority", "").lower() if getattr(task, "priority", None) else ""
@@ -476,15 +526,6 @@ class DashboardWidget(QWidget):
 
         layout.addLayout(text_col, stretch=1)
 
-        if highlighted:
-            task_id = getattr(task, "id", None)
-            action = QPushButton("✓ Open", item)
-            action.setObjectName("DashboardMiniActionGreen")
-            action.setCursor(Qt.PointingHandCursor)
-            if task_id is not None:
-                action.clicked.connect(lambda checked, tid=task_id: self.navigateToTask.emit(tid))
-            layout.addWidget(action, alignment=Qt.AlignVCenter)
-
         return item
 
     # ---------------------------------------------------------
@@ -512,7 +553,21 @@ class DashboardWidget(QWidget):
             self._upcoming_events_card.add_content(self._create_empty_box("Unable to load events"))
 
     def _create_event_item(self, meeting, highlighted: bool = False) -> QWidget:
-        item = QFrame()
+        # Use clickable frame if highlighted, otherwise regular frame
+        if highlighted:
+            # Navigate to the day of this event
+            event_date = None
+            if getattr(meeting, "start_time", None):
+                event_date = meeting.start_time.date() if hasattr(meeting.start_time, "date") else meeting.start_time
+            
+            item = ClickableItemFrame()
+            if event_date:
+                item.clicked.connect(lambda: self.navigateToEventDay.emit(event_date))
+            else:
+                item.clicked.connect(lambda: self.navigateToTodoList.emit())
+        else:
+            item = QFrame()
+        
         item.setObjectName("DashboardEventItem")
 
         layout = QHBoxLayout(item)
@@ -544,17 +599,6 @@ class DashboardWidget(QWidget):
 
         layout.addLayout(text_col, stretch=1)
 
-        if highlighted:
-            action = QPushButton("✓ Open", item)
-            action.setObjectName("DashboardMiniActionGreen")
-            action.setCursor(Qt.PointingHandCursor)
-            # Navigate to the day of this event
-            event_date = None
-            if getattr(meeting, "start_time", None):
-                event_date = meeting.start_time.date() if hasattr(meeting.start_time, "date") else meeting.start_time
-            action.clicked.connect(lambda checked, d=event_date: self.navigateToEventDay.emit(d) if d else self.navigateToTodoList.emit())
-            layout.addWidget(action, alignment=Qt.AlignVCenter)
-
         return item
 
     # ---------------------------------------------------------
@@ -563,32 +607,82 @@ class DashboardWidget(QWidget):
     def _load_reminders(self) -> None:
         self._reminders_card.clear_content()
 
-        # Reminder items with icons - matching the second image style
-        reminder_items = [
-            ("✓", "purple", "Quantity Preview"),
-            ("✓", "purple", "Email Reminder"),
-            ("✓", "green", "Upcoming Dates"),
-            ("✓", "green", "Final Reminders"),
-            ("✓", "green", "Email Reminder"),
-            ("📶", "blue", "Built-in"),
-            ("🕐", "blue", "Silent Notifications"),
-            ("🕐", "blue", "Desk Alerts"),
-        ]
+        # Fetch real reminders from database - get today's and upcoming reminders
+        try:
+            # Get today's reminders
+            today_reminders = self._reminder_service.get_by_filter("today")
+            # Get upcoming reminders (next 7 days)
+            upcoming_reminders = self._reminder_service.get_by_filter("upcoming")
+            
+            # Combine and limit to 8 most relevant reminders
+            all_reminders = list(today_reminders) + list(upcoming_reminders)
+            # Remove duplicates by ID
+            seen_ids = set()
+            unique_reminders = []
+            for r in all_reminders:
+                if r.id not in seen_ids:
+                    seen_ids.add(r.id)
+                    unique_reminders.append(r)
+            
+            # Sort by remind_at date/time and take first 8
+            unique_reminders.sort(key=lambda x: x.remind_at)
+            reminders_to_show = unique_reminders[:8]
+            
+        except Exception as e:
+            # Fallback to empty list if there's an error
+            reminders_to_show = []
+            from app.core.logger import get_logger
+            logger = get_logger(__name__)
+            logger.error(f"Error loading reminders: {e}", exc_info=True)
 
         top_list = QVBoxLayout()
         top_list.setContentsMargins(0, 0, 0, 0)
         top_list.setSpacing(10)
 
-        if reminder_items:
-            for icon, icon_type, name in reminder_items:
-                top_list.addWidget(self._create_reminder_row(icon, icon_type, name))
+        if reminders_to_show:
+            for reminder in reminders_to_show:
+                # Determine icon and color based on reminder status and category
+                icon, icon_type = self._get_reminder_icon(reminder)
+                # Format reminder text with time
+                time_str = reminder.remind_at.strftime("%I:%M %p").lstrip("0")
+                reminder_text = f"{reminder.title} - {time_str}"
+                if reminder.meeting_title:
+                    reminder_text = f"{reminder.meeting_title} - {time_str}"
+                
+                top_list.addWidget(self._create_reminder_row(icon, icon_type, reminder_text))
         else:
-            top_list.addWidget(self._create_empty_box("None"))
+            top_list.addWidget(self._create_empty_box("No reminders"))
 
         top_widget = QWidget()
         top_widget.setLayout(top_list)
         self._reminders_card.add_content(top_widget)
         self._reminders_card.add_stretch()
+    
+    def _get_reminder_icon(self, reminder) -> tuple[str, str]:
+        """Get icon and icon type (color) for a reminder based on its status and category."""
+        status = reminder.status or "active"
+        category = reminder.category or ""
+        
+        # Status-based icons
+        if status == "completed":
+            return ("✓", "green")
+        elif status == "overdue":
+            return ("⚠", "purple")
+        elif status == "snoozed":
+            return ("⏰", "blue")
+        
+        # Category-based icons
+        if "email" in category.lower() or "Email" in (reminder.notification_type or ""):
+            return ("✓", "purple")
+        elif "meeting" in category.lower() or reminder.meeting_id:
+            return ("✓", "green")
+        elif "work" in category.lower():
+            return ("📶", "blue")
+        elif "personal" in category.lower():
+            return ("✓", "green")
+        
+        # Default for active reminders
+        return ("✓", "green")
 
     def _create_reminder_row(self, icon: str, icon_type: str, text: str) -> QWidget:
         item = QWidget()

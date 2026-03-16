@@ -1,0 +1,259 @@
+/* =========================================================
+   Smart Calendar Login Screen
+   Matches reference: blue gradient bg + blue card + light inputs
+   ========================================================= */
+
+/* Window background gradient */
+QMainWindow {
+    background: qlineargradient(
+        x1:0, y1:0, x2:1, y2:1,
+        stop:0   #334155,
+        stop:0.35 #1D4ED8,
+        stop:0.75 #1E40AF,
+        stop:1   #0F172A
+    );
+}
+
+/* Transparent containers so painted gradient shows through */
+QWidget#LoginWindowCentral {
+    background: transparent;
+}
+
+QWidget#LoginWidget {
+    background: transparent;
+}
+
+QFrame#LoginContainer {
+    background: transparent;
+    border: none;
+}
+
+/* ── Login card ─────────────────────────────────────────── */
+QFrame#LoginCard {
+    background: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0   #2563EB,
+        stop:0.45 #1D4ED8,
+        stop:1   #1E3A8A
+    );
+    border: 1px solid rgba(15, 23, 42, 0.35);
+    border-radius: 4px;
+    min-width: 460px;
+    max-width: 460px;
+}
+
+/* Header strip inside card – slightly darker blue with bottom divider line */
+QFrame#LoginHeaderBar {
+    background: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0   #1D4ED8,
+        stop:1   #1E3A8A
+    );
+    border-bottom: 1px solid rgba(15, 23, 42, 0.45);
+}
+
+/* ── Header icon ────────────────────────────────────────── */
+QLabel#LoginIcon {
+    font-size: 24px;
+    background: transparent;
+    border: none;
+    padding: 0px;
+    color: #FFFFFF;
+}
+
+/* ── App title ──────────────────────────────────────────── */
+QLabel#LoginTitle {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #FFFFFF;
+    background: transparent;
+    border: none;
+    letter-spacing: -0.5px;
+    justify-center
+}
+
+/* ── "Log In" heading ───────────────────────────────────── */
+QLabel#LoginHeading {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #FFFFFF;
+    background: transparent;
+    border: none;
+    padding: 4px 0px;
+    letter-spacing: -0.3px;
+}
+
+/* ── Field labels ───────────────────────────────────────── */
+QLabel#LoginFieldLabel {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.90);
+    background: transparent;
+    border: none;
+    padding: 0px;
+}
+
+/* ── Email + Password inputs — light style matching reference ── */
+QLineEdit#LoginEmailInput,
+QLineEdit#LoginPasswordInput {
+    background-color: #EEF2FF;
+    border: 1px solid rgba(148, 163, 184, 0.7);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    color: #1E293B;
+    min-height: 24px;
+    selection-background-color: #3B82F6;
+}
+
+QLineEdit#LoginEmailInput:focus,
+QLineEdit#LoginPasswordInput:focus {
+    border: 2px solid #60A5FA;
+    background-color: #F0F4FF;
+}
+
+QLineEdit#LoginEmailInput:disabled,
+QLineEdit#LoginPasswordInput:disabled {
+    background-color: #CBD5E1;
+    color: rgba(30, 41, 59, 0.50);
+}
+
+/* ── Remember me checkbox ───────────────────────────────── */
+QCheckBox#LoginRememberCheckbox {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #FFFFFF;
+    background: transparent;
+    border: none;
+    spacing: 8px;
+}
+
+QCheckBox#LoginRememberCheckbox::indicator {
+    width: 17px;
+    height: 17px;
+    border: 2px solid rgba(255, 255, 255, 0.50);
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.10);
+}
+
+QCheckBox#LoginRememberCheckbox::indicator:hover {
+    border-color: rgba(255, 255, 255, 0.75);
+    background-color: rgba(255, 255, 255, 0.18);
+}
+
+QCheckBox#LoginRememberCheckbox::indicator:checked {
+    background-color: #3B82F6;
+    border-color: #3B82F6;
+    image: url(:/icons/check_white.svg);
+}
+
+/* ── Forgot password link ───────────────────────────────── */
+QLabel#LoginForgotLink {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #BFDBFE;
+    background: transparent;
+    border: none;
+    text-decoration: underline;
+}
+
+QLabel#LoginForgotLink:hover {
+    color: #FFFFFF;
+}
+
+/* ── Log In button — bright blue matching reference ─────── */
+QPushButton#LoginButton {
+    background: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0 #3B82F6,
+        stop:1 #2563EB
+    );
+    border: none;
+    border-radius: 10px;
+    padding: 13px 24px;
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #FFFFFF;
+    min-width: 140px;
+}
+
+QPushButton#LoginButton:hover {
+    background: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0 #60A5FA,
+        stop:1 #3B82F6
+    );
+}
+
+QPushButton#LoginButton:pressed {
+    background: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0 #1E40AF,
+        stop:1 #1E3A8A
+    );
+}
+
+QPushButton#LoginButton:disabled {
+    background: rgba(59, 130, 246, 0.45);
+    color: rgba(255, 255, 255, 0.55);
+}
+
+/* ── Create Account button — dark green variant ── */
+QPushButton#CreateAccountButton {
+    background: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0 #15803D,   /* top green */
+        stop:1 #166534    /* bottom green */
+    );
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 13px 24px;
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #FFFFFF;
+    min-width: 140px;
+}
+
+QPushButton#CreateAccountButton:hover {
+    background: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0 #22C55E,
+        stop:1 #16A34A
+    );
+    border-color: rgba(255, 255, 255, 0.22);
+}
+
+QPushButton#CreateAccountButton:pressed {
+    background: #14532D;
+}
+
+QPushButton#CreateAccountButton:disabled {
+    color: rgba(255, 255, 255, 0.40);
+}
+
+/* ── Server status label ────────────────────────────────── */
+QLabel#LoginStatusLabel {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    background: transparent;
+    border: none;
+    padding: 8px 0px;
+    color: #93C5FD;
+}
+
+QLabel#LoginStatusLabel[status="connected"] {
+    color: #34D399;
+}
+
+QLabel#LoginStatusLabel[status="disconnected"] {
+    color: #F87171;
+}

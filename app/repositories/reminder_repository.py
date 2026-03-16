@@ -6,12 +6,14 @@ from typing import List, Optional
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
 
+from app.core.logger import get_logger
 from app.database.schema import Reminder
 
 
 class ReminderRepository:
     def __init__(self, session: Session) -> None:
         self._session = session
+        self._logger = get_logger(__name__)
 
     # ── Create ────────────────────────────────────────────────
     def create(self, reminder: Reminder) -> Reminder:
@@ -61,6 +63,7 @@ class ReminderRepository:
         )
 
     def get_upcoming(self, days: int = 7) -> List[Reminder]:
+        """Get upcoming reminders - excludes overdue and completed."""
         now = datetime.now()
         future = now + timedelta(days=days)
         return (
@@ -69,18 +72,20 @@ class ReminderRepository:
                 Reminder.remind_at >= now,
                 Reminder.remind_at <= future,
                 Reminder.status.in_(["active", "snoozed"]),
+                Reminder.dismissed.is_(False),
             )
             .order_by(Reminder.remind_at.asc())
             .all()
         )
 
     def get_overdue(self) -> List[Reminder]:
+        """Get overdue reminders - includes both active/snoozed past-due and status='overdue'."""
         now = datetime.now()
         return (
             self._session.query(Reminder)
             .filter(
                 Reminder.remind_at < now,
-                Reminder.status.in_(["active", "snoozed"]),
+                Reminder.status.in_(["active", "snoozed", "overdue"]),
                 Reminder.dismissed.is_(False),
             )
             .order_by(Reminder.remind_at.asc())
@@ -97,15 +102,35 @@ class ReminderRepository:
 
     def due_reminders(self, now: datetime) -> List[Reminder]:
         """Reminders that should fire right now."""
-        return (
+        self._logger.info(f"due_reminders() query: now={now.strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        # First, let's see all reminders to debug
+        all_reminders = self._session.query(Reminder).all()
+        self._logger.info(f"Total reminders in database: {len(all_reminders)}")
+        for r in all_reminders:
+            self._logger.info(
+                f"  Reminder ID={r.id}: title='{r.title}', remind_at={r.remind_at.strftime('%Y-%m-%d %H:%M:%S')}, "
+                f"status={r.status}, dismissed={r.dismissed}, meeting_id={r.meeting_id}"
+            )
+        
+        # Now query for due reminders
+        # Include "overdue" status because reminders that just became overdue
+        # should still fire their notifications
+        due = (
             self._session.query(Reminder)
             .filter(
                 Reminder.remind_at <= now,
                 Reminder.dismissed.is_(False),
-                Reminder.status.in_(["active", "snoozed"]),
+                Reminder.status.in_(["active", "snoozed", "overdue"]),
             )
             .all()
         )
+        self._logger.info(f"due_reminders() found {len(due)} due reminder(s) matching criteria")
+        for r in due:
+            self._logger.info(
+                f"  Due reminder ID={r.id}: title='{r.title}', remind_at={r.remind_at.strftime('%Y-%m-%d %H:%M:%S')}"
+            )
+        return due
 
     def search(self, query: str) -> List[Reminder]:
         pattern = f"%{query}%"
@@ -142,11 +167,12 @@ class ReminderRepository:
                 counts["completed"] += 1
             elif r.status == "snoozed":
                 counts["snoozed"] += 1
-            elif r.remind_at < now and r.status == "active" and not r.dismissed:
+            elif r.status == "overdue" or (r.remind_at < now and r.status == "active" and not r.dismissed):
+                # Count as overdue if status is "overdue" OR if it's past due and active
                 counts["overdue"] += 1
-            else:
+            elif r.status == "active" and not r.dismissed:
                 counts["active"] += 1
-            if today_start <= r.remind_at < today_end:
+            if today_start <= r.remind_at < today_end and not r.dismissed:
                 counts["today"] += 1
         return counts
 

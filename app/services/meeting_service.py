@@ -79,13 +79,22 @@ class MeetingService:
         session = self._db.session()
         try:
             repo = MeetingRepository(session)
-            return repo.update(model)
+            updated = repo.update(model)
+            # Update linked reminders when meeting is updated
+            if updated:
+                reminder_service = ReminderService(self._db)
+                reminder_service.update_for_meeting(updated)
+            return updated
         finally:
             session.close()
 
     def delete_meeting(self, meeting_id: int) -> bool:
         session = self._db.session()
         try:
+            # Delete linked reminders first
+            reminder_service = ReminderService(self._db)
+            reminder_service.delete_for_meeting(meeting_id)
+            # Then delete the meeting
             repo = MeetingRepository(session)
             return repo.delete(meeting_id)
         finally:

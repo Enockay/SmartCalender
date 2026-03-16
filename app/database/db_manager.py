@@ -21,6 +21,7 @@ class DatabaseManager:
 
     def initialize(self) -> None:
         Base.metadata.create_all(self._engine)
+        self._ensure_users_schema()
         self._ensure_meetings_schema()
         self._ensure_tasks_schema()
         self._ensure_reminders_schema()
@@ -32,6 +33,45 @@ class DatabaseManager:
                 session.add(user)
                 session.commit()
         # Task tables are created automatically via Base.metadata.create_all
+
+    def _ensure_users_schema(self) -> None:
+        """Lightweight SQLite 'migration' to add new columns to users table."""
+        with self._engine.begin() as conn:
+            # Check if users table exists
+            tables = conn.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")).fetchall()
+            if not tables:
+                # Table doesn't exist, will be created by Base.metadata.create_all
+                return
+            
+            cols = conn.execute(text("PRAGMA table_info(users)")).fetchall()
+            existing = {row[1] for row in cols}  # (cid, name, type, ...)
+            
+            # Add new columns if they don't exist
+            new_columns = [
+                ("subscription_status", "VARCHAR(50) DEFAULT 'active'"),
+                ("subscription_expires_at", "DATETIME"),
+                ("subscription_features", "TEXT"),
+                ("access_token", "TEXT"),
+                ("refresh_token", "TEXT"),
+                ("token_expires_at", "DATETIME"),
+                ("api_user_id", "VARCHAR(255)"),
+                ("timezone", "VARCHAR(100)"),
+                ("language", "VARCHAR(10)"),
+                ("avatar_url", "TEXT"),
+                ("organization_id", "VARCHAR(255)"),
+                ("organization_name", "VARCHAR(255)"),
+                ("role", "VARCHAR(50)"),
+                ("last_login_at", "DATETIME"),
+                ("is_logged_in", "BOOLEAN DEFAULT 0"),
+            ]
+            
+            for col_name, col_type in new_columns:
+                if col_name not in existing:
+                    try:
+                        conn.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}"))
+                    except Exception:
+                        # Column might already exist, ignore
+                        pass
 
     def _ensure_meetings_schema(self) -> None:
         """Lightweight SQLite 'migration' to add new columns without wiping data."""

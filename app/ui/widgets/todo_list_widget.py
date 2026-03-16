@@ -146,7 +146,7 @@ class TodoListWidget(QWidget):
 
             self._table.setItem(row, 0, time_item)
             self._table.setItem(row, 1, event_item)
-            self._table.setRowHeight(row, 48)
+            self._table.setRowHeight(row, 40)
 
     def _load_qss(self) -> None:
         root = Path(__file__).resolve().parents[2]

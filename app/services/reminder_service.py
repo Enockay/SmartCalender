@@ -4,6 +4,7 @@ from datetime import datetime, date, timedelta
 from dataclasses import dataclass, field
 from typing import List, Optional, Dict
 
+from app.core.logger import get_logger
 from app.database.db_manager import DatabaseManager
 from app.database.schema import Reminder, Meeting
 from app.repositories.reminder_repository import ReminderRepository
@@ -57,6 +58,7 @@ class ReminderData:
 class ReminderService:
     def __init__(self, db: DatabaseManager | None = None) -> None:
         self._db = db or DatabaseManager()
+        self._logger = get_logger(__name__)
 
     # -- Helpers ---------------------------------------------------------------
     def _to_data(self, r: Reminder) -> ReminderData:
@@ -99,6 +101,10 @@ class ReminderService:
         advance_minutes: int = 0,
         meeting_id: Optional[int] = None,
     ) -> ReminderData:
+        self._logger.info(
+            f"create_reminder() called: title='{title}', remind_at={remind_at.strftime('%Y-%m-%d %H:%M:%S')}, "
+            f"meeting_id={meeting_id}, notification_type={notification_type}, advance_minutes={advance_minutes}"
+        )
         session = self._db.session()
         try:
             repo = ReminderRepository(session)
@@ -116,8 +122,12 @@ class ReminderService:
                 meeting_id=meeting_id,
                 user_id=1,
             )
-            repo.create(reminder)
-            return self._to_data(reminder)
+            created = repo.create(reminder)
+            self._logger.info(f"Reminder created successfully: ID={created.id}, remind_at={created.remind_at.strftime('%Y-%m-%d %H:%M:%S')}")
+            return self._to_data(created)
+        except Exception as e:
+            self._logger.error(f"Error creating reminder: {e}", exc_info=True)
+            raise
         finally:
             session.close()
 
@@ -182,7 +192,10 @@ class ReminderService:
             elif filter_name == "completed":
                 items = repo.get_completed()
             elif filter_name == "overdue":
+                # Ensure overdue reminders are marked first
+                self.update_overdue()
                 items = repo.get_overdue()
+                self._logger.info(f"get_by_filter('overdue') returned {len(items)} reminders")
             elif filter_name == "active":
                 items = repo.get_active()
             else:
@@ -264,20 +277,27 @@ class ReminderService:
     def get_due_reminders(self, now: datetime | None = None) -> List[ReminderData]:
         if now is None:
             now = datetime.now()
+        self._logger.info(f"get_due_reminders() called with now={now.strftime('%Y-%m-%d %H:%M:%S')}")
         session = self._db.session()
         try:
             repo = ReminderRepository(session)
-            return [self._to_data(r) for r in repo.due_reminders(now)]
+            reminders = repo.due_reminders(now)
+            self._logger.info(f"Repository returned {len(reminders)} due reminder(s)")
+            for r in reminders:
+                self._logger.info(f"  - Reminder ID={r.id}, title='{r.title}', remind_at={r.remind_at.strftime('%Y-%m-%d %H:%M:%S')}, status={r.status}, dismissed={r.dismissed}, meeting_id={r.meeting_id}")
+            return [self._to_data(r) for r in reminders]
         finally:
             session.close()
 
     def update_overdue(self) -> int:
         """Mark any past-due active reminders as overdue. Returns count."""
         now = datetime.now()
+        self._logger.info(f"update_overdue() called at {now.strftime('%Y-%m-%d %H:%M:%S')}")
         session = self._db.session()
         try:
             repo = ReminderRepository(session)
             overdue = repo.get_overdue()
+            self._logger.debug(f"Found {len(overdue)} overdue reminder(s)")
             count = 0
             for r in overdue:
                 if r.status != "overdue":
@@ -339,7 +359,12 @@ class ReminderService:
     def create_for_meeting(self, meeting, minutes_before: int = 10) -> None:
         """Legacy: create a reminder from a meeting."""
         remind_at = meeting.start_time - timedelta(minutes=minutes_before)
-        self.create_reminder(
+        self._logger.info(
+            f"create_for_meeting() called: meeting_id={meeting.id}, meeting_title='{meeting.title}', "
+            f"meeting_start={meeting.start_time.strftime('%Y-%m-%d %H:%M:%S')}, "
+            f"minutes_before={minutes_before}, remind_at={remind_at.strftime('%Y-%m-%d %H:%M:%S')}"
+        )
+        reminder_data = self.create_reminder(
             title=f"Meeting: {meeting.title}",
             remind_at=remind_at,
             category="Meetings",
@@ -347,3 +372,128 @@ class ReminderService:
             advance_minutes=minutes_before,
             meeting_id=meeting.id,
         )
+        
+        # Schedule system notification for when app is closed
+        try:
+            from app.services.system_notification_service import SystemNotificationService
+            sys_notif = SystemNotificationService()
+            body = f"Meeting at {meeting.start_time.strftime('%I:%M %p')}"
+            if hasattr(meeting, 'location') and meeting.location:
+                body += f" • {meeting.location}"
+            sys_notif.schedule_notification(
+                reminder_id=reminder_data.id,
+                title=f"🔔 {meeting.title}",
+                body=body,
+                fire_date=remind_at,
+            )
+        except Exception as e:
+            self._logger.warning(f"Could not schedule system notification: {e}")
+
+    def get_by_meeting_id(self, meeting_id: int) -> List[ReminderData]:
+        """Get all reminders linked to a specific meeting."""
+        session = self._db.session()
+        try:
+            from sqlalchemy.orm import Session
+            reminders = (
+                session.query(Reminder)
+                .filter(Reminder.meeting_id == meeting_id)
+                .all()
+            )
+            return [self._to_data(r) for r in reminders]
+        finally:
+            session.close()
+
+    def update_for_meeting(self, meeting, minutes_before: int | None = None) -> None:
+        """Update existing reminder(s) for a meeting, or create if none exist."""
+        session = self._db.session()
+        try:
+            repo = ReminderRepository(session)
+            existing = (
+                session.query(Reminder)
+                .filter(Reminder.meeting_id == meeting.id)
+                .all()
+            )
+            
+            if existing:
+                # Update existing reminders
+                for reminder in existing:
+                    if minutes_before is not None:
+                        reminder.advance_minutes = minutes_before
+                    reminder.remind_at = meeting.start_time - timedelta(minutes=reminder.advance_minutes)
+                    reminder.title = f"Meeting: {meeting.title}"
+                    reminder.description = meeting.description or ""
+                    repo.update(reminder)
+            else:
+                # Create new reminder if none exists
+                if minutes_before is None:
+                    minutes_before = 10
+                self.create_for_meeting(meeting, minutes_before)
+        finally:
+            session.close()
+
+    def delete_for_meeting(self, meeting_id: int) -> None:
+        """Delete all reminders linked to a meeting."""
+        session = self._db.session()
+        try:
+            repo = ReminderRepository(session)
+            reminders = (
+                session.query(Reminder)
+                .filter(Reminder.meeting_id == meeting_id)
+                .all()
+            )
+            for reminder in reminders:
+                repo.delete(reminder)
+        finally:
+            session.close()
+
+    def sync_existing_meeting_reminders(self) -> int:
+        """
+        Sync existing reminders that might be linked to meetings but missing meeting_id,
+        or update reminders that have meeting_id but outdated meeting info.
+        Returns count of reminders synced.
+        """
+        session = self._db.session()
+        try:
+            from sqlalchemy.orm import joinedload
+            # Get all reminders
+            all_reminders = session.query(Reminder).options(joinedload(Reminder.meeting)).all()
+            synced_count = 0
+            
+            for reminder in all_reminders:
+                # If reminder has meeting_id, ensure it's up to date
+                if reminder.meeting_id:
+                    meeting = reminder.meeting
+                    if meeting:
+                        # Update reminder with current meeting info
+                        reminder.title = f"Meeting: {meeting.title}"
+                        reminder.remind_at = meeting.start_time - timedelta(minutes=reminder.advance_minutes or 0)
+                        reminder.description = meeting.description or ""
+                        reminder.category = "Meetings"
+                        session.commit()
+                        synced_count += 1
+                    else:
+                        # Meeting was deleted but reminder still references it - clear the link
+                        reminder.meeting_id = None
+                        session.commit()
+                # If reminder title starts with "Meeting:" but no meeting_id, try to find matching meeting
+                elif reminder.title and reminder.title.startswith("Meeting:"):
+                    meeting_title = reminder.title.replace("Meeting:", "").strip()
+                    # Try to find a meeting with matching title and similar time
+                    matching_meeting = (
+                        session.query(Meeting)
+                        .filter(Meeting.title == meeting_title)
+                        .filter(
+                            Meeting.start_time >= reminder.remind_at - timedelta(hours=2),
+                            Meeting.start_time <= reminder.remind_at + timedelta(hours=2)
+                        )
+                        .first()
+                    )
+                    if matching_meeting:
+                        reminder.meeting_id = matching_meeting.id
+                        reminder.remind_at = matching_meeting.start_time - timedelta(minutes=reminder.advance_minutes or 0)
+                        session.commit()
+                        synced_count += 1
+            
+            return synced_count
+        finally:
+            session.close()

@@ -7,8 +7,8 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QTime, Signal, QTimer
-from PySide6.QtGui import QFont, QColor, QPixmap
+from PySide6.QtCore import Qt, QTime, Signal, QTimer, QUrl
+from PySide6.QtGui import QFont, QColor, QPixmap, QDesktopServices
 from PySide6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
@@ -32,7 +32,9 @@ from PySide6.QtWidgets import (
     QGraphicsDropShadowEffect,
 )
 
+from app.core.logger import get_logger
 from app.services.settings_service import SettingsService, ThemeName, ViewName
+from app.services.sound_service import SoundService
 from app.database.db_manager import DatabaseManager
 from app.database.schema import User, Meeting, Task
 from sqlalchemy import select, func
@@ -48,7 +50,11 @@ class SettingsWindow(QWidget):
         super().__init__(parent)
         self._settings = settings
         self._db = DatabaseManager()
+        self._logger = get_logger(__name__)
         self.setObjectName("SettingsDialog")
+        
+        # Initialize sound service early so it's available when building tabs
+        self._sound_service = SoundService()
 
         root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
@@ -93,6 +99,9 @@ class SettingsWindow(QWidget):
         self._tabs.tabBar().setExpanding(True)
 
         root.addWidget(self._tabs, 1)
+        
+        # Populate sound combo after tabs are created (delayed to ensure _sound_combo exists)
+        QTimer.singleShot(200, self._populate_sound_combo)
 
         # ── Bottom bar ──
         bottom = QWidget(self)
@@ -339,7 +348,20 @@ class SettingsWindow(QWidget):
         self._sub_badge.setObjectName("SubscriptionBadge")
         self._sub_badge.setAlignment(Qt.AlignCenter)
         sub_row.addWidget(self._sub_badge)
+
+        # Renew subscription button -> opens browser with user_id + token
+        self._renew_btn = QPushButton("↻  Renew Subscription", page)
+        self._renew_btn.setObjectName("SubscriptionRenewButton")
+        self._renew_btn.setCursor(Qt.PointingHandCursor)
+        self._renew_btn.clicked.connect(self._on_renew_subscription)
+        sub_row.addWidget(self._renew_btn)
+
         pc_lay.addLayout(sub_row)
+
+        # Subscription details (expiry, status) under the row
+        self._sub_detail_label = QLabel("", page)
+        self._sub_detail_label.setObjectName("SubscriptionDetailLabel")
+        pc_lay.addWidget(self._sub_detail_label)
 
         lay.addWidget(profile_card)
 
@@ -425,6 +447,34 @@ class SettingsWindow(QWidget):
         self._sound_check.setObjectName("SettingsCheckbox")
         self._sound_check.setCursor(Qt.PointingHandCursor)
         card_lay.addWidget(self._sound_check)
+        
+        # Sound selection dropdown
+        sound_row = QHBoxLayout()
+        sound_row.setSpacing(10)
+        sound_label = QLabel("Reminder sound:", page)
+        sound_label.setObjectName("SettingsLabel")
+        sound_row.addWidget(sound_label)
+        
+        self._sound_combo = QComboBox(page)
+        self._sound_combo.setObjectName("SettingsCombo")
+        self._sound_combo.setFixedHeight(36)
+        self._sound_combo.setMinimumWidth(200)
+        self._sound_combo.setCursor(Qt.PointingHandCursor)
+        
+        sound_row.addWidget(self._sound_combo)
+        
+        # Test sound button
+        test_sound_btn = QPushButton("▶ Test", page)
+        test_sound_btn.setObjectName("SettingsTestSoundButton")
+        test_sound_btn.setFixedHeight(36)
+        test_sound_btn.setFixedWidth(100)
+        test_sound_btn.setCursor(Qt.PointingHandCursor)
+        test_sound_btn.clicked.connect(self._on_test_sound)
+        sound_row.addWidget(test_sound_btn)
+        
+        sound_row.addStretch()
+        card_lay.addLayout(sound_row)
+        
         lay.addWidget(sound_card)
 
         # ── Quiet Hours ──
@@ -774,14 +824,39 @@ class SettingsWindow(QWidget):
         try:
             with self._db.session() as session:
                 user = session.execute(
-                    select(User).where(User.is_active == True).limit(1)
+                    select(User)
+                    .where(User.is_logged_in == True)
+                    .order_by(User.last_login_at.desc())
+                    .limit(1)
                 ).scalar_one_or_none()
                 if user:
+                    # Header name + avatar should reflect logged-in user
+                    name_lbl = self.findChild(QLabel, "AccountName")
+                    avatar_lbl = self.findChild(QLabel, "AccountAvatar")
+                    display_name = user.name or "User"
+                    if name_lbl:
+                        name_lbl.setText(display_name)
+                    if avatar_lbl and display_name:
+                        avatar_lbl.setText(display_name[0].upper())
+
+                    # Username / email fields
                     self._username_edit.setText(user.name or "")
                     self._email_edit.setText(user.email or "")
+
+                    # Subscription tier badge
                     self._sub_badge.setText(
                         (user.subscription_tier or "free").capitalize()
                     )
+                    # Subscription details: status + expiry date if present
+                    details = []
+                    if user.subscription_status:
+                        details.append(user.subscription_status.capitalize())
+                    if user.subscription_expires_at:
+                        details.append(
+                            "ends "
+                            + user.subscription_expires_at.strftime("%b %d, %Y")
+                        )
+                    self._sub_detail_label.setText(" · ".join(details))
                 # Stats
                 task_count = session.execute(
                     select(func.count(Task.id))
@@ -798,6 +873,21 @@ class SettingsWindow(QWidget):
         self._notif_check.setChecked(s.get_notifications_enabled())
         self._email_alerts_check.setChecked(s.get_email_alerts())
         self._sound_check.setChecked(s.get_sound_alerts())
+        # Reminder sound
+        if hasattr(self, '_sound_combo'):
+            selected_sound = s.get_reminder_sound()
+            index = self._sound_combo.findText(selected_sound, Qt.MatchFixedString)
+            if index >= 0:
+                self._sound_combo.setCurrentIndex(index)
+            else:
+                # Try to find by removing emoji prefix
+                for i in range(self._sound_combo.count()):
+                    item_text = self._sound_combo.itemText(i)
+                    if item_text.replace("🎵 ", "") == selected_sound or item_text == selected_sound:
+                        self._sound_combo.setCurrentIndex(i)
+                        break
+                else:
+                    self._sound_combo.setCurrentIndex(0)  # Default to first item
         self._reminder_spin.setValue(s.get_default_reminder_minutes())
 
         qs = s.get_quiet_hours_start().split(":")
@@ -834,6 +924,52 @@ class SettingsWindow(QWidget):
                 self._db_size_label.setText("📊  Database: not found")
         except Exception:
             self._db_size_label.setText("📊  Database: unknown")
+
+    # =====================================================================
+    #  SUBSCRIPTION ACTIONS
+    # =====================================================================
+
+    def _on_renew_subscription(self) -> None:
+        """Open browser to renewal page, including user_id and token via backend."""
+        try:
+            with self._db.session() as session:
+                user = session.execute(
+                    select(User)
+                    .where(User.is_logged_in == True)
+                    .order_by(User.last_login_at.desc())
+                    .limit(1)
+                ).scalar_one_or_none()
+                if not user:
+                    QMessageBox.information(
+                        self,
+                        "Renew Subscription",
+                        "No logged-in user found. Please log in again first.",
+                    )
+                    return
+
+                user_id = user.api_user_id or str(user.id)
+                token = user.access_token
+                if not token:
+                    QMessageBox.information(
+                        self,
+                        "Renew Subscription",
+                        "No access token found for this user. Please log in again to refresh your session.",
+                    )
+                    return
+
+        except Exception as exc:
+            QMessageBox.warning(
+                self,
+                "Renew Subscription",
+                f"Unable to prepare renewal link: {exc}",
+            )
+            return
+
+        # We cannot set HTTP headers directly in the user's browser, so instead
+        # we pass the token via querystring for the web backend to validate.
+        url = QUrl(f"https://deskhab.com/renew-smartcalender/{user_id}")
+        url.setQuery(f"token={token}")
+        QDesktopServices.openUrl(url)
 
         # Last backup
         last = self._settings._get("last_backup_time", "")
@@ -882,6 +1018,14 @@ class SettingsWindow(QWidget):
         s.set_notifications_enabled(self._notif_check.isChecked())
         s.set_email_alerts(self._email_alerts_check.isChecked())
         s.set_sound_alerts(self._sound_check.isChecked())
+        # Reminder sound - remove emoji prefix if present
+        if hasattr(self, '_sound_combo'):
+            selected_sound = self._sound_combo.currentText().replace("🎵 ", "")
+            self._logger.info(f"Saving reminder sound setting: '{selected_sound}'")
+            s.set_reminder_sound(selected_sound)
+            # Verify it was saved
+            saved_sound = s.get_reminder_sound()
+            self._logger.info(f"Verified saved reminder sound: '{saved_sound}'")
         s.set_default_reminder_minutes(self._reminder_spin.value())
         s.set_quiet_hours_start(self._quiet_start.time().toString("HH:mm"))
         s.set_quiet_hours_end(self._quiet_end.time().toString("HH:mm"))
@@ -920,6 +1064,8 @@ class SettingsWindow(QWidget):
             self._notif_check.setChecked(True)
             self._email_alerts_check.setChecked(False)
             self._sound_check.setChecked(True)
+            if hasattr(self, '_sound_combo'):
+                self._sound_combo.setCurrentIndex(0)  # Default sound
             self._reminder_spin.setValue(10)
             self._quiet_start.setTime(QTime(22, 0))
             self._quiet_end.setTime(QTime(7, 0))
@@ -1065,7 +1211,7 @@ class SettingsWindow(QWidget):
                     "default_view", "weather_city", "notifications_enabled",
                     "email_alerts", "sound_alerts", "quiet_hours_start",
                     "quiet_hours_end", "auto_backup", "backup_schedule",
-                    "default_reminder_minutes",
+                    "default_reminder_minutes", "reminder_sound",
                 ]:
                     data["settings"][key] = self._settings._get(key, "")
 
@@ -1110,6 +1256,38 @@ class SettingsWindow(QWidget):
                 )
             except Exception as e:
                 self._styled_msg(QMessageBox.Critical, "Export Error", str(e))
+
+    def _on_test_sound(self) -> None:
+        """Test the selected sound."""
+        if not hasattr(self, '_sound_combo'):
+            return
+        selected_sound = self._sound_combo.currentText().replace("🎵 ", "")
+        self._logger.info(f"Testing sound: '{selected_sound}'")
+        try:
+            self._sound_service.play_sound(selected_sound, repeat=3)
+        except Exception as e:
+            self._logger.error(f"Error testing sound: {e}", exc_info=True)
+    
+    def _populate_sound_combo(self) -> None:
+        """Populate the sound combo box with available sounds."""
+        if not hasattr(self, '_sound_combo'):
+            return
+        self._sound_combo.clear()
+        
+        # Add system sounds
+        system_sounds = self._sound_service.get_available_sounds()
+        for sound in system_sounds:
+            self._sound_combo.addItem(sound)
+        
+        # Add separator if we have custom sounds
+        custom_sounds = self._sound_service.get_custom_sounds()
+        if custom_sounds:
+            self._sound_combo.insertSeparator(len(system_sounds))
+            # Add custom sounds
+            for sound_file in custom_sounds:
+                # Remove extension for display
+                sound_name = sound_file.replace(".wav", "").replace(".mp3", "").replace(".aiff", "").replace(".m4a", "")
+                self._sound_combo.addItem(f"🎵 {sound_name}")
 
     # =====================================================================
     #  QSS

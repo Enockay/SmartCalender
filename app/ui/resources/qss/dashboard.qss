@@ -9,13 +9,12 @@
 QWidget#DashboardHeader {
     background: qlineargradient(
         x1:0, y1:0, x2:1, y2:0,
-        stop:0    #102A5A,
-        stop:0.25 #2E4A7A,
-        stop:0.50 #5A72A8,
-        stop:0.75 #9FADD0,
-        stop:1    #E8ECF5
+        stop:0    #1E1B4B,
+        stop:0.30 #3730A3,
+        stop:0.65 #7C3AED,
+        stop:1    #EC4899
     );
-    border-bottom: 1px solid rgba(200, 210, 235, 0.40);
+    border-bottom: 1px solid rgba(236, 72, 153, 0.35);
 }
 
 QLabel#DashboardGreeting {
@@ -103,9 +102,14 @@ QWidget#DashboardContent {
 
 QFrame#DashboardCard {
     background-color: rgba(255, 255, 255, 0.82);
-    border: 1px solid rgba(200, 210, 235, 0.45);
-    border-radius: 16px;
+    border: 1px solid rgba(39, 40, 41, 0.45);
+    border-radius: 4px;
     min-height: 270px;
+}
+
+/* Better spacing when card has only one item */
+QFrame#DashboardCard QVBoxLayout {
+    spacing: 12px;
 }
 
 QLabel#DashboardCardIcon {
@@ -121,35 +125,296 @@ QLabel#DashboardCardTitle {
     color: #1A1A3E;
 }
 
+/* Base button styles */
 QWidget#DashboardRoot QPushButton#DashboardCardAction,
 QFrame#DashboardCard QPushButton#DashboardCardAction {
-    background-color: #4A6CF7 !important;
     color: #ffffff !important;
     border: none !important;
-    border-radius: 8px;
-    padding: 8px 18px;
+    border-radius: 10px;
+    padding: 10px 20px;
     font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
     font-size: 12px;
     font-weight: 600;
     min-width: 100px;
     opacity: 1.0 !important;
+    letter-spacing: 0.3px;
+    text-transform: none;
 }
 
-QWidget#DashboardRoot QPushButton#DashboardCardAction:hover,
-QFrame#DashboardCard QPushButton#DashboardCardAction:hover {
-    background-color: #3A5CE6 !important;
+/* Today's Tasks button - Blue */
+QPushButton#DashboardCardActionTasks {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #6B7DFF,
+        stop:1 #5C6DFD) !important;
+    border: 1px solid rgba(92, 109, 253, 0.3) !important;
+    border: none !important;
+    border-radius: 10px;
+    padding: 5px 10px;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 100px;
+    opacity: 1.0 !important;
+    letter-spacing: 0.3px;
+    text-transform: none;
+}
+
+QWidget#DashboardRoot QPushButton#DashboardCardActionTasks,
+QFrame#DashboardCard QPushButton#DashboardCardActionTasks {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #6B7DFF,
+        stop:1 #5C6DFD) !important;
+    border: 1px solid rgba(92, 109, 253, 0.3) !important;
+}
+
+QPushButton#DashboardCardActionTasks:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #5C6DFD,
+        stop:1 #4C5DED) !important;
+    border: 1px solid rgba(76, 93, 237, 0.5) !important;
     color: #ffffff !important;
     opacity: 1.0 !important;
+    padding: 11px 21px;
+}
+
+QWidget#DashboardRoot QPushButton#DashboardCardActionTasks:hover,
+QFrame#DashboardCard QPushButton#DashboardCardActionTasks:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #5C6DFD,
+        stop:1 #4C5DED) !important;
+    border: 1px solid rgba(76, 93, 237, 0.5) !important;
+    color: #ffffff !important;
+    opacity: 1.0 !important;
+    padding: 11px 21px;
+}
+
+QPushButton#DashboardCardActionTasks:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #4C5DED,
+        stop:1 #3C4DDD) !important;
+    padding: 9px 19px;
+}
+
+QWidget#DashboardRoot QPushButton#DashboardCardActionTasks:pressed,
+QFrame#DashboardCard QPushButton#DashboardCardActionTasks:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #4C5DED,
+        stop:1 #3C4DDD) !important;
+    padding: 9px 19px;
+}
+
+/* Upcoming Events button - Purple */
+QPushButton#DashboardCardActionEvents {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #9B6CF8,
+        stop:1 #8B5CF6) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    border: none !important;
+    border-radius: 10px;
+    padding: 5px 10px;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 100px;
+    opacity: 1.0 !important;
+    letter-spacing: 0.3px;
+    text-transform: none;
+}
+
+QWidget#DashboardRoot QPushButton#DashboardCardActionEvents,
+QFrame#DashboardCard QPushButton#DashboardCardActionEvents {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #9B6CF8,
+        stop:1 #8B5CF6) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+}
+
+QPushButton#DashboardCardActionEvents:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #8B5CF6,
+        stop:1 #7C3AED) !important;
+    border: 1px solid rgba(124, 58, 237, 0.5) !important;
+    color: #ffffff !important;
+    opacity: 1.0 !important;
+    padding: 11px 21px;
+}
+
+QWidget#DashboardRoot QPushButton#DashboardCardActionEvents:hover,
+QFrame#DashboardCard QPushButton#DashboardCardActionEvents:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #8B5CF6,
+        stop:1 #7C3AED) !important;
+    border: 1px solid rgba(124, 58, 237, 0.5) !important;
+    color: #ffffff !important;
+    opacity: 1.0 !important;
+    padding: 11px 21px;
+}
+
+QPushButton#DashboardCardActionEvents:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #7C3AED,
+        stop:1 #6D2BDD) !important;
+    padding: 9px 19px;
+}
+
+QWidget#DashboardRoot QPushButton#DashboardCardActionEvents:pressed,
+QFrame#DashboardCard QPushButton#DashboardCardActionEvents:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #7C3AED,
+        stop:1 #6D2BDD) !important;
+    padding: 9px 19px;
+}
+
+/* Reminders button - Orange */
+QPushButton#DashboardCardActionReminders {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #FBBF24,
+        stop:1 #F59E0B) !important;
+    border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    border: none !important;
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 100px;
+    opacity: 1.0 !important;
+    letter-spacing: 0.3px;
+    text-transform: none;
+}
+
+QWidget#DashboardRoot QPushButton#DashboardCardActionReminders,
+QFrame#DashboardCard QPushButton#DashboardCardActionReminders {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #FBBF24,
+        stop:1 #F59E0B) !important;
+    border: 1px solid rgba(245, 158, 11, 0.3) !important;
+}
+
+QPushButton#DashboardCardActionReminders:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #F59E0B,
+        stop:1 #D97706) !important;
+    border: 1px solid rgba(217, 119, 6, 0.5) !important;
+    color: #ffffff !important;
+    opacity: 1.0 !important;
+    padding: 11px 21px;
+}
+
+QWidget#DashboardRoot QPushButton#DashboardCardActionReminders:hover,
+QFrame#DashboardCard QPushButton#DashboardCardActionReminders:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #F59E0B,
+        stop:1 #D97706) !important;
+    border: 1px solid rgba(217, 119, 6, 0.5) !important;
+    color: #ffffff !important;
+    opacity: 1.0 !important;
+    padding: 11px 21px;
+}
+
+QPushButton#DashboardCardActionReminders:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #D97706,
+        stop:1 #C96805) !important;
+    padding: 9px 19px;
+}
+
+QWidget#DashboardRoot QPushButton#DashboardCardActionReminders:pressed,
+QFrame#DashboardCard QPushButton#DashboardCardActionReminders:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #D97706,
+        stop:1 #C96805) !important;
+    padding: 9px 19px;
+}
+
+/* Overdue button - Red */
+QPushButton#DashboardCardActionOverdue {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #F87171,
+        stop:1 #EF4444) !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    border: none !important;
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 100px;
+    opacity: 1.0 !important;
+    letter-spacing: 0.3px;
+    text-transform: none;
+}
+
+QWidget#DashboardRoot QPushButton#DashboardCardActionOverdue,
+QFrame#DashboardCard QPushButton#DashboardCardActionOverdue {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #F87171,
+        stop:1 #EF4444) !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+}
+
+QPushButton#DashboardCardActionOverdue:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #EF4444,
+        stop:1 #DC2626) !important;
+    border: 1px solid rgba(220, 38, 38, 0.5) !important;
+    color: #ffffff !important;
+    opacity: 1.0 !important;
+    padding: 11px 21px;
+}
+
+QWidget#DashboardRoot QPushButton#DashboardCardActionOverdue:hover,
+QFrame#DashboardCard QPushButton#DashboardCardActionOverdue:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #EF4444,
+        stop:1 #DC2626) !important;
+    border: 1px solid rgba(220, 38, 38, 0.5) !important;
+    color: #ffffff !important;
+    opacity: 1.0 !important;
+    padding: 11px 21px;
+}
+
+QPushButton#DashboardCardActionOverdue:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #DC2626,
+        stop:1 #B91C1C) !important;
+    padding: 9px 19px;
+}
+
+QWidget#DashboardRoot QPushButton#DashboardCardActionOverdue:pressed,
+QFrame#DashboardCard QPushButton#DashboardCardActionOverdue:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #DC2626,
+        stop:1 #B91C1C) !important;
+    padding: 9px 19px;
 }
 
 /* ---------------- Reusable item cards ---------------- */
 
-QFrame#DashboardTaskItem,
-QFrame#DashboardEventItem {
-    background-color: rgba(255, 255, 255, 0.65);
-    border: 1px solid rgba(200, 210, 240, 0.70);
+/* Regular task items - faded blue tint */
+QFrame#DashboardTaskItem {
+    background-color: rgba(92, 109, 253, 0.08);
+    border: 1px solid rgba(92, 109, 253, 0.25);
     border-radius: 10px;
     padding: 2px;
+}
+
+QFrame#DashboardTaskItem:hover {
+    background-color: rgba(92, 109, 253, 0.15);
+    border: 1px solid rgba(92, 109, 253, 0.35);
+}
+
+/* Event items - faded purple tint */
+QFrame#DashboardEventItem {
+    background-color: rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    border-radius: 10px;
+    padding: 2px;
+}
+
+QFrame#DashboardEventItem:hover {
+    background-color: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.35);
 }
 
 /* Priority-based task item backgrounds */
@@ -160,6 +425,11 @@ QFrame#DashboardTaskItemHigh {
     padding: 2px;
 }
 
+QFrame#DashboardTaskItemHigh:hover {
+    background-color: rgba(16, 185, 129, 0.18) !important;
+    border: 1px solid rgba(16, 185, 129, 0.40) !important;
+}
+
 QFrame#DashboardTaskItemMedium {
     background-color: rgba(245, 158, 11, 0.10) !important;
     border: 1px solid rgba(245, 158, 11, 0.28) !important;
@@ -167,11 +437,21 @@ QFrame#DashboardTaskItemMedium {
     padding: 2px;
 }
 
+QFrame#DashboardTaskItemMedium:hover {
+    background-color: rgba(245, 158, 11, 0.18) !important;
+    border: 1px solid rgba(245, 158, 11, 0.40) !important;
+}
+
 QFrame#DashboardTaskItemLow {
     background-color: rgba(74, 108, 247, 0.08) !important;
     border: 1px solid rgba(74, 108, 247, 0.22) !important;
     border-radius: 10px;
     padding: 2px;
+}
+
+QFrame#DashboardTaskItemLow:hover {
+    background-color: rgba(74, 108, 247, 0.16) !important;
+    border: 1px solid rgba(74, 108, 247, 0.35) !important;
 }
 
 QLabel#DashboardItemTitle {
@@ -265,6 +545,18 @@ QPushButton#DashboardMiniActionBlue:pressed {
 
 /* ---------------- Reminders ---------------- */
 
+QFrame#DashboardReminderItem {
+    background-color: rgba(255, 255, 255, 0.70);
+    border: 1px solid rgba(200, 210, 240, 0.60);
+    border-radius: 10px;
+    margin-bottom: 2px;
+}
+
+QFrame#DashboardReminderItem:hover {
+    background-color: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(200, 210, 240, 0.80);
+}
+
 QWidget#DashboardReminderRow {
     background-color: transparent !important;
     border: none;
@@ -275,60 +567,87 @@ QWidget#DashboardReminderRow QLabel#DashboardReminderText {
 }
 
 QWidget#DashboardReminderRow QLabel#DashboardReminderIconPurple,
-QFrame#DashboardCard QLabel#DashboardReminderIconPurple {
+QFrame#DashboardCard QLabel#DashboardReminderIconPurple,
+QFrame#DashboardReminderItem QLabel#DashboardReminderIconPurple {
     color: #7C6FD4 !important;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
-    min-width: 20px;
-    max-width: 20px;
-    background-color: rgba(124, 111, 212, 0.14) !important;
-    border-radius: 50%;
-    padding: 4px;
+    min-width: 24px;
+    max-width: 24px;
+    min-height: 24px;
+    max-height: 24px;
+    background-color: rgba(124, 111, 212, 0.15) !important;
+    border-radius: 6px;
+    padding: 0px;
     border: none;
 }
 
 QFrame#DashboardReminderIconGreenContainer {
     background-color: rgba(16, 185, 129, 0.12) !important;
-    border-radius: 10px;
+    border-radius: 8px;
     border: none;
+    min-width: 24px;
+    max-width: 24px;
+    min-height: 24px;
+    max-height: 24px;
 }
 
-QFrame#DashboardCard QFrame#DashboardReminderIconGreenContainer {
+QFrame#DashboardCard QFrame#DashboardReminderIconGreenContainer,
+QFrame#DashboardReminderItem QFrame#DashboardReminderIconGreenContainer {
     background-color: rgba(16, 185, 129, 0.12) !important;
-    border-radius: 10px;
+    border-radius: 8px;
     border: none;
+    min-width: 24px;
+    max-width: 24px;
+    min-height: 24px;
+    max-height: 24px;
 }
 
-QFrame#DashboardCard QLabel#DashboardReminderIconGreen {
+QFrame#DashboardCard QLabel#DashboardReminderIconGreen,
+QFrame#DashboardReminderItem QLabel#DashboardReminderIconGreen {
     color: #10B981 !important;
     font-size: 14px;
     font-weight: 700;
     background-color: transparent !important;
     border-radius: 50%;
-    padding: 4px;
+    padding: 0px;
     min-width: 20px;
     max-width: 20px;
+    min-height: 20px;
+    max-height: 20px;
     border: none;
 }
 
 QWidget#DashboardReminderRow QLabel#DashboardReminderIconBlue,
-QFrame#DashboardCard QLabel#DashboardReminderIconBlue {
+QFrame#DashboardCard QLabel#DashboardReminderIconBlue,
+QFrame#DashboardReminderItem QLabel#DashboardReminderIconBlue {
     color: #4A6CF7 !important;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
-    background-color: rgba(74, 108, 247, 0.12) !important;
-    border-radius: 50%;
-    padding: 4px;
-    min-width: 20px;
-    max-width: 20px;
+    background-color: rgba(74, 108, 247, 0.15) !important;
+    border-radius: 6px;
+    padding: 0px;
+    min-width: 24px;
+    max-width: 24px;
+    min-height: 24px;
+    max-height: 24px;
     border: none;
 }
 
 QLabel#DashboardReminderText {
     font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
     font-size: 13px;
-    font-weight: 500;
-    color: #2A2A50;
+    font-weight: 600;
+    color: #1A1A3E;
+    background-color: transparent !important;
+}
+
+QFrame#DashboardReminderItem QLabel#DashboardReminderText {
+    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1A1A3E;
+    background-color: transparent !important;
 }
 
 /* ---------------- Overdue ---------------- */

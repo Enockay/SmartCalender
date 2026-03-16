@@ -94,11 +94,8 @@ class ReminderPopup(QDialog):
 
         layout.addLayout(buttons_row)
 
-        self._auto_close_timer = QTimer(self)
-        self._auto_close_timer.setInterval(20_000)  # auto-close after 20 seconds
-        self._auto_close_timer.setSingleShot(True)
-        self._auto_close_timer.timeout.connect(self.reject)
-        self._auto_close_timer.start()
+        # No auto-close timer - popup stays visible until user snoozes or dismisses
+        # This ensures notifications persist until user interaction
 
         # Apply styles and lock a fixed window size similar to the reference UI.
         self._apply_qss()

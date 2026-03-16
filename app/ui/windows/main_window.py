@@ -62,6 +62,9 @@ class MainWindow(QMainWindow):
         self._settings = settings or SettingsService()
         self._current_date = date.today()
         self._db = DatabaseManager()
+        
+        # Cached logged-in user info for sidebar / title
+        self._current_user = None
 
         self._meeting_service = MeetingService(settings_service=self._settings)
         self._calendar_service = CalendarService(self._meeting_service)
@@ -316,12 +319,38 @@ class MainWindow(QMainWindow):
 
         # ── User card at the bottom ──
         # Get the actual system username
+        # Prefer the last logged-in app user from the database
+        display_name = "User"
+        email = ""
+        sub_expiry_str = ""
+        days_left = None
         try:
-            sys_user = getpass.getuser()
+            with self._db.session() as session:
+                user = session.execute(
+                    select(User)
+                    .where(User.is_logged_in == True)
+                    .order_by(User.last_login_at.desc())
+                    .limit(1)
+                ).scalar_one_or_none()
+                if user:
+                    self._current_user = user
+                    display_name = user.name or "User"
+                    email = user.email or ""
+                    if user.subscription_expires_at:
+                        sub_expiry = user.subscription_expires_at.date()
+                        today = date.today()
+                        days_left = (sub_expiry - today).days
+                        sub_expiry_str = sub_expiry.strftime("%b %d, %Y")
         except Exception:
-            sys_user = os.environ.get("USER", os.environ.get("USERNAME", "User"))
-        # Capitalise nicely
-        display_name = sys_user.replace("_", " ").replace("-", " ").title()
+            pass
+        
+        if not display_name:
+            try:
+                sys_user = getpass.getuser()
+            except Exception:
+                sys_user = os.environ.get("USER", os.environ.get("USERNAME", "User"))
+            display_name = sys_user.replace("_", " ").replace("-", " ").title()
+        
         initial = display_name[0].upper() if display_name else "U"
 
         user_card = QFrame(sidebar_container)
@@ -345,12 +374,29 @@ class MainWindow(QMainWindow):
 
         self._user_id_label = QLabel(display_name, user_card)
         self._user_id_label.setObjectName("SidebarUserName")
-
-        status_label = QLabel("● Online", user_card)
-        status_label.setObjectName("SidebarUserStatus")
-
+        
+        self._status_label = QLabel("● Online", user_card)
+        self._status_label.setObjectName("SidebarUserStatus")
+        
+        if sub_expiry_str:
+            sub_text = f"Subscription: Ends {sub_expiry_str}"
+        else:
+            sub_text = ""
+        self._sub_expiry_label = QLabel(sub_text, user_card)
+        self._sub_expiry_label.setObjectName("SidebarUserSubExpiry")
+        # Set state for QSS color: ok / near / expired
+        if days_left is not None:
+            if days_left <= 0:
+                state = "expired"
+            elif days_left <= 15:
+                state = "near"
+            else:
+                state = "ok"
+            self._sub_expiry_label.setProperty("state", state)
+        
         info_col.addWidget(self._user_id_label)
-        info_col.addWidget(status_label)
+        info_col.addWidget(self._status_label)
+        info_col.addWidget(self._sub_expiry_label)
         card_lay.addLayout(info_col, 1)
 
         sidebar_layout.addWidget(user_card)
@@ -640,6 +686,9 @@ class MainWindow(QMainWindow):
     def _on_meetings_changed(self) -> None:
         self._set_view(0)
         self._reload_current_day()
+        # Refresh reminder view to show newly created meeting reminders
+        if hasattr(self, "_reminder_view"):
+            self._reminder_view.refresh()
 
     def _reload_tasks(self) -> None:
         """Reload tasks and update the task board for the current date."""

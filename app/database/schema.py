@@ -27,7 +27,28 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False)
     name = Column(String(255), nullable=True)
     subscription_tier = Column(String(50), default="free")
+    subscription_status = Column(String(50), default="active")
+    subscription_expires_at = Column(DateTime, nullable=True)
+    subscription_features = Column(Text, nullable=True)  # JSON array stored as text
     is_active = Column(Boolean, default=True)
+    
+    # Authentication data
+    access_token = Column(Text, nullable=True)
+    refresh_token = Column(Text, nullable=True)
+    token_expires_at = Column(DateTime, nullable=True)
+    api_user_id = Column(String(255), nullable=True)  # External API user ID
+    
+    # Additional metadata
+    timezone = Column(String(100), nullable=True)
+    language = Column(String(10), nullable=True)
+    avatar_url = Column(Text, nullable=True)
+    organization_id = Column(String(255), nullable=True)
+    organization_name = Column(String(255), nullable=True)
+    role = Column(String(50), nullable=True)
+    
+    # Login tracking
+    last_login_at = Column(DateTime, nullable=True)
+    is_logged_in = Column(Boolean, default=False)
 
 
 class Meeting(Base):
