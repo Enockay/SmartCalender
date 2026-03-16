@@ -363,6 +363,15 @@ class SettingsWindow(QWidget):
         self._sub_detail_label.setObjectName("SubscriptionDetailLabel")
         pc_lay.addWidget(self._sub_detail_label)
 
+        # Contact support
+        self._support_label = QLabel(
+            'Need help? Contact <a href="mailto:support@desktophab.com">support@desktophab.com</a>',
+            page,
+        )
+        self._support_label.setObjectName("AccountSupportLabel")
+        self._support_label.setOpenExternalLinks(True)
+        pc_lay.addWidget(self._support_label)
+
         lay.addWidget(profile_card)
 
         # ── Danger zone ──

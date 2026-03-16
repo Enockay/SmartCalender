@@ -4,8 +4,8 @@ from datetime import date, datetime, time, timedelta
 from calendar import monthrange
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QDate, QSize, QTimer
-from PySide6.QtGui import QGuiApplication
+from PySide6.QtCore import Qt, QDate, QSize, QTimer, QUrl
+from PySide6.QtGui import QGuiApplication, QDesktopServices
 from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -84,6 +84,140 @@ class MainWindow(QMainWindow):
         # Defer positioning until the window has been shown so we can
         # reliably use the final frame geometry and screen information.
         QTimer.singleShot(0, self._move_to_top_right)
+        # After the window is up, enforce subscription status. This dialog
+        # is modal and cannot be bypassed from within the app.
+        QTimer.singleShot(200, self._check_subscription_status)
+
+        # Periodically re-check subscription status while the app is open,
+        # so mid-session expiries are also enforced.
+        self._subscription_timer = QTimer(self)
+        self._subscription_timer.timeout.connect(self._refresh_subscription_and_check)
+        self._subscription_timer.start(15 * 60 * 1000)  # every 15 minutes
+
+    def _refresh_subscription_and_check(self) -> None:
+        """Refresh the current user from DB and re-run subscription check."""
+        from app.database.schema import User
+        from sqlalchemy import select
+
+        try:
+            with self._db.session() as session:
+                user = session.execute(
+                    select(User)
+                    .where(User.is_logged_in == True)
+                    .order_by(User.last_login_at.desc())
+                    .limit(1)
+                ).scalar_one_or_none()
+                self._current_user = user
+        except Exception:
+            # If refresh fails, keep whatever we had before.
+            pass
+
+        self._check_subscription_status()
+
+    # --- Subscription / licensing -------------------------------------------
+
+    def _open_subscription_renewal_url(self) -> None:
+        """Open browser to the hosted renewal flow for the current user."""
+        from app.database.schema import User
+        from sqlalchemy import select
+
+        try:
+            with self._db.session() as session:
+                user = session.execute(
+                    select(User)
+                    .where(User.is_logged_in == True)
+                    .order_by(User.last_login_at.desc())
+                    .limit(1)
+                ).scalar_one_or_none()
+                if not user:
+                    return
+                user_id = user.api_user_id or str(user.id)
+                token = user.access_token
+                if not token:
+                    return
+        except Exception:
+            return
+
+        url = QUrl(f"https://deskhab.com/renew-smartcalender/{user_id}")
+        url.setQuery(f"token={token}")
+        QDesktopServices.openUrl(url)
+
+    def _check_subscription_status(self) -> None:
+        """If the subscription is expired, block usage until user upgrades."""
+        if not self._current_user:
+            return
+
+        sub_status = (self._current_user.subscription_status or "").lower()
+        expires_at = self._current_user.subscription_expires_at
+
+        expired = False
+        if sub_status in {"expired", "cancelled"}:
+            expired = True
+        elif expires_at:
+            today = datetime.utcnow().date()
+            expired = expires_at.date() < today
+
+        if not expired:
+            return
+
+        # Build a blocking dialog similar to the reference screenshot.
+        dlg = QDialog(self)
+        dlg.setModal(True)
+        dlg.setWindowFlag(Qt.FramelessWindowHint, True)
+        dlg.setAttribute(Qt.WA_TranslucentBackground, True)
+
+        outer = QVBoxLayout(dlg)
+        outer.setContentsMargins(0, 0, 0, 0)
+
+        card = QFrame(dlg)
+        card.setObjectName("InlineInfoCard")
+        card.setMinimumWidth(460)
+
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(32, 24, 32, 24)
+        layout.setSpacing(16)
+
+        icon = QLabel("⚠️", card)
+        icon.setAlignment(Qt.AlignHCenter)
+        layout.addWidget(icon)
+
+        title = QLabel("Payment Required", card)
+        title.setObjectName("InlineInfoTitle")
+        title.setAlignment(Qt.AlignHCenter)
+        layout.addWidget(title)
+
+        body = QLabel(
+            "Your subscription has expired. To continue using Smart Calender,\n"
+            "please renew your subscription.",
+            card,
+        )
+        body.setObjectName("InlineInfoBody")
+        body.setAlignment(Qt.AlignHCenter)
+        body.setWordWrap(True)
+        layout.addWidget(body)
+
+        btn_row = QHBoxLayout()
+        btn_row.addStretch(1)
+        upgrade_btn = QPushButton("Upgrade Plan", card)
+        upgrade_btn.setObjectName("InlineInfoPrimaryButton")
+        upgrade_btn.setCursor(Qt.PointingHandCursor)
+        upgrade_btn.clicked.connect(self._open_subscription_renewal_url)
+        upgrade_btn.clicked.connect(dlg.accept)
+        btn_row.addWidget(upgrade_btn)
+        btn_row.addStretch(1)
+        layout.addLayout(btn_row)
+
+        outer.addWidget(card)
+
+        # Center over main window
+        dlg.adjustSize()
+        parent_geo = self.frameGeometry()
+        dlg_geo = dlg.frameGeometry()
+        dlg.move(
+            parent_geo.center().x() - dlg_geo.width() // 2,
+            parent_geo.center().y() - dlg_geo.height() // 2,
+        )
+        dlg.exec()
 
     def _move_to_top_right(self) -> None:
         """Position the main window in the top-right corner of the current screen."""
