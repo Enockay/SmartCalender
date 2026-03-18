@@ -1411,7 +1411,6 @@ class SettingsWindow(QWidget):
         card_lay.addLayout(_row("Version",       "1.0.0"))
         card_lay.addLayout(_row("Platform",
             f"{_platform.system()} {_platform.release()} ({_platform.machine()})"))
-        card_lay.addLayout(_row("Python",        sys.version.split()[0]))
         card_lay.addLayout(_row("Built by", "blackie-networks"))
         card_lay.addLayout(
             _row("License", "Copyright © 2024 blackie-networks. All rights reserved.")
@@ -1435,7 +1434,7 @@ class SettingsWindow(QWidget):
         desc = QLabel(
             "Smart Calender is a productivity desktop application for managing "
             "events, meetings, tasks and reminders — all in one place.\n\n"
-            "Designed and built by <b>blackie-networks</b> with ❤️ using Python & PySide6."
+            "Designed and built by <b>blackie-networks</b> with ❤️."
         )
         desc.setWordWrap(True)
         desc.setAlignment(Qt.AlignCenter)

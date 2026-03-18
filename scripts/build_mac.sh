@@ -43,7 +43,7 @@ APPLE_APP_PASSWORD="${APPLE_APP_PASSWORD:-}"   # app-specific password
 # Directories
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-DIST_DIR="$ROOT/dist/mac"
+DIST_DIR="$ROOT/dist/mac_build_$(date +%Y%m%d_%H%M%S)"
 BUILD_DIR="$ROOT/build"
 
 # ---------------------------------------------------------------------------
@@ -66,7 +66,9 @@ mkdir -p "$DIST_DIR"
 # 2. Install / upgrade build dependencies
 # ---------------------------------------------------------------------------
 echo "[2/7] Installing build dependencies..."
-pip install --quiet --upgrade pyinstaller
+if ! command -v pyinstaller &>/dev/null; then
+    pip install --quiet --upgrade pyinstaller
+fi
 
 # ---------------------------------------------------------------------------
 # 3. Build with PyInstaller
@@ -75,8 +77,7 @@ echo "[3/7] Running PyInstaller..."
 pyinstaller SmartCalender.spec \
     --distpath "$DIST_DIR" \
     --workpath "$BUILD_DIR/work" \
-    --noconfirm \
-    --clean
+    --noconfirm
 
 APP_BUNDLE="$DIST_DIR/${APP_NAME}.app"
 if [ ! -d "$APP_BUNDLE" ]; then

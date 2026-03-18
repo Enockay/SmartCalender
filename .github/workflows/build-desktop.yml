@@ -1,0 +1,95 @@
+name: Build SmartCalender (Linux/Windows/macOS)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux
+          - os: windows-latest
+            target: windows
+          - os: macos-13
+            target: mac
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Install Linux build dependencies (AppImage/.deb)
+        if: matrix.target == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libfuse2 binutils patchelf fakeroot dpkg-deb curl
+
+      - name: Install NSIS (Windows installer)
+        if: matrix.target == 'windows'
+        shell: pwsh
+        run: |
+          choco install nsis -y
+
+      - name: Build (Linux)
+        if: matrix.target == 'linux'
+        run: |
+          bash scripts/build_linux.sh
+
+      - name: Build (Windows)
+        if: matrix.target == 'windows'
+        shell: cmd
+        run: |
+          scripts\build_windows.bat
+
+      - name: Build (macOS)
+        if: matrix.target == 'mac'
+        run: |
+          bash scripts/build_mac.sh
+        env:
+          # Optional macOS signing/notarization secrets:
+          # SIGNING_IDENTITY: ${{ secrets.MAC_SIGNING_IDENTITY }}
+          # APPLE_ID: ${{ secrets.APPLE_ID }}
+          # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          # APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          SIGNING_IDENTITY: ""
+
+      - name: Upload artifacts (Linux)
+        if: matrix.target == 'linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: |
+            dist/linux_build_*/**/*.AppImage
+            dist/linux_build_*/**/*.deb
+
+      - name: Upload artifacts (Windows)
+        if: matrix.target == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: |
+            dist/windows/**/SmartCalender-Setup-*.exe
+
+      - name: Upload artifacts (macOS)
+        if: matrix.target == 'mac'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-build
+          path: |
+            dist/mac_build_*/**/*.dmg
+            dist/mac_build_*/**/*.app
+

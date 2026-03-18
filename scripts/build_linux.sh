@@ -39,7 +39,7 @@ GPG_KEY_ID="${GPG_KEY_ID:-}"    # optional: GPG key to sign the AppImage/deb
 # Directories
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-DIST_DIR="$ROOT/dist/linux"
+DIST_DIR="$ROOT/dist/linux_build_$(date +%Y%m%d_%H%M%S)"
 BUILD_DIR="$ROOT/build"
 
 cd "$ROOT"
@@ -60,7 +60,9 @@ mkdir -p "$DIST_DIR"
 # 2. Dependencies
 # ---------------------------------------------------------------------------
 echo "[2/6] Installing build dependencies..."
-pip install --quiet --upgrade pyinstaller
+if ! command -v pyinstaller &>/dev/null; then
+    pip install --quiet --upgrade pyinstaller
+fi
 
 # ---------------------------------------------------------------------------
 # 3. PyInstaller build
@@ -69,8 +71,7 @@ echo "[3/6] Running PyInstaller..."
 pyinstaller SmartCalender.spec \
     --distpath "$DIST_DIR" \
     --workpath "$BUILD_DIR/work" \
-    --noconfirm \
-    --clean
+    --noconfirm
 
 APP_DIR="$DIST_DIR/$APP_NAME"
 if [ ! -d "$APP_DIR" ]; then
