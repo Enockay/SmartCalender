@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
     QScrollArea,
+    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
@@ -161,13 +162,15 @@ class DashboardCard(QFrame):
         super().__init__(parent)
         self.setObjectName("DashboardCard")
         self.setAttribute(Qt.WA_StyledBackground, True)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self._main_layout = QVBoxLayout(self)
-        self._main_layout.setContentsMargins(8, 6, 8, 6)
-        self._main_layout.setSpacing(8)
+        # Inner padding so content has breathing room inside each card
+        self._main_layout.setContentsMargins(14, 12, 14, 14)
+        self._main_layout.setSpacing(0)
 
         header_layout = QHBoxLayout()
-        header_layout.setContentsMargins(0, 0, 0, 0)
+        header_layout.setContentsMargins(0, 0, 0, 8)
         header_layout.setSpacing(8)
 
         # Add icon if provided
@@ -193,8 +196,8 @@ class DashboardCard(QFrame):
 
         self._content_layout = QVBoxLayout()
         self._content_layout.setContentsMargins(0, 0, 0, 0)
-        self._content_layout.setSpacing(12)
-        self._main_layout.addLayout(self._content_layout)
+        self._content_layout.setSpacing(6)
+        self._main_layout.addLayout(self._content_layout, stretch=1)
 
     def set_action_button(self, text: str, callback=None, button_id: str = None) -> None:
         self._action_button.setText(text)
@@ -337,13 +340,18 @@ class DashboardWidget(QWidget):
         content = QWidget()
         content.setObjectName("DashboardContent")
         content_layout = QVBoxLayout(content)
-        content_layout.setContentsMargins(12, 12, 12, 12)
-        content_layout.setSpacing(18)
+        # Remove outer padding so dashboard grid is flush
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.setSpacing(0)
 
         grid = QGridLayout()
-        grid.setHorizontalSpacing(18)
-        grid.setVerticalSpacing(18)
+        grid.setHorizontalSpacing(1)
+        grid.setVerticalSpacing(1)
         grid.setContentsMargins(0, 0, 0, 0)
+        grid.setColumnStretch(0, 1)
+        grid.setColumnStretch(1, 1)
+        grid.setRowStretch(0, 1)
+        grid.setRowStretch(1, 1)
 
         self._today_tasks_card = DashboardCard("Today's Tasks", "✓", content)
         self._today_tasks_card.set_action_button("View All", self._on_view_tasks, "DashboardCardActionTasks")
@@ -362,8 +370,7 @@ class DashboardWidget(QWidget):
         grid.addWidget(self._reminders_card, 1, 0)
         grid.addWidget(self._overdue_card, 1, 1)
 
-        content_layout.addLayout(grid)
-        content_layout.addStretch()
+        content_layout.addLayout(grid, stretch=1)
 
         scroll.setWidget(content)
         root_layout.addWidget(scroll)

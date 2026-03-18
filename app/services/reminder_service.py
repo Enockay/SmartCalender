@@ -195,7 +195,7 @@ class ReminderService:
                 # Ensure overdue reminders are marked first
                 self.update_overdue()
                 items = repo.get_overdue()
-                self._logger.info(f"get_by_filter('overdue') returned {len(items)} reminders")
+                self._logger.debug(f"get_by_filter('overdue') returned {len(items)} reminders")
             elif filter_name == "active":
                 items = repo.get_active()
             else:
@@ -277,12 +277,12 @@ class ReminderService:
     def get_due_reminders(self, now: datetime | None = None) -> List[ReminderData]:
         if now is None:
             now = datetime.now()
-        self._logger.info(f"get_due_reminders() called with now={now.strftime('%Y-%m-%d %H:%M:%S')}")
+        self._logger.debug(f"get_due_reminders() called with now={now.strftime('%Y-%m-%d %H:%M:%S')}")
         session = self._db.session()
         try:
             repo = ReminderRepository(session)
             reminders = repo.due_reminders(now)
-            self._logger.info(f"Repository returned {len(reminders)} due reminder(s)")
+            self._logger.debug(f"Repository returned {len(reminders)} due reminder(s)")
             for r in reminders:
                 self._logger.info(f"  - Reminder ID={r.id}, title='{r.title}', remind_at={r.remind_at.strftime('%Y-%m-%d %H:%M:%S')}, status={r.status}, dismissed={r.dismissed}, meeting_id={r.meeting_id}")
             return [self._to_data(r) for r in reminders]
@@ -292,7 +292,7 @@ class ReminderService:
     def update_overdue(self) -> int:
         """Mark any past-due active reminders as overdue. Returns count."""
         now = datetime.now()
-        self._logger.info(f"update_overdue() called at {now.strftime('%Y-%m-%d %H:%M:%S')}")
+        self._logger.debug(f"update_overdue() called at {now.strftime('%Y-%m-%d %H:%M:%S')}")
         session = self._db.session()
         try:
             repo = ReminderRepository(session)

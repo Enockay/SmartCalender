@@ -102,11 +102,11 @@ class ReminderRepository:
 
     def due_reminders(self, now: datetime) -> List[Reminder]:
         """Reminders that should fire right now."""
-        self._logger.info(f"due_reminders() query: now={now.strftime('%Y-%m-%d %H:%M:%S')}")
+        self._logger.debug(f"due_reminders() query: now={now.strftime('%Y-%m-%d %H:%M:%S')}")
         
         # First, let's see all reminders to debug
         all_reminders = self._session.query(Reminder).all()
-        self._logger.info(f"Total reminders in database: {len(all_reminders)}")
+        self._logger.debug(f"Total reminders in database: {len(all_reminders)}")
         for r in all_reminders:
             self._logger.info(
                 f"  Reminder ID={r.id}: title='{r.title}', remind_at={r.remind_at.strftime('%Y-%m-%d %H:%M:%S')}, "
@@ -125,7 +125,7 @@ class ReminderRepository:
             )
             .all()
         )
-        self._logger.info(f"due_reminders() found {len(due)} due reminder(s) matching criteria")
+        self._logger.debug(f"due_reminders() found {len(due)} due reminder(s) matching criteria")
         for r in due:
             self._logger.info(
                 f"  Due reminder ID={r.id}: title='{r.title}', remind_at={r.remind_at.strftime('%Y-%m-%d %H:%M:%S')}"

@@ -4,7 +4,7 @@ from datetime import date, datetime, time, timedelta
 from calendar import monthrange
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QDate, QSize, QTimer, QUrl
+from PySide6.QtCore import Qt, QDate, QSize, QTimer, QUrl, Signal, Slot
 from PySide6.QtGui import QGuiApplication, QDesktopServices
 from PySide6.QtWidgets import (
     QMainWindow,
@@ -30,7 +30,10 @@ from app.services.meeting_service import MeetingService
 from app.services.calendar_service import CalendarService
 from app.services.task_service import TaskService
 from app.services.auth_service import AuthService
+from app.services.device_service import DeviceService
 from PySide6.QtWebSockets import QWebSocket
+from PySide6.QtNetwork import QAbstractSocket
+from app.core.logger import get_logger
 from app.ui.widgets.dashboard_widget import DashboardWidget
 from app.ui.widgets.day_view_widget import DayViewWidget
 from app.ui.widgets.week_view_widget import WeekViewWidget
@@ -52,9 +55,14 @@ from sqlalchemy import select
 
 class MainWindow(QMainWindow):
     """Main application window with a Monthboard-style layout."""
+    
+    # Cross-thread safe UI refresh trigger (e.g. from websocket background worker)
+    subscriptionUiRefreshRequested = Signal()
 
     def __init__(self, settings: SettingsService | None = None) -> None:
         super().__init__()
+        self._logger = get_logger(__name__)
+        self.subscriptionUiRefreshRequested.connect(self._refresh_subscription_ui)
         self.setWindowTitle("Smart Calender")
         self.setFixedSize(1000, 750)
         self.setWindowFlag(Qt.WindowMaximizeButtonHint, False)
@@ -68,6 +76,7 @@ class MainWindow(QMainWindow):
         # Cached logged-in user info for sidebar / title
         self._current_user = None
         self._auth_service = AuthService(settings_service=self._settings)
+        self._device_service = DeviceService(self._db)
         self._ws: QWebSocket | None = None
         self._ws_reconnect_timer: QTimer | None = None
         self._ws_reconnect_backoff_ms: int = 1000
@@ -144,12 +153,15 @@ class MainWindow(QMainWindow):
             self._ws.connected.connect(self._on_ws_connected)
             self._ws.disconnected.connect(self._on_ws_disconnected)
 
-        if self._ws.state() == QWebSocket.ConnectedState:
+        if self._ws.state() == QAbstractSocket.ConnectedState:
             return
 
         token = self._current_user.access_token
+        device_id = self._device_service.get_or_create_device_id()
         # Backend should accept token for websocket auth. Query-param auth works cross-platform.
-        ws_url = QUrl(f"wss://api.deskhab.com/v1/ws?token={token}")
+        ws_url = QUrl(f"wss://api.deskhab.com/v1/ws?token={token}&device_id={device_id}")
+        # Log without leaking token (QUrl.toString only supports ComponentFormattingOption here)
+        self._logger.info("Opening subscription socket: wss://api.deskhab.com/v1/ws?token=***")
         self._ws.open(ws_url)
 
     def _on_ws_connected(self) -> None:
@@ -165,12 +177,16 @@ class MainWindow(QMainWindow):
                 + str(user_id)
                 + '"}'
             )
+            self._logger.info(f"Subscription socket connected; subscribing to user_id={user_id}")
             self._ws.sendTextMessage(msg)
         except Exception:
             pass
 
     def _on_ws_disconnected(self) -> None:
         """Reconnect with exponential backoff."""
+        self._logger.warning(
+            f"Subscription socket disconnected. Reconnecting in {self._ws_reconnect_backoff_ms}ms"
+        )
         if self._ws_reconnect_timer is None:
             self._ws_reconnect_timer = QTimer(self)
             self._ws_reconnect_timer.setSingleShot(True)
@@ -200,15 +216,68 @@ class MainWindow(QMainWindow):
         }
 
         if name in interesting or payload.get("subscription_status") or payload.get("subscription"):
+            # Log current visible state before syncing
+            before_status = getattr(self._current_user, "subscription_status", None) if self._current_user else None
+            before_exp = getattr(self._current_user, "subscription_expires_at", None) if self._current_user else None
+            self._logger.info(
+                "Subscription socket event received: "
+                f"{payload.get('name') or payload.get('event') or payload.get('type')} "
+                f"(before: status={before_status}, expires_at={before_exp})"
+            )
             # Refresh subscription from server and re-check gate.
             # Run in background to avoid blocking UI thread.
             import threading
 
             def worker():
-                self._sync_subscription_from_server(best_effort=True)
-                QTimer.singleShot(0, self._check_subscription_status)
+                updated = self._sync_subscription_from_server(best_effort=True)
+                after_status = getattr(self._current_user, "subscription_status", None) if self._current_user else None
+                after_exp = getattr(self._current_user, "subscription_expires_at", None) if self._current_user else None
+                self._logger.info(
+                    f"Subscription sync completed (updated={updated}) "
+                    f"(after: status={after_status}, expires_at={after_exp})"
+                )
+                # Schedule UI refresh on the main thread safely
+                self.subscriptionUiRefreshRequested.emit()
 
             threading.Thread(target=worker, daemon=True).start()
+
+    @Slot()
+    def _refresh_subscription_ui(self) -> None:
+        """Refresh UI that displays subscription/user data (sidebar + settings)."""
+        # Re-check paywall gate first/also
+        self._check_subscription_status()
+
+        # Sidebar expiry label
+        try:
+            if getattr(self, "_sub_expiry_label", None) is not None and self._current_user:
+                exp = self._current_user.subscription_expires_at
+                if exp:
+                    exp_str = exp.strftime("%b %d, %Y")
+                    self._sub_expiry_label.setText(f"Subscription: Ends {exp_str}")
+                    self._logger.info(f"UI refreshed: sidebar subscription expiry set to {exp_str}")
+
+                    days_left = (exp.date() - date.today()).days
+                    if days_left <= 0:
+                        state = "expired"
+                    elif days_left <= 15:
+                        state = "near"
+                    else:
+                        state = "ok"
+                    self._sub_expiry_label.setProperty("state", state)
+                    self._sub_expiry_label.style().unpolish(self._sub_expiry_label)
+                    self._sub_expiry_label.style().polish(self._sub_expiry_label)
+                else:
+                    self._sub_expiry_label.setText("")
+        except Exception:
+            pass
+
+        # Settings → Account view (if constructed)
+        try:
+            if getattr(self, "_settings_view", None) is not None:
+                self._settings_view.refresh_account()
+                self._logger.info("UI refreshed: Settings → Account reloaded from DB")
+        except Exception:
+            pass
 
     def _sync_subscription_from_server(self, best_effort: bool = False) -> bool:
         """Sync subscription fields from remote server into local DB.

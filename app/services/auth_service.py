@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from typing import Optional
+import platform
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -11,6 +12,7 @@ from urllib3.util.retry import Retry
 from app.core.logger import get_logger
 from app.models.auth_response import AuthResponse
 from app.services.settings_service import SettingsService
+from app.services.device_service import DeviceService
 
 
 logger = get_logger(__name__)
@@ -23,9 +25,11 @@ class AuthService:
     DEFAULT_API_BASE_URL = "https://api.deskhab.com/v1"
     LOGIN_ENDPOINT = "auth/login"
     SUBSCRIPTION_STATUS_ENDPOINT = "subscription/status"
+    DEVICE_BIND_ENDPOINT = "devices/bind"
     
     def __init__(self, settings_service: Optional[SettingsService] = None):
         self._settings = settings_service or SettingsService()
+        self._device_service = DeviceService()
         self._api_base_url = self._get_api_base_url()
         self._session = self._create_session()
     
@@ -216,6 +220,7 @@ class AuthService:
         headers = {
             "Accept": "application/json",
             "Authorization": f"Bearer {access_token}",
+            "X-Device-ID": self._device_service.get_or_create_device_id(),
         }
         response = self._session.get(url, headers=headers, timeout=10)
         response.raise_for_status()
@@ -229,3 +234,32 @@ class AuthService:
         if isinstance(data.get("data"), dict):
             data = data["data"]
         return data
+
+    def bind_device(self, access_token: str) -> dict:
+        """Bind this device_id to the current account (one device per account policy)."""
+        if not access_token:
+            raise ValueError("Missing access token")
+
+        url = self._url(self.DEVICE_BIND_ENDPOINT)
+        payload = {
+            "device_id": self._device_service.get_or_create_device_id(),
+            "device_name": self._device_service.get_device_name(),
+            "platform": platform.system(),
+        }
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {access_token}",
+            "X-Device-ID": payload["device_id"],
+        }
+        response = self._session.post(url, json=payload, headers=headers, timeout=10)
+        # Do not raise immediately: callers may want to handle 409 device_already_bound specially.
+        if response.status_code >= 400:
+            try:
+                data = response.json()
+            except Exception:
+                data = {"error": "http_error", "message": response.text}
+            data["_status_code"] = response.status_code
+            return data
+        data = response.json()
+        return data if isinstance(data, dict) else {"result": data}

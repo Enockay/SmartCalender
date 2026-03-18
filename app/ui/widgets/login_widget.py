@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
 )
 
 from app.services.auth_service import AuthService
+from app.services.device_service import DeviceService
 from app.models.auth_response import AuthResponse
 from app.database.db_manager import DatabaseManager
 from app.database.schema import User
@@ -60,6 +61,7 @@ class LoginWidget(QWidget):
         self.setAttribute(Qt.WA_StyledBackground, True)
         
         self._auth_service = AuthService()
+        self._device_service = DeviceService()
         self._db = DatabaseManager()
         self._login_worker: LoginWorker | None = None
         
@@ -377,6 +379,23 @@ class LoginWidget(QWidget):
         try:
             # Save user data to database
             self._save_user_data(auth_response)
+
+            # Bind device to this account (one device per account policy)
+            try:
+                bind_result = self._auth_service.bind_device(auth_response.access_token)
+                if isinstance(bind_result, dict) and bind_result.get("_status_code") == 409:
+                    QMessageBox.warning(
+                        self,
+                        "Device Already Linked",
+                        "This account is already active on another device.\n\n"
+                        "If this is a re-install, please transfer the device from the web portal or contact support.",
+                    )
+                    self._set_inputs_enabled(True)
+                    self._login_button.setText("Log In")
+                    return
+            except Exception:
+                # Non-fatal: allow login; server may not enforce yet
+                pass
             
             # Emit success signal
             self.loginSuccessful.emit(auth_response)

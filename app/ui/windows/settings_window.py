@@ -916,6 +916,10 @@ class SettingsWindow(QWidget):
         # Database size
         self._update_db_stats()
 
+    def refresh_account(self) -> None:
+        """Public hook for parent window to refresh account/subscription UI."""
+        self._load_from_settings()
+
     def _update_db_stats(self) -> None:
         """Calculate and display database stats."""
         try:

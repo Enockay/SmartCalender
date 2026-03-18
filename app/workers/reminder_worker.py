@@ -27,32 +27,32 @@ class ReminderWorker(QObject):
         self._timer.timeout.connect(self.check_due)
         self._timer.start()
 
-        self._logger.info("ReminderWorker started - checking every 30 seconds")
-        self._logger.info(f"Timer interval: {self._timer.interval()}ms, isActive: {self._timer.isActive()}")
+        self._logger.debug("ReminderWorker started - checking every 30 seconds")
+        self._logger.debug(f"Timer interval: {self._timer.interval()}ms, isActive: {self._timer.isActive()}")
 
         # Do an immediate first check after 5 seconds
-        self._logger.info("Scheduling first check in 5 seconds...")
+        self._logger.debug("Scheduling first check in 5 seconds...")
         def first_check():
-            self._logger.info("First check timer fired - calling check_due()")
+            self._logger.debug("First check timer fired - calling check_due()")
             self.check_due()
         QTimer.singleShot(5_000, first_check)
 
     def check_due(self) -> None:
         """Query all due reminders and fire notifications."""
         now = datetime.now()
-        self._logger.info(f"ReminderWorker.check_due() called at {now.strftime('%Y-%m-%d %H:%M:%S')}")
+        self._logger.debug(f"ReminderWorker.check_due() called at {now.strftime('%Y-%m-%d %H:%M:%S')}")
 
         # Mark any past-due active reminders as overdue first
         overdue_count = self._reminders.update_overdue()
         if overdue_count > 0:
-            self._logger.info(f"Marked {overdue_count} reminders as overdue")
+            self._logger.debug(f"Marked {overdue_count} reminders as overdue")
 
         # Get all due reminders
         due_reminders = self._reminders.get_due_reminders(now)
-        self._logger.info(f"Found {len(due_reminders)} due reminder(s) at {now.strftime('%H:%M:%S')}")
+        self._logger.debug(f"Found {len(due_reminders)} due reminder(s) at {now.strftime('%H:%M:%S')}")
 
         if not due_reminders:
-            self._logger.info("No due reminders found - check completed")
+            self._logger.debug("No due reminders found - check completed")
             return
 
         for info in due_reminders:
