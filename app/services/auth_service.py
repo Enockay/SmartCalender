@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from typing import Optional
-from urllib.parse import urljoin
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -21,8 +20,9 @@ class AuthService:
     """Service for handling authentication with external API."""
     
     # API Configuration - should be configurable via AppConfig
-    DEFAULT_API_BASE_URL = "https://api.smartcalender.com/v1"
-    LOGIN_ENDPOINT = "/auth/login"
+    DEFAULT_API_BASE_URL = "https://api.deskhab.com/v1"
+    LOGIN_ENDPOINT = "auth/login"
+    SUBSCRIPTION_STATUS_ENDPOINT = "subscription/status"
     
     def __init__(self, settings_service: Optional[SettingsService] = None):
         self._settings = settings_service or SettingsService()
@@ -46,6 +46,10 @@ class AuthService:
         session.mount("http://", adapter)
         session.mount("https://", adapter)
         return session
+
+    def _url(self, path: str) -> str:
+        """Join base URL + path safely without urljoin stripping '/v1'."""
+        return f"{self._api_base_url.rstrip('/')}/{path.lstrip('/')}"
     
     def login(self, email: str, password: str, remember_me: bool = False) -> AuthResponse:
         """
@@ -63,64 +67,7 @@ class AuthService:
             requests.RequestException: If API request fails
             ValueError: If authentication fails or response is invalid
         """
-        # ── Local dummy login (no network) ───────────────────────────────────
-        # This allows development and UI testing without a real API.
-        # Credentials:
-        #   email:    enock@example.com
-        #   password: test123
-        if email.lower() == "enock@example.com" and password == "test123":
-            now = datetime.now(timezone.utc)
-            one_month_later = now + timedelta(days=30)
-            
-            dummy_payload = {
-                # Core identity
-                "user_id": "dummy_enock_001",
-                "email": email,
-                "name": "Enock",
-                # Tokens
-                "access_token": "dummy-access-token",
-                "refresh_token": "dummy-refresh-token",
-                "token_expires_at": one_month_later.isoformat().replace("+00:00", "Z"),
-                # Subscription details
-                "subscription": {
-                    "tier": "premium",              # matches Settings / Account badge
-                    "status": "active",
-                    "expires_at": one_month_later.isoformat().replace("+00:00", "Z"),
-                    "features": [
-                        "1_month_trial",
-                        "price_1_usd",
-                        "calendar_sync",
-                        "priority_notifications",
-                        "daily_summary_email",
-                        "advanced_reminders",
-                    ],
-                    # Extra info for future UI use (ignored safely by current parser)
-                    "currency": "USD",
-                    "amount": 1.00,
-                    "billing_period": "monthly",
-                },
-                # Top-level field so subscription_expires_at gets parsed correctly
-                "subscription_expires_at": one_month_later.isoformat().replace("+00:00", "Z"),
-                # Profile / preferences
-                "timezone": "America/New_York",
-                "language": "en",
-                "avatar_url": "https://example.com/avatars/enock.png",
-                "organization": {
-                    "id": "org_dummy_1",
-                    "name": "Smart Calender Test Org",
-                    "role": "Owner",
-                    "team_size": 3,
-                },
-                "role": "user",
-                # Metadata
-                "api_version": "v1",
-                "server_timestamp": now.isoformat().replace("+00:00", "Z"),
-            }
-            
-            logger.info("Using local dummy login for Enock.")
-            return self._parse_response(dummy_payload)
-        
-        url = urljoin(self._api_base_url, self.LOGIN_ENDPOINT)
+        url = self._url(self.LOGIN_ENDPOINT)
         
         payload = {
             "email": email,
@@ -139,6 +86,12 @@ class AuthService:
             response.raise_for_status()
             
             data = response.json()
+            if not isinstance(data, dict):
+                # Avoid 'NoneType has no attribute get' later and surface real body
+                raise ValueError(
+                    f"Invalid JSON response type ({type(data).__name__}). "
+                    f"HTTP {response.status_code}: {response.text[:500]}"
+                )
             auth_response = self._parse_response(data)
             
             logger.info(f"Login successful for user: {email}")
@@ -169,6 +122,10 @@ class AuthService:
     def _parse_response(self, data: dict) -> AuthResponse:
         """Parse API response into AuthResponse model."""
         try:
+            # Some APIs wrap payloads, e.g. { "data": { ... } }.
+            if isinstance(data, dict) and isinstance(data.get("data"), dict):
+                data = data["data"]
+
             # Parse token expiration if provided
             token_expires_at = None
             if "token_expires_at" in data:
@@ -178,11 +135,23 @@ class AuthService:
             subscription_expires_at = None
             if "subscription_expires_at" in data:
                 subscription_expires_at = datetime.fromisoformat(data["subscription_expires_at"].replace("Z", "+00:00"))
+            # Fallback: sometimes the expiry is nested under subscription.expires_at
+            if not subscription_expires_at:
+                sub = data.get("subscription") or {}
+                if isinstance(sub, dict) and sub.get("expires_at"):
+                    subscription_expires_at = datetime.fromisoformat(str(sub["expires_at"]).replace("Z", "+00:00"))
             
             # Parse server timestamp if provided
             server_timestamp = None
             if "server_timestamp" in data:
                 server_timestamp = datetime.fromisoformat(data["server_timestamp"].replace("Z", "+00:00"))
+
+            subscription = data.get("subscription") or {}
+            if not isinstance(subscription, dict):
+                subscription = {}
+            organization = data.get("organization") or {}
+            if not isinstance(organization, dict):
+                organization = {}
             
             return AuthResponse(
                 user_id=str(data.get("user_id", "")),
@@ -191,15 +160,15 @@ class AuthService:
                 access_token=data.get("access_token", ""),
                 refresh_token=data.get("refresh_token"),
                 token_expires_at=token_expires_at,
-                subscription_tier=data.get("subscription", {}).get("tier", "free"),
-                subscription_status=data.get("subscription", {}).get("status", "active"),
+                subscription_tier=subscription.get("tier", "free"),
+                subscription_status=subscription.get("status", "active"),
                 subscription_expires_at=subscription_expires_at,
-                subscription_features=data.get("subscription", {}).get("features", []),
+                subscription_features=subscription.get("features", []) or [],
                 timezone=data.get("timezone"),
                 language=data.get("language"),
                 avatar_url=data.get("avatar_url"),
-                organization_id=data.get("organization", {}).get("id"),
-                organization_name=data.get("organization", {}).get("name"),
+                organization_id=organization.get("id"),
+                organization_name=organization.get("name"),
                 role=data.get("role"),
                 api_version=data.get("api_version"),
                 server_timestamp=server_timestamp,
@@ -219,9 +188,44 @@ class AuthService:
             True if server is reachable, False otherwise
         """
         try:
-            # Try to ping a health/status endpoint if available
-            url = urljoin(self._api_base_url, "/health")
+            # Deskhab health endpoint: GET /v1/health -> {"status":"ok","service":"DesktopHab API"}
+            url = self._url("health")
             response = self._session.get(url, timeout=5)
-            return response.status_code == 200
+            if response.status_code != 200:
+                return False
+            try:
+                data = response.json()
+                return data.get("status") == "ok"
+            except Exception:
+                return True  # fallback: HTTP 200 means reachable
         except Exception:
             return False
+
+    def fetch_subscription_status(self, access_token: str) -> dict:
+        """Fetch the current user's subscription status from the API.
+
+        Expected response shape is compatible with API_RESPONSE_FORMAT.md,
+        at minimum including:
+          - subscription { tier, status, expires_at, features }
+          - subscription_expires_at
+        """
+        if not access_token:
+            raise ValueError("Missing access token")
+
+        url = self._url(self.SUBSCRIPTION_STATUS_ENDPOINT)
+        headers = {
+            "Accept": "application/json",
+            "Authorization": f"Bearer {access_token}",
+        }
+        response = self._session.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"Invalid subscription response type ({type(data).__name__}). "
+                f"HTTP {response.status_code}: {response.text[:500]}"
+            )
+        # Unwrap if needed
+        if isinstance(data.get("data"), dict):
+            data = data["data"]
+        return data

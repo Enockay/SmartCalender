@@ -29,6 +29,8 @@ from app.controllers.task_controller import TaskController
 from app.services.meeting_service import MeetingService
 from app.services.calendar_service import CalendarService
 from app.services.task_service import TaskService
+from app.services.auth_service import AuthService
+from PySide6.QtWebSockets import QWebSocket
 from app.ui.widgets.dashboard_widget import DashboardWidget
 from app.ui.widgets.day_view_widget import DayViewWidget
 from app.ui.widgets.week_view_widget import WeekViewWidget
@@ -65,6 +67,10 @@ class MainWindow(QMainWindow):
         
         # Cached logged-in user info for sidebar / title
         self._current_user = None
+        self._auth_service = AuthService(settings_service=self._settings)
+        self._ws: QWebSocket | None = None
+        self._ws_reconnect_timer: QTimer | None = None
+        self._ws_reconnect_backoff_ms: int = 1000
 
         self._meeting_service = MeetingService(settings_service=self._settings)
         self._calendar_service = CalendarService(self._meeting_service)
@@ -87,6 +93,8 @@ class MainWindow(QMainWindow):
         # After the window is up, enforce subscription status. This dialog
         # is modal and cannot be bypassed from within the app.
         QTimer.singleShot(200, self._check_subscription_status)
+        # Connect real-time subscription socket (no polling) once UI is up.
+        QTimer.singleShot(400, self._ensure_subscription_socket)
 
         # Periodically re-check subscription status while the app is open,
         # so mid-session expiries are also enforced.
@@ -112,7 +120,133 @@ class MainWindow(QMainWindow):
             # If refresh fails, keep whatever we had before.
             pass
 
+        # Also sync subscription from server (best-effort) before enforcing.
+        self._sync_subscription_from_server(best_effort=True)
         self._check_subscription_status()
+
+    # --- Realtime subscription socket (no polling) --------------------------
+
+    def _ensure_subscription_socket(self) -> None:
+        """Ensure websocket is connected for payment/subscription events."""
+        # Only connect if we have a logged-in user + token
+        try:
+            if not self._current_user or not getattr(self._current_user, "access_token", None):
+                # Try refresh from DB in case current user wasn't loaded yet
+                self._refresh_subscription_and_check()
+            if not self._current_user or not getattr(self._current_user, "access_token", None):
+                return
+        except Exception:
+            return
+
+        if self._ws is None:
+            self._ws = QWebSocket()
+            self._ws.textMessageReceived.connect(self._on_ws_message)
+            self._ws.connected.connect(self._on_ws_connected)
+            self._ws.disconnected.connect(self._on_ws_disconnected)
+
+        if self._ws.state() == QWebSocket.ConnectedState:
+            return
+
+        token = self._current_user.access_token
+        # Backend should accept token for websocket auth. Query-param auth works cross-platform.
+        ws_url = QUrl(f"wss://api.deskhab.com/v1/ws?token={token}")
+        self._ws.open(ws_url)
+
+    def _on_ws_connected(self) -> None:
+        # Reset reconnect backoff on success
+        self._ws_reconnect_backoff_ms = 1000
+        # Optionally subscribe to user channel if backend requires it
+        try:
+            if not self._current_user:
+                return
+            user_id = self._current_user.api_user_id or str(self._current_user.id)
+            msg = (
+                '{"type":"subscribe","topic":"user","user_id":"'
+                + str(user_id)
+                + '"}'
+            )
+            self._ws.sendTextMessage(msg)
+        except Exception:
+            pass
+
+    def _on_ws_disconnected(self) -> None:
+        """Reconnect with exponential backoff."""
+        if self._ws_reconnect_timer is None:
+            self._ws_reconnect_timer = QTimer(self)
+            self._ws_reconnect_timer.setSingleShot(True)
+            self._ws_reconnect_timer.timeout.connect(self._ensure_subscription_socket)
+
+        self._ws_reconnect_timer.start(self._ws_reconnect_backoff_ms)
+        self._ws_reconnect_backoff_ms = min(self._ws_reconnect_backoff_ms * 2, 30000)
+
+    def _on_ws_message(self, message: str) -> None:
+        """Handle subscription/payment events from server."""
+        import json as _json
+        try:
+            payload = _json.loads(message)
+        except Exception:
+            return
+
+        if not isinstance(payload, dict):
+            return
+
+        name = str(payload.get("name") or payload.get("event") or payload.get("type") or "").lower()
+        # Accept a few likely event names from backend
+        interesting = {
+            "subscription.updated",
+            "payment.completed",
+            "payment.succeeded",
+            "subscription.active",
+        }
+
+        if name in interesting or payload.get("subscription_status") or payload.get("subscription"):
+            # Refresh subscription from server and re-check gate.
+            # Run in background to avoid blocking UI thread.
+            import threading
+
+            def worker():
+                self._sync_subscription_from_server(best_effort=True)
+                QTimer.singleShot(0, self._check_subscription_status)
+
+            threading.Thread(target=worker, daemon=True).start()
+
+    def _sync_subscription_from_server(self, best_effort: bool = False) -> bool:
+        """Sync subscription fields from remote server into local DB.
+
+        Returns True if an update was applied, False otherwise.
+        """
+        from sqlalchemy import select
+        from app.database.schema import User
+
+        try:
+            with self._db.session() as session:
+                user = session.execute(
+                    select(User)
+                    .where(User.is_logged_in == True)
+                    .order_by(User.last_login_at.desc())
+                    .limit(1)
+                ).scalar_one_or_none()
+                if not user or not user.access_token:
+                    return False
+
+                payload = self._auth_service.fetch_subscription_status(user.access_token)
+                auth_like = self._auth_service._parse_response(payload)  # reuse parsing rules
+
+                user.subscription_tier = auth_like.subscription_tier
+                user.subscription_status = auth_like.subscription_status
+                user.subscription_expires_at = auth_like.subscription_expires_at
+                import json as _json
+                user.subscription_features = _json.dumps(auth_like.subscription_features or [])
+                user.token_expires_at = auth_like.token_expires_at or user.token_expires_at
+                session.commit()
+
+                self._current_user = user
+                return True
+        except Exception as exc:
+            if not best_effort:
+                raise
+            # best-effort: ignore transient network errors
+            return False
 
     # --- Subscription / licensing -------------------------------------------
 
@@ -138,9 +272,11 @@ class MainWindow(QMainWindow):
         except Exception:
             return
 
-        url = QUrl(f"https://deskhab.com/renew-smartcalender/{user_id}")
+        url = QUrl(f"https://www.deskhab.com/renew-smartcalender/{user_id}")
         url.setQuery(f"token={token}")
         QDesktopServices.openUrl(url)
+        # Ensure realtime socket is connected so payment completion unlocks immediately.
+        QTimer.singleShot(0, self._ensure_subscription_socket)
 
     def _check_subscription_status(self) -> None:
         """If the subscription is expired, block usage until user upgrades."""

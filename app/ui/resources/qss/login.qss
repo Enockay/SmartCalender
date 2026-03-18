@@ -149,7 +149,7 @@ QCheckBox#LoginRememberCheckbox::indicator:hover {
 QCheckBox#LoginRememberCheckbox::indicator:checked {
     background-color: #3B82F6;
     border-color: #3B82F6;
-    image: url(:/icons/check_white.svg);
+    /* NOTE: removed missing Qt resource icon to avoid runtime warnings */
 }
 
 /* ── Forgot password link ───────────────────────────────── */
@@ -256,4 +256,82 @@ QLabel#LoginStatusLabel[status="connected"] {
 
 QLabel#LoginStatusLabel[status="disconnected"] {
     color: #F87171;
+}
+
+/* =========================================================
+   Forgot Password Dialog (Login flow)
+   ========================================================= */
+
+QDialog#ForgotPasswordDialog {
+    background: qlineargradient(
+        x1:0, y1:0, x2:1, y2:1,
+        stop:0   #334155,
+        stop:0.35 #1D4ED8,
+        stop:0.75 #1E40AF,
+        stop:1   #0F172A
+    );
+}
+
+QLabel#ForgotPasswordTitle {
+    color: #FFFFFF;
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+QLabel#ForgotPasswordHint {
+    color: rgba(255, 255, 255, 0.80);
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+}
+
+QLineEdit#ForgotPasswordEmail {
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.20);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    color: #FFFFFF;
+}
+
+QLineEdit#ForgotPasswordEmail:focus {
+    border: 2px solid #60A5FA;
+    background-color: rgba(255, 255, 255, 0.10);
+}
+
+QPushButton#ForgotPasswordCancel {
+    background-color: rgba(255, 255, 255, 0.10);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+    padding: 8px 18px;
+    color: rgba(255, 255, 255, 0.90);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+QPushButton#ForgotPasswordCancel:hover {
+    background-color: rgba(255, 255, 255, 0.16);
+}
+
+QPushButton#ForgotPasswordContinue {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #3B82F6,
+        stop:1 #2563EB);
+    border: none;
+    border-radius: 10px;
+    padding: 8px 18px;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+QPushButton#ForgotPasswordContinue:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #60A5FA,
+        stop:1 #3B82F6);
+}
+
+QPushButton#ForgotPasswordContinue:pressed {
+    background: #1E40AF;
 }

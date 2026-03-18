@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from PySide6.QtCore import Qt, Signal, QTimer, QThread
-from PySide6.QtGui import QShowEvent
+from PySide6.QtCore import Qt, Signal, QTimer, QThread, QUrl
+from PySide6.QtGui import QShowEvent, QDesktopServices
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QMessageBox,
     QApplication,
+    QDialog,
 )
 
 from app.services.auth_service import AuthService
@@ -69,7 +70,7 @@ class LoginWidget(QWidget):
         QTimer.singleShot(100, self._apply_styles)
         
         # Check if user is already logged in
-        #QTimer.singleShot(100, self._check_existing_login)
+        QTimer.singleShot(100, self._check_existing_login)
     
     def _build_ui(self) -> None:
         """Build the login UI."""
@@ -181,6 +182,7 @@ class LoginWidget(QWidget):
         forgot_link = QLabel("Forgot Password?", card)
         forgot_link.setObjectName("LoginForgotLink")
         forgot_link.setCursor(Qt.PointingHandCursor)
+        forgot_link.mousePressEvent = lambda e: self._on_forgot_password_clicked()  # type: ignore[method-assign]
         options_layout.addWidget(forgot_link)
         
         content_layout.addLayout(options_layout)
@@ -310,12 +312,65 @@ class LoginWidget(QWidget):
     
     def _on_create_account_clicked(self) -> None:
         """Handle create account button click."""
-        QMessageBox.information(
-            self,
-            "Create Account",
-            "Please visit our website to create an account.\n\n"
-            "You can sign up at: https://smartcalender.com/signup"
-        )
+        QDesktopServices.openUrl(QUrl("https://www.deskhab.com/create-account"))
+
+    def _on_forgot_password_clicked(self) -> None:
+        """Prompt for email and open the web forgot-password page."""
+        dlg = QDialog(self)
+        dlg.setObjectName("ForgotPasswordDialog")
+        dlg.setWindowTitle("Forgot Password")
+        dlg.setModal(True)
+        # Disable macOS "zoom/enlarge" (green) by fixing size and limiting window buttons.
+        dlg.setWindowFlags(Qt.Dialog | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
+        dlg.setFixedSize(440, 210)
+
+        lay = QVBoxLayout(dlg)
+        lay.setContentsMargins(18, 16, 18, 16)
+        lay.setSpacing(10)
+
+        title = QLabel("Reset your password", dlg)
+        title.setObjectName("ForgotPasswordTitle")
+        lay.addWidget(title)
+
+        hint = QLabel("Enter your email address and we'll take you to the reset page.", dlg)
+        hint.setObjectName("ForgotPasswordHint")
+        hint.setWordWrap(True)
+        lay.addWidget(hint)
+
+        email_in = QLineEdit(dlg)
+        email_in.setObjectName("ForgotPasswordEmail")
+        email_in.setPlaceholderText("Email Address")
+        email_in.setText(self._email_input.text().strip())
+        lay.addWidget(email_in)
+
+        btn_row = QHBoxLayout()
+        btn_row.addStretch(1)
+
+        cancel = QPushButton("Cancel", dlg)
+        cancel.setObjectName("ForgotPasswordCancel")
+        cancel.clicked.connect(dlg.reject)
+        btn_row.addWidget(cancel)
+
+        cont = QPushButton("Continue", dlg)
+        cont.setObjectName("ForgotPasswordContinue")
+        cont.setDefault(True)
+        cont.clicked.connect(dlg.accept)
+        btn_row.addWidget(cont)
+
+        lay.addLayout(btn_row)
+
+        if dlg.exec() != QDialog.Accepted:
+            return
+
+        email = email_in.text().strip()
+        if not email:
+            QMessageBox.warning(self, "Forgot Password", "Please enter your email address.")
+            return
+
+        url = QUrl("https://www.deskhab.com/forgot-password")
+        # Pre-fill email if your web page supports it.
+        url.setQuery(f"email={email}")
+        QDesktopServices.openUrl(url)
     
     def _on_login_success(self, auth_response: AuthResponse) -> None:
         """Handle successful login."""

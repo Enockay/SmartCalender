@@ -976,7 +976,7 @@ class SettingsWindow(QWidget):
 
         # We cannot set HTTP headers directly in the user's browser, so instead
         # we pass the token via querystring for the web backend to validate.
-        url = QUrl(f"https://deskhab.com/renew-smartcalender/{user_id}")
+        url = QUrl(f"https://www.deskhab.com/renew-smartcalender/{user_id}")
         url.setQuery(f"token={token}")
         QDesktopServices.openUrl(url)
 
