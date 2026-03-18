@@ -260,6 +260,8 @@ if errorlevel 1 (
     echo   WARNING: makensis ^(NSIS^) not found on PATH.
     echo   Install NSIS from https://nsis.sourceforge.io/Download
     echo   Then run:  makensis "%NSI_SCRIPT%"
+    REM Installer can't be created, but the standalone folder is still usable.
+    exit /b 0
 ) else (
     makensis "%NSI_SCRIPT%"
     if errorlevel 1 (
