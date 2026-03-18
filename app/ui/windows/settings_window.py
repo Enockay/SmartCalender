@@ -45,6 +45,8 @@ class SettingsWindow(QWidget):
 
     # Emitted when user saves – parent can react (e.g. apply theme)
     settingsSaved = Signal()
+    # Emitted when user clicks renew so the main window can open websocket, etc.
+    renewSubscriptionRequested = Signal()
 
     def __init__(self, settings: SettingsService, parent=None) -> None:
         super().__init__(parent)
@@ -983,6 +985,8 @@ class SettingsWindow(QWidget):
         url = QUrl(f"https://www.deskhab.com/renew-smartcalender/{user_id}")
         url.setQuery(f"token={token}")
         QDesktopServices.openUrl(url)
+        # Let parent window know renewal has started (so it can open websocket for realtime unlock).
+        self.renewSubscriptionRequested.emit()
 
         # Last backup
         last = self._settings._get("last_backup_time", "")

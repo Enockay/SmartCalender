@@ -102,8 +102,9 @@ class MainWindow(QMainWindow):
         # After the window is up, enforce subscription status. This dialog
         # is modal and cannot be bypassed from within the app.
         QTimer.singleShot(200, self._check_subscription_status)
-        # Connect real-time subscription socket (no polling) once UI is up.
-        QTimer.singleShot(400, self._ensure_subscription_socket)
+        # Do NOT connect the subscription websocket at startup.
+        # We only open it when subscription is overdue (paywall) or when the user
+        # explicitly clicks Renew/Upgrade.
 
         # Periodically re-check subscription status while the app is open,
         # so mid-session expiries are also enforced.
@@ -364,6 +365,9 @@ class MainWindow(QMainWindow):
 
         if not expired:
             return
+
+        # Subscription is overdue: open websocket so payment events can unlock immediately.
+        QTimer.singleShot(0, self._ensure_subscription_socket)
 
         # Build a blocking dialog similar to the reference screenshot.
         dlg = QDialog(self)
@@ -770,6 +774,9 @@ class MainWindow(QMainWindow):
         self._task_board = TaskBoardWidget(main_container)
 
         self._settings_view = SettingsWindow(self._settings, main_container)
+        self._settings_view.renewSubscriptionRequested.connect(
+            lambda: QTimer.singleShot(0, self._ensure_subscription_socket)
+        )
         self._reminder_view = ReminderDashboardWidget(main_container)
 
         self._stack.addWidget(self._dashboard)      # index 0
