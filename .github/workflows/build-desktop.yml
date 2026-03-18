@@ -16,7 +16,7 @@ jobs:
             target: linux
           - os: windows-latest
             target: windows
-          - os: macos-13
+          - os: macos-latest
             target: mac
 
     steps:
@@ -36,7 +36,8 @@ jobs:
         if: matrix.target == 'linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libfuse2 binutils patchelf fakeroot dpkg-deb curl
+          # dpkg-deb binary is provided by the `dpkg` package.
+          sudo apt-get install -y libfuse2 binutils patchelf fakeroot dpkg curl
 
       - name: Install NSIS (Windows installer)
         if: matrix.target == 'windows'
@@ -53,6 +54,7 @@ jobs:
         if: matrix.target == 'windows'
         shell: cmd
         run: |
+          cd /d "%GITHUB_WORKSPACE%"
           scripts\build_windows.bat
 
       - name: Build (macOS)
