@@ -68,7 +68,7 @@ fi
 # 3. PyInstaller build
 # ---------------------------------------------------------------------------
 echo "[3/6] Running PyInstaller..."
-pyinstaller SmartCalender.spec \
+pyinstaller "$ROOT/SmartCalender.spec" \
     --distpath "$DIST_DIR" \
     --workpath "$BUILD_DIR/work" \
     --noconfirm
