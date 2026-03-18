@@ -4,14 +4,16 @@ from pathlib import Path
 from sqlalchemy import create_engine, select, text
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.core.app_config import AppConfig
+from app.core.app_config import AppConfig, get_user_data_dir
 from app.database.schema import Base, User
 
 
 class DatabaseManager:
     def __init__(self) -> None:
         db_path = AppConfig.get("database", "path", "data/app.db")
-        root = Path(__file__).resolve().parents[3]
+        # Use the platform-aware user-data directory so the database is
+        # never stored inside a read-only app bundle.
+        root = get_user_data_dir()
         full_path = root / db_path
         full_path.parent.mkdir(parents=True, exist_ok=True)
 

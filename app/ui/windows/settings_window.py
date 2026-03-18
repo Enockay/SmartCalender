@@ -33,6 +33,7 @@ from PySide6.QtWidgets import (
 )
 
 from app.core.logger import get_logger
+from app.core.app_config import get_base_dir
 from app.services.settings_service import SettingsService, ThemeName, ViewName
 from app.services.sound_service import SoundService
 from app.database.db_manager import DatabaseManager
@@ -98,6 +99,7 @@ class SettingsWindow(QWidget):
         self._tabs.addTab(self._build_account_tab(), " 👤 Account")
         self._tabs.addTab(self._build_notifications_tab(), " 🔔 Alerts")
         self._tabs.addTab(self._build_backup_tab(), " 💾 Backup")
+        self._tabs.addTab(self._build_about_tab(), " ℹ About")
         self._tabs.tabBar().setExpanding(True)
 
         root.addWidget(self._tabs, 1)
@@ -1305,6 +1307,151 @@ class SettingsWindow(QWidget):
                 # Remove extension for display
                 sound_name = sound_file.replace(".wav", "").replace(".mp3", "").replace(".aiff", "").replace(".m4a", "")
                 self._sound_combo.addItem(f"🎵 {sound_name}")
+
+    # =====================================================================
+    #  About Tab
+    # =====================================================================
+
+    def _build_about_tab(self) -> QWidget:
+        """Build the About tab."""
+        import sys
+        import platform as _platform
+
+        page = QWidget()
+        page.setStyleSheet("background-color: #FFFFFF;")
+        scroll = QScrollArea(page)
+        scroll.setStyleSheet("background-color: #FFFFFF;")
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame)
+
+        container = QWidget()
+        container.setStyleSheet("background-color: #FFFFFF;")
+        lay = QVBoxLayout(container)
+        lay.setContentsMargins(32, 32, 32, 32)
+        lay.setSpacing(20)
+
+        # ── App badge ────────────────────────────────────────────────
+        badge_row = QHBoxLayout()
+        badge_row.setAlignment(Qt.AlignHCenter)
+
+        icon_lbl = QLabel()
+        icon_lbl.setAlignment(Qt.AlignCenter)
+        icon_lbl.setFixedSize(64, 64)
+        icon_lbl.setStyleSheet("background: transparent;")
+
+        # Use bundled logo image (works inside packaged app).
+        logo_path = get_base_dir() / "assets" / "image.png"
+        pixmap = QPixmap(str(logo_path))
+        if not pixmap.isNull():
+            icon_lbl.setPixmap(
+                pixmap.scaled(
+                    64, 64, Qt.KeepAspectRatio, Qt.SmoothTransformation
+                )
+            )
+        else:
+            # Fallback for development or missing file
+            icon_lbl.setText("📆")
+            icon_lbl.setStyleSheet("font-size: 64px; background: transparent;")
+        badge_row.addWidget(icon_lbl)
+        lay.addLayout(badge_row)
+
+        # App name
+        # Brand accent color (green)
+        accent = "#22C55E"
+
+        name_lbl = QLabel("Smart Calender")
+        name_lbl.setAlignment(Qt.AlignCenter)
+        name_lbl.setStyleSheet(
+            f"font-size: 22px; font-weight: 700; color: {accent};"
+            "background: transparent;"
+        )
+        lay.addWidget(name_lbl)
+
+        version_lbl = QLabel("Version 1.0.0")
+        version_lbl.setAlignment(Qt.AlignCenter)
+        version_lbl.setStyleSheet("font-size: 13px; color: #7B8794; background: transparent;")
+        lay.addWidget(version_lbl)
+
+        # ── Divider ──────────────────────────────────────────────────
+        div = QFrame()
+        div.setFrameShape(QFrame.HLine)
+        div.setFrameShadow(QFrame.Sunken)
+        lay.addWidget(div)
+
+        # ── Author card ───────────────────────────────────────────────
+        card = QFrame()
+        card.setObjectName("AboutCard")
+        card.setStyleSheet(
+            "#AboutCard {"
+            f"  background: #F8FAFC;"
+            f"  border: 1px solid rgba(34,197,94,0.22);"
+            "  border-radius: 12px;"
+            "  padding: 16px;"
+            "}"
+        )
+        card_lay = QVBoxLayout(card)
+        card_lay.setSpacing(8)
+
+        def _row(label: str, value: str) -> QHBoxLayout:
+            row = QHBoxLayout()
+            lbl = QLabel(f"<b>{label}</b>")
+            lbl.setFixedWidth(140)
+            lbl.setStyleSheet(
+                "background: transparent; color: #6B7280; font-weight: 700;"
+            )
+            val = QLabel(value)
+            val.setWordWrap(True)
+            val.setStyleSheet("background: transparent; color: #111827;")
+            row.addWidget(lbl)
+            row.addWidget(val, 1)
+            return row
+
+        card_lay.addLayout(_row("Designed by", "blackie-networks"))
+        card_lay.addLayout(_row("Application",  "Smart Calender Desktop"))
+        card_lay.addLayout(_row("Version",       "1.0.0"))
+        card_lay.addLayout(_row("Platform",
+            f"{_platform.system()} {_platform.release()} ({_platform.machine()})"))
+        card_lay.addLayout(_row("Python",        sys.version.split()[0]))
+        card_lay.addLayout(_row("Built by", "blackie-networks"))
+        card_lay.addLayout(
+            _row("License", "Copyright © 2024 blackie-networks. All rights reserved.")
+        )
+
+        # Link to the builder website
+        builder_link = QLabel(
+            "Visit: <a href='https://www.blackie-networks.com'>www.blackie-networks.com</a>"
+        )
+        builder_link.setAlignment(Qt.AlignCenter)
+        builder_link.setTextFormat(Qt.RichText)
+        builder_link.setOpenExternalLinks(True)
+        builder_link.setStyleSheet(
+            "background: transparent; color: #16A34A; font-weight: 700;"
+        )
+        card_lay.addWidget(builder_link)
+
+        lay.addWidget(card)
+
+        # ── Description ───────────────────────────────────────────────
+        desc = QLabel(
+            "Smart Calender is a productivity desktop application for managing "
+            "events, meetings, tasks and reminders — all in one place.\n\n"
+            "Designed and built by <b>blackie-networks</b> with ❤️ using Python & PySide6."
+        )
+        desc.setWordWrap(True)
+        desc.setAlignment(Qt.AlignCenter)
+        desc.setStyleSheet(
+            "color: #6B7280; font-size: 13px; background: transparent; padding: 0 24px;"
+        )
+        desc.setTextFormat(Qt.RichText)
+        lay.addWidget(desc)
+
+        lay.addStretch()
+
+        scroll.setWidget(container)
+        outer = QVBoxLayout(page)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.addWidget(scroll)
+        return page
 
     # =====================================================================
     #  QSS

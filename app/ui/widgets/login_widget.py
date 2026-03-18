@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from PySide6.QtCore import Qt, Signal, QTimer, QThread, QUrl
-from PySide6.QtGui import QShowEvent, QDesktopServices
+from PySide6.QtGui import QShowEvent, QDesktopServices, QPixmap, QColor, QPainter
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -26,6 +26,7 @@ from app.database.db_manager import DatabaseManager
 from app.database.schema import User
 from sqlalchemy import select
 from datetime import datetime
+from app.core.app_config import get_base_dir
 
 
 class LoginWorker(QThread):
@@ -113,8 +114,35 @@ class LoginWidget(QWidget):
         header_layout.setSpacing(12)
         header_layout.setAlignment(Qt.AlignCenter)
         
-        icon_label = QLabel("📅", header_frame)
+        icon_label = QLabel(header_frame)
         icon_label.setObjectName("LoginIcon")
+        icon_label.setAlignment(Qt.AlignCenter)
+        icon_label.setFixedSize(44, 44)
+
+        # Use bundled logo image (works inside packaged app).
+        logo_path = get_base_dir() / "assets" / "image.png"
+        pixmap = QPixmap(str(logo_path))
+        if not pixmap.isNull():
+            # Apply subtle green tint so it matches the app green styling.
+            tinted = QPixmap(pixmap.size())
+            tinted.fill(Qt.transparent)
+            painter = QPainter(tinted)
+            painter.drawPixmap(0, 0, pixmap)
+            painter.setCompositionMode(QPainter.CompositionMode_SourceAtop)
+            overlay = QColor("#22C55E")
+            overlay.setAlpha(95)
+            painter.fillRect(tinted.rect(), overlay)
+            painter.end()
+            pixmap = tinted
+
+            icon_label.setPixmap(
+                pixmap.scaled(
+                    44, 44, Qt.KeepAspectRatio, Qt.SmoothTransformation
+                )
+            )
+        else:
+            icon_label.setText("📆")
+
         header_layout.addWidget(icon_label)
         
         title_label = QLabel("Smart Calender", header_frame)

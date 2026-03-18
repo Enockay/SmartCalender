@@ -5,7 +5,7 @@ from calendar import monthrange
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QDate, QSize, QTimer, QUrl, Signal, Slot
-from PySide6.QtGui import QGuiApplication, QDesktopServices
+from PySide6.QtGui import QGuiApplication, QDesktopServices, QPixmap, QColor, QPainter
 from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -50,6 +50,7 @@ from app.ui.dialogs.create_task_dialog import CreateTaskDialog
 from app.ui.widgets.todo_list_widget import TodoEvent
 from app.database.db_manager import DatabaseManager
 from app.database.schema import User
+from app.core.app_config import get_base_dir
 from sqlalchemy import select
 
 
@@ -526,8 +527,36 @@ class MainWindow(QMainWindow):
         header_layout.setSpacing(12)
 
         # App logo / title on the left
-        logo_label = QLabel("📅", header_bar)
+        logo_label = QLabel(header_bar)
         logo_label.setObjectName("AppLogo")
+        logo_label.setAlignment(Qt.AlignCenter)
+        logo_label.setFixedSize(44, 44)
+
+        # Use bundled logo image (never rely on emoji so branding stays consistent
+        # in the packaged app).
+        logo_path = get_base_dir() / "assets" / "image.png"
+        pixmap = QPixmap(str(logo_path))
+        if not pixmap.isNull():
+            # Apply a subtle green tint so the logo matches the green header theme.
+            # This avoids needing a separate green logo file.
+            tinted = QPixmap(pixmap.size())
+            tinted.fill(Qt.transparent)
+            painter = QPainter(tinted)
+            painter.drawPixmap(0, 0, pixmap)
+            painter.setCompositionMode(QPainter.CompositionMode_SourceAtop)
+            overlay = QColor("#22C55E")
+            overlay.setAlpha(95)  # keep logo readable; header theme tint
+            painter.fillRect(tinted.rect(), overlay)
+            painter.end()
+            pixmap = tinted
+
+            logo_label.setPixmap(
+                pixmap.scaled(44, 44, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            )
+        else:
+            # Fallback for development or missing file
+            logo_label.setText("📆")
+
         header_layout.addWidget(logo_label)
 
         self._header_title = QLabel("Smart Calender", header_bar)
