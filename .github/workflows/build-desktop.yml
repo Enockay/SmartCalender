@@ -90,7 +90,8 @@ jobs:
           name: windows-build
           path: |
             dist/windows/**/SmartCalender-Setup-*.exe
-            dist/windows/**/SmartCalender/*.exe
+            # Upload the FULL one-folder app (exe + _internal runtime files)
+            dist/windows/**/SmartCalender/**
 
       - name: Upload artifacts (macOS)
         if: matrix.target == 'mac'

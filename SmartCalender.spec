@@ -62,9 +62,6 @@ datas = [
 
     # App configuration (read-only defaults)
     (str(ROOT / "config.ini"), "."),
-
-    # Bundled UI logo image
-    (str(ROOT / "assets" / "image.png"), "assets"),
 ]
 
 # Only add optional resource subdirs if they are present
