@@ -7,10 +7,9 @@
 QMainWindow {
     background: qlineargradient(
         x1:0, y1:0, x2:1, y2:1,
-        stop:0   #334155,
-        stop:0.35 #1D4ED8,
-        stop:0.75 #1E40AF,
-        stop:1   #0F172A
+        stop:0   #143C7A,
+        stop:0.6 #1B4EA8,
+        stop:1   #14386E
     );
 }
 
@@ -70,7 +69,6 @@ QLabel#LoginTitle {
     background: transparent;
     border: none;
     letter-spacing: -0.5px;
-    justify-center
 }
 
 /* ── "Log In" heading ───────────────────────────────────── */
@@ -147,9 +145,17 @@ QCheckBox#LoginRememberCheckbox::indicator:hover {
 }
 
 QCheckBox#LoginRememberCheckbox::indicator:checked {
-    background-color: #3B82F6;
-    border-color: #3B82F6;
-    /* NOTE: removed missing Qt resource icon to avoid runtime warnings */
+    /* Keep checkbox "tick" style but do not fill with blue. */
+    background-color: transparent;
+    border-color: rgba(255, 255, 255, 0.85);
+    image: url(app/ui/resources/icons/check_white.svg);
+}
+
+/* Prevent hover from re-introducing the blue fill when checked. */
+QCheckBox#LoginRememberCheckbox::indicator:checked:hover {
+    background-color: transparent;
+    border-color: rgba(255, 255, 255, 0.95);
+    image: url(app/ui/resources/icons/check_white.svg);
 }
 
 /* ── Forgot password link ───────────────────────────────── */
@@ -205,38 +211,26 @@ QPushButton#LoginButton:disabled {
     color: rgba(255, 255, 255, 0.55);
 }
 
-/* ── Create Account button — dark green variant ── */
-QPushButton#CreateAccountButton {
-    background: qlineargradient(
-        x1:0, y1:0, x2:0, y2:1,
-        stop:0 #15803D,   /* top green */
-        stop:1 #166534    /* bottom green */
-    );
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 10px;
-    padding: 13px 24px;
+/* ── Small create-account link text ───────────────────────── */
+QLabel#LoginCreateAccountHint {
     font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-    font-size: 15px;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.78);
+    background: transparent;
+}
+
+QLabel#LoginCreateAccountLink {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
     font-weight: 700;
+    color: #86EFAC;
+    background: transparent;
+    text-decoration: underline;
+}
+
+QLabel#LoginCreateAccountLink:hover {
     color: #FFFFFF;
-    min-width: 140px;
-}
-
-QPushButton#CreateAccountButton:hover {
-    background: qlineargradient(
-        x1:0, y1:0, x2:0, y2:1,
-        stop:0 #22C55E,
-        stop:1 #16A34A
-    );
-    border-color: rgba(255, 255, 255, 0.22);
-}
-
-QPushButton#CreateAccountButton:pressed {
-    background: #14532D;
-}
-
-QPushButton#CreateAccountButton:disabled {
-    color: rgba(255, 255, 255, 0.40);
 }
 
 /* ── Server status label ────────────────────────────────── */

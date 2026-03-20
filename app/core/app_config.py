@@ -9,13 +9,13 @@ from pathlib import Path
 def get_base_dir() -> Path:
     """Return the base directory of the application.
     
-    - In development: root of the source tree (3 levels above this file).
+    - In development: root of the source tree (2 levels above this file).
     - In a frozen PyInstaller bundle: the temporary extraction folder
       (sys._MEIPASS) where bundled read-only assets live.
     """
     if getattr(sys, "frozen", False):
         return Path(sys._MEIPASS)  # type: ignore[attr-defined]
-    return Path(__file__).resolve().parents[3]
+    return Path(__file__).resolve().parents[2]
 
 
 def get_user_data_dir() -> Path:
@@ -37,7 +37,7 @@ def get_user_data_dir() -> Path:
             base = Path.home() / ".local" / "share" / "SmartCalender"
     else:
         # Development: keep everything inside the project root.
-        base = Path(__file__).resolve().parents[3]
+        base = Path(__file__).resolve().parents[2]
     base.mkdir(parents=True, exist_ok=True)
     return base
 

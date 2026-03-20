@@ -14,7 +14,9 @@ class MiniCalendarWidget(QWidget):
         self.setFixedSize(224, 240)
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(8, 6, 8, 6)
+        # Slightly reduce top margin so the calendar navigation/header bar
+        # sits a bit higher (matches the overall sidebar spacing).
+        layout.setContentsMargins(8, 3, 8, 6)
         layout.setSpacing(0)
 
         self._calendar = QCalendarWidget(self)

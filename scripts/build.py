@@ -165,17 +165,82 @@ def ensure_assets_dir() -> None:
         )
         _ok(f"Created placeholder {lic}")
 
-    # Remind user about icon files
-    for fname, note in [
-        ("SmartCalender.icns", "macOS icon"),
-        ("SmartCalender.ico",  "Windows icon"),
-        ("SmartCalender.png",  "Linux icon (256×256)"),
-    ]:
-        p = ASSETS / fname
-        if not p.exists():
-            _warn(f"Missing {ASSETS}/{fname} ({note}) – build will proceed without it")
+    image_png = ASSETS / "image.png"
+    if not image_png.exists():
+        _warn(f"Missing {image_png} (base icon source)")
+    else:
+        _ok(f"Found {image_png.name}")
+        smart_png = ASSETS / "SmartCalender.png"
+        if not smart_png.exists():
+            shutil.copy2(image_png, smart_png)
+            _ok(f"Created {smart_png.name} from image.png")
         else:
-            _ok(f"Found {fname}")
+            _ok(f"Found {smart_png.name}")
+
+        # On macOS, create SmartCalender.icns from assets/image.png if absent.
+        # This is the icon format used by app bundles and installers.
+        smart_icns = ASSETS / "SmartCalender.icns"
+        if platform.system() == "Darwin" and not smart_icns.exists():
+            _generate_macos_icns_from_png(image_png, smart_icns)
+
+    # Windows still needs a .ico for best installer/taskbar icon behavior.
+    win_ico = ASSETS / "SmartCalender.ico"
+    if win_ico.exists():
+        _ok(f"Found {win_ico.name}")
+    else:
+        _warn(f"Missing {win_ico} (Windows icon)")
+
+    mac_icns = ASSETS / "SmartCalender.icns"
+    if mac_icns.exists():
+        _ok(f"Found {mac_icns.name}")
+    else:
+        _warn(f"Missing {mac_icns} (macOS icon)")
+
+
+def _generate_macos_icns_from_png(src_png: Path, out_icns: Path) -> None:
+    """Generate .icns from a PNG using native macOS tools (sips + iconutil)."""
+    if not shutil.which("sips") or not shutil.which("iconutil"):
+        _warn("sips/iconutil not found; cannot auto-generate SmartCalender.icns")
+        return
+
+    tmp_root = ROOT / "build" / "icongen"
+    iconset = tmp_root / "SmartCalender.iconset"
+    shutil.rmtree(iconset, ignore_errors=True)
+    iconset.mkdir(parents=True, exist_ok=True)
+
+    # iconutil expects this fixed set of iconset filenames/sizes.
+    size_map = {
+        "icon_16x16.png": 16,
+        "icon_16x16@2x.png": 32,
+        "icon_32x32.png": 32,
+        "icon_32x32@2x.png": 64,
+        "icon_128x128.png": 128,
+        "icon_128x128@2x.png": 256,
+        "icon_256x256.png": 256,
+        "icon_256x256@2x.png": 512,
+        "icon_512x512.png": 512,
+        "icon_512x512@2x.png": 1024,
+    }
+
+    try:
+        for name, size in size_map.items():
+            out_png = iconset / name
+            subprocess.run(
+                ["sips", "-z", str(size), str(size), str(src_png), "--out", str(out_png)],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+        subprocess.run(
+            ["iconutil", "-c", "icns", str(iconset), "-o", str(out_icns)],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        _ok(f"Generated {out_icns.name} from image.png")
+    except subprocess.CalledProcessError as exc:
+        _warn(f"Could not generate {out_icns.name}: {exc}")
 
 
 # ---------------------------------------------------------------------------

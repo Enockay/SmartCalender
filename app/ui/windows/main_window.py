@@ -6,6 +6,7 @@ from pathlib import Path
 
 from PySide6.QtCore import Qt, QDate, QSize, QTimer, QUrl, Signal, Slot
 from PySide6.QtGui import QGuiApplication, QDesktopServices, QPixmap, QColor, QPainter
+from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -64,11 +65,12 @@ class MainWindow(QMainWindow):
         super().__init__()
         self._logger = get_logger(__name__)
         self.subscriptionUiRefreshRequested.connect(self._refresh_subscription_ui)
-        self.setWindowTitle("Smart Calender")
-        self.setFixedSize(1000, 750)
-        self.setWindowFlag(Qt.WindowMaximizeButtonHint, False)
-        if hasattr(Qt, "WindowFullscreenButtonHint"):
-            self.setWindowFlag(Qt.WindowFullscreenButtonHint, False)
+        self.setWindowTitle("SmartCalender")
+        # Avoid clipping/pushed sidebar content on Windows high-DPI displays.
+        # Use a comfortable default size but allow resizing.
+        self.resize(1100, 780)
+        self.setMinimumSize(1000, 750)
+        self._apply_window_controls()
 
         self._settings = settings or SettingsService()
         self._current_date = date.today()
@@ -97,9 +99,6 @@ class MainWindow(QMainWindow):
         self._reload_current_day()
         self._sync_title()
 
-        # Defer positioning until the window has been shown so we can
-        # reliably use the final frame geometry and screen information.
-        QTimer.singleShot(0, self._move_to_top_right)
         # After the window is up, enforce subscription status. This dialog
         # is modal and cannot be bypassed from within the app.
         QTimer.singleShot(200, self._check_subscription_status)
@@ -112,6 +111,47 @@ class MainWindow(QMainWindow):
         self._subscription_timer = QTimer(self)
         self._subscription_timer.timeout.connect(self._refresh_subscription_and_check)
         self._subscription_timer.start(15 * 60 * 1000)  # every 15 minutes
+
+    def _apply_window_controls(self) -> None:
+        """Force close/minimize only and block fullscreen/maximize hints."""
+        self.setWindowFlags(
+            Qt.Window
+            | Qt.CustomizeWindowHint
+            | Qt.WindowTitleHint
+            | Qt.WindowCloseButtonHint
+            | Qt.WindowMinimizeButtonHint
+        )
+        self.setWindowFlag(Qt.WindowMaximizeButtonHint, False)
+        # Always remove the macOS green-button fullscreen capability (no hasattr guard
+        # needed – PySide6 exposes this flag on all supported versions).
+        self.setWindowFlag(Qt.WindowFullscreenButtonHint, False)
+
+    def showEvent(self, event) -> None:  # noqa: N802
+        super().showEvent(event)
+        # NOTE: Do NOT call _apply_window_controls() here.
+        # Calling setWindowFlags() on a visible window forces macOS to
+        # recreate the native window handle, which wipes out all painted
+        # content and produces a blank/dark screen. Window flags are already
+        # set correctly in __init__, so this call is both redundant and harmful.
+        # Keep position reliable without delayed visible jump.
+        self._move_to_top_right()
+        if self.windowState() & Qt.WindowFullScreen:
+            self.setWindowState(self.windowState() & ~Qt.WindowFullScreen)
+
+    def changeEvent(self, event) -> None:  # noqa: N802
+        """Hard-block fullscreen on all platforms (macOS/Windows/Linux)."""
+        super().changeEvent(event)
+        if self.windowState() & Qt.WindowFullScreen:
+            # Defer the revert by one event-loop tick so that macOS can finish
+            # its native fullscreen transition before we cancel it.  Reverting
+            # synchronously here causes the macOS "not in fullscreen state"
+            # console warning.
+            QTimer.singleShot(0, self._exit_fullscreen)
+
+    def _exit_fullscreen(self) -> None:
+        """Revert to normal window state, cancelling any fullscreen transition."""
+        if self.windowState() & Qt.WindowFullScreen:
+            self.setWindowState(self.windowState() & ~Qt.WindowFullScreen)
 
     def _refresh_subscription_and_check(self) -> None:
         """Refresh the current user from DB and re-run subscription check."""
@@ -513,6 +553,9 @@ class MainWindow(QMainWindow):
 
     def _init_central_layout(self) -> None:
         central = QWidget(self)
+        # Required on macOS: without WA_StyledBackground the central widget is
+        # fully transparent and none of its children paint their backgrounds.
+        central.setAttribute(Qt.WA_StyledBackground, True)
 
         # Root layout: header bar on top, then body row (sidebar + main content)
         root_layout = QVBoxLayout(central)
@@ -522,6 +565,8 @@ class MainWindow(QMainWindow):
         # --- Top header bar spanning full width ---
         header_bar = QWidget(central)
         header_bar.setObjectName("HeaderBar")
+        # Required on macOS for QSS gradient backgrounds on child QWidgets.
+        header_bar.setAttribute(Qt.WA_StyledBackground, True)
         header_layout = QHBoxLayout(header_bar)
         header_layout.setContentsMargins(16, 8, 16, 8)
         header_layout.setSpacing(12)
@@ -534,22 +579,14 @@ class MainWindow(QMainWindow):
 
         # Use bundled logo image (never rely on emoji so branding stays consistent
         # in the packaged app).
-        logo_path = get_base_dir() / "assets" / "image.png"
-        pixmap = QPixmap(str(logo_path))
-        if not pixmap.isNull():
-            # Apply a subtle green tint so the logo matches the green header theme.
-            # This avoids needing a separate green logo file.
-            tinted = QPixmap(pixmap.size())
-            tinted.fill(Qt.transparent)
-            painter = QPainter(tinted)
-            painter.drawPixmap(0, 0, pixmap)
-            painter.setCompositionMode(QPainter.CompositionMode_SourceAtop)
-            overlay = QColor("#22C55E")
-            overlay.setAlpha(95)  # keep logo readable; header theme tint
-            painter.fillRect(tinted.rect(), overlay)
+        logo_path = get_base_dir() / "assets" / "logo.svg"
+        renderer = QSvgRenderer(str(logo_path))
+        if renderer.isValid():
+            pixmap = QPixmap(44, 44)
+            pixmap.fill(Qt.transparent)
+            painter = QPainter(pixmap)
+            renderer.render(painter)  # render SVG into the painter's surface
             painter.end()
-            pixmap = tinted
-
             logo_label.setPixmap(
                 pixmap.scaled(44, 44, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             )
@@ -625,6 +662,7 @@ class MainWindow(QMainWindow):
 
         # --- Body row: sidebar + main content ---
         body_container = QWidget(central)
+        body_container.setAttribute(Qt.WA_StyledBackground, True)
         body_layout = QHBoxLayout(body_container)
         body_layout.setContentsMargins(0, 0, 0, 0)
         body_layout.setSpacing(0)
@@ -659,6 +697,8 @@ class MainWindow(QMainWindow):
         self._nav_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self._nav_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self._nav_list.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # Keep sidebar navigation fixed: ignore mouse-wheel scrolling on this list.
+        self._nav_list.viewport().installEventFilter(self)
 
         for label in [
             "  🏠  Dashboard",
@@ -676,7 +716,11 @@ class MainWindow(QMainWindow):
         self._nav_list.currentRowChanged.connect(self._on_nav_changed)
         sidebar_layout.addWidget(self._nav_list)
 
-        sidebar_layout.addStretch(1)
+        # Keep the mini calendar closer to the navigation list; push the user
+        # card down instead (added below).
+        # Nudge the mini calendar slightly downward to visually center it
+        # between the nav list and the user card.
+        sidebar_layout.addSpacing(80)
 
         # ── Mini calendar ──
         self._mini_calendar_widget = MiniCalendarWidget(sidebar_container)
@@ -686,7 +730,8 @@ class MainWindow(QMainWindow):
         self._mini_calendar = self._mini_calendar_widget.calendar
         self._mini_calendar.selectionChanged.connect(self._on_sidebar_date_changed)
         sidebar_layout.addWidget(self._mini_calendar_widget, alignment=Qt.AlignHCenter)
-
+        # Flexible space below the mini calendar so the user card stays at
+        # the bottom of the sidebar.
         sidebar_layout.addStretch(1)
 
         # ── User card at the bottom ──
@@ -777,6 +822,14 @@ class MainWindow(QMainWindow):
 
         # Load sidebar-only stylesheet first
         self._load_sidebar_qss(sidebar_container)
+
+    def eventFilter(self, watched, event):  # type: ignore[override]
+        """Block wheel scrolling on sidebar nav list to avoid visual stretch/shift."""
+        if hasattr(self, "_nav_list") and watched is self._nav_list.viewport():
+            if event.type() == event.Type.Wheel:
+                event.ignore()
+                return True
+        return super().eventFilter(watched, event)
 
     def _build_main_content(self, parent: QWidget, root_layout: QHBoxLayout) -> None:
         """Create the header and central stacked views."""
@@ -872,7 +925,7 @@ class MainWindow(QMainWindow):
 
     def _sync_title(self) -> None:
         text = self._current_date.strftime("%A, %B %d, %Y")
-        self.setWindowTitle(f"Monthboard Desktop – {text}")
+        self.setWindowTitle(f"SmartCalender – {text}")
         if hasattr(self, "_header_date_label"):
             self._header_date_label.setText(text)
 
@@ -996,11 +1049,13 @@ class MainWindow(QMainWindow):
             self._month_view.set_date(self._current_date)
         if hasattr(self, "_year_view"):
             self._year_view.set_date(self._current_date)
+        if hasattr(self, "_task_board"):
+            self._task_board.set_date(self._current_date)
 
-        # Switch to the Day view when a date is clicked (not Dashboard)
+        # If date is clicked from dashboard, jump into Day view.
+        # Keep Task Board users on Task Board.
         current_idx = self._stack.currentIndex()
-        if current_idx == 0 or current_idx == 5:
-            # If on Dashboard or Task Board, switch to Day view
+        if current_idx == 0:
             self._set_view(1)
 
     def _on_nav_changed(self, index: int) -> None:

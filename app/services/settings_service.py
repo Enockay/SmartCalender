@@ -23,6 +23,7 @@ class SettingsService:
     EMAIL_ALERTS_KEY = "email_alerts"
     SOUND_ALERTS_KEY = "sound_alerts"
     REMINDER_SOUND_KEY = "reminder_sound"  # Selected reminder sound name
+    DEFAULT_REMINDER_SOUND = "alert-tone"
     QUIET_HOURS_START_KEY = "quiet_hours_start"
     QUIET_HOURS_END_KEY = "quiet_hours_end"
     # Backup tab
@@ -139,8 +140,11 @@ class SettingsService:
     # --- Reminder sound ----------------------------------------------------
 
     def get_reminder_sound(self) -> str:
-        """Get the selected reminder sound name. Returns 'Default' if not set."""
-        return self._get(self.REMINDER_SOUND_KEY, "Default")
+        """Get the selected reminder sound name.
+
+        Fresh installs default to alert-tone.
+        """
+        return self._get(self.REMINDER_SOUND_KEY, self.DEFAULT_REMINDER_SOUND)
 
     def set_reminder_sound(self, sound_name: str) -> None:
         """Set the selected reminder sound name."""

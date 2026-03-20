@@ -4,7 +4,8 @@ import json
 from pathlib import Path
 
 from PySide6.QtCore import Qt, Signal, QTimer, QThread, QUrl
-from PySide6.QtGui import QShowEvent, QDesktopServices, QPixmap, QColor, QPainter
+from PySide6.QtGui import QShowEvent, QDesktopServices, QPixmap, QPainter
+from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -17,6 +18,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QApplication,
     QDialog,
+    QSizePolicy,
 )
 
 from app.services.auth_service import AuthService
@@ -65,6 +67,7 @@ class LoginWidget(QWidget):
         self._device_service = DeviceService()
         self._db = DatabaseManager()
         self._login_worker: LoginWorker | None = None
+        self._auto_login_checked = False
         
         self._build_ui()
         self._check_server_status()
@@ -72,8 +75,8 @@ class LoginWidget(QWidget):
         # Ensure QSS is applied after widget is built
         QTimer.singleShot(100, self._apply_styles)
         
-        # Check if user is already logged in
-        QTimer.singleShot(100, self._check_existing_login)
+        # Auto-login check is triggered from showEvent so the login page
+        # is visible first (avoids a blank/flashy startup transition).
     
     def _build_ui(self) -> None:
         """Build the login UI."""
@@ -86,6 +89,7 @@ class LoginWidget(QWidget):
         container = QFrame(self)
         container.setObjectName("LoginContainer")
         container.setAttribute(Qt.WA_StyledBackground, True)
+        container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
         container_layout = QVBoxLayout(container)
         container_layout.setContentsMargins(0, 0, 0, 0)
@@ -96,6 +100,10 @@ class LoginWidget(QWidget):
         card = QFrame(container)
         card.setObjectName("LoginCard")
         card.setAttribute(Qt.WA_StyledBackground, True)
+        # Prevent platform/layout edge-cases where the card collapses to 0-height.
+        card.setFixedWidth(460)
+        card.setMinimumHeight(470)
+        self._login_card = card
         
         card_layout = QVBoxLayout(card)
         # Let the header bar touch the very top of the card and span full width.
@@ -119,27 +127,16 @@ class LoginWidget(QWidget):
         icon_label.setAlignment(Qt.AlignCenter)
         icon_label.setFixedSize(44, 44)
 
-        # Use bundled logo image (works inside packaged app).
-        logo_path = get_base_dir() / "assets" / "image.png"
-        pixmap = QPixmap(str(logo_path))
-        if not pixmap.isNull():
-            # Apply subtle green tint so it matches the app green styling.
-            tinted = QPixmap(pixmap.size())
-            tinted.fill(Qt.transparent)
-            painter = QPainter(tinted)
-            painter.drawPixmap(0, 0, pixmap)
-            painter.setCompositionMode(QPainter.CompositionMode_SourceAtop)
-            overlay = QColor("#22C55E")
-            overlay.setAlpha(95)
-            painter.fillRect(tinted.rect(), overlay)
+        # Use bundled SVG logo so it stays crisp at all scales.
+        logo_path = get_base_dir() / "assets" / "logo.svg"
+        renderer = QSvgRenderer(str(logo_path))
+        if renderer.isValid():
+            pixmap = QPixmap(44, 44)
+            pixmap.fill(Qt.transparent)
+            painter = QPainter(pixmap)
+            renderer.render(painter)
             painter.end()
-            pixmap = tinted
-
-            icon_label.setPixmap(
-                pixmap.scaled(
-                    44, 44, Qt.KeepAspectRatio, Qt.SmoothTransformation
-                )
-            )
+            icon_label.setPixmap(pixmap)
         else:
             icon_label.setText("📆")
 
@@ -176,6 +173,7 @@ class LoginWidget(QWidget):
         self._email_input.setObjectName("LoginEmailInput")
         self._email_input.setPlaceholderText("Email Address")
         self._email_input.setMaxLength(255)
+        self._email_input.returnPressed.connect(self._on_login_clicked)
         email_layout.addWidget(self._email_input)
         
         content_layout.addLayout(email_layout)
@@ -194,6 +192,7 @@ class LoginWidget(QWidget):
         self._password_input.setPlaceholderText("Password")
         self._password_input.setEchoMode(QLineEdit.Password)
         self._password_input.setMaxLength(255)
+        self._password_input.returnPressed.connect(self._on_login_clicked)
         password_layout.addWidget(self._password_input)
         
         content_layout.addLayout(password_layout)
@@ -228,13 +227,25 @@ class LoginWidget(QWidget):
         self._login_button.clicked.connect(self._on_login_clicked)
         buttons_layout.addWidget(self._login_button)
         
-        self._create_account_button = QPushButton("Create Account", card)
-        self._create_account_button.setObjectName("CreateAccountButton")
-        self._create_account_button.setCursor(Qt.PointingHandCursor)
-        self._create_account_button.clicked.connect(self._on_create_account_clicked)
-        buttons_layout.addWidget(self._create_account_button)
-        
         content_layout.addLayout(buttons_layout)
+
+        # Small create-account link (instead of a second large button)
+        create_link_row = QHBoxLayout()
+        create_link_row.setContentsMargins(0, 2, 0, 0)
+        create_link_row.setSpacing(4)
+        create_link_row.setAlignment(Qt.AlignCenter)
+
+        create_hint = QLabel("Don't have an account?", card)
+        create_hint.setObjectName("LoginCreateAccountHint")
+        create_link_row.addWidget(create_hint)
+
+        create_link = QLabel("Create account", card)
+        create_link.setObjectName("LoginCreateAccountLink")
+        create_link.setCursor(Qt.PointingHandCursor)
+        create_link.mousePressEvent = lambda e: self._on_create_account_clicked()  # type: ignore[method-assign]
+        create_link_row.addWidget(create_link)
+
+        content_layout.addLayout(create_link_row)
         
         # Server status
         self._status_label = QLabel("Server status: Checking...", card)
@@ -312,6 +323,10 @@ class LoginWidget(QWidget):
                         return
         except Exception:
             pass  # If check fails, show login screen
+        # No valid saved session found: keep login form usable.
+        self._set_inputs_enabled(True)
+        self._login_button.setText("Log In")
+        self._status_label.setText("Server status: Connected")
     
     def _on_login_clicked(self) -> None:
         """Handle login button click."""
@@ -351,7 +366,15 @@ class LoginWidget(QWidget):
         dlg.setWindowTitle("Forgot Password")
         dlg.setModal(True)
         # Disable macOS "zoom/enlarge" (green) by fixing size and limiting window buttons.
-        dlg.setWindowFlags(Qt.Dialog | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
+        dlg.setWindowFlags(
+            Qt.Dialog
+            | Qt.CustomizeWindowHint
+            | Qt.WindowTitleHint
+            | Qt.WindowCloseButtonHint
+        )
+        dlg.setWindowFlag(Qt.WindowMaximizeButtonHint, False)
+        if hasattr(Qt, "WindowFullscreenButtonHint"):
+            dlg.setWindowFlag(Qt.WindowFullscreenButtonHint, False)
         dlg.setFixedSize(440, 210)
 
         lay = QVBoxLayout(dlg)
@@ -448,7 +471,6 @@ class LoginWidget(QWidget):
         self._password_input.setEnabled(enabled)
         self._remember_checkbox.setEnabled(enabled)
         self._login_button.setEnabled(enabled)
-        self._create_account_button.setEnabled(enabled)
     
     def _save_user_data(self, auth_response: AuthResponse) -> None:
         """Save authentication data to database."""
@@ -509,5 +531,25 @@ class LoginWidget(QWidget):
     def showEvent(self, event: QShowEvent) -> None:
         """Override showEvent to focus email input."""
         super().showEvent(event)
+        QTimer.singleShot(150, self._ensure_login_card_visible)
         # Focus email input
         QTimer.singleShot(100, self._email_input.setFocus)
+        if not hasattr(self, "_auto_login_checked"):
+            self._auto_login_checked = False
+        if not self._auto_login_checked:
+            self._auto_login_checked = True
+            self._status_label.setText("Server status: Connected - Checking saved session...")
+            # Let the login card render first, then run auto-login.
+            QTimer.singleShot(900, self._check_existing_login)
+
+    def _ensure_login_card_visible(self) -> None:
+        """Fail-safe for macOS: ensure login card got a usable geometry."""
+        card = getattr(self, "_login_card", None)
+        if card is None:
+            return
+        if card.height() < 120 or card.width() < 200:
+            card.setFixedWidth(460)
+            card.setMinimumHeight(470)
+            card.updateGeometry()
+            self.updateGeometry()
+            self.update()

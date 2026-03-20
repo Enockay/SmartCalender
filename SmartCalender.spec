@@ -30,18 +30,34 @@ IS_WINDOWS = sys.platform == "win32"
 IS_LINUX   = sys.platform.startswith("linux")
 
 # ---------------------------------------------------------------------------
-# Icon paths  (put SmartCalender.icns / .ico / .png in assets/ folder)
+# Icon paths (prefer platform icon files; fallback to assets/image.png)
 # ---------------------------------------------------------------------------
 ICON_MAC     = str(ROOT / "assets" / "SmartCalender.icns")
 ICON_WIN     = str(ROOT / "assets" / "SmartCalender.ico")
 ICON_LINUX   = str(ROOT / "assets" / "SmartCalender.png")
+ICON_FALLBACK = str(ROOT / "assets" / "image.png")
 
 if IS_MAC:
-    ICON = ICON_MAC if Path(ICON_MAC).exists() else None
+    if Path(ICON_MAC).exists():
+        ICON = ICON_MAC
+    elif Path(ICON_FALLBACK).exists():
+        ICON = ICON_FALLBACK
+    else:
+        ICON = None
 elif IS_WINDOWS:
-    ICON = ICON_WIN if Path(ICON_WIN).exists() else None
+    if Path(ICON_WIN).exists():
+        ICON = ICON_WIN
+    elif Path(ICON_FALLBACK).exists():
+        ICON = ICON_FALLBACK
+    else:
+        ICON = None
 else:
-    ICON = ICON_LINUX if Path(ICON_LINUX).exists() else None
+    if Path(ICON_LINUX).exists():
+        ICON = ICON_LINUX
+    elif Path(ICON_FALLBACK).exists():
+        ICON = ICON_FALLBACK
+    else:
+        ICON = None
 
 # ---------------------------------------------------------------------------
 # Data files to bundle (read-only assets only – NO database files!)

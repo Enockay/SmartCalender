@@ -40,7 +40,15 @@ class CreateTaskDialog(QDialog):
         self.setObjectName("CreateTaskDialog")
         self.setFixedSize(480, 580)
         self.setModal(True)
-        self.setWindowFlags(Qt.Dialog | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
+        self.setWindowFlags(
+            Qt.Dialog
+            | Qt.CustomizeWindowHint
+            | Qt.WindowTitleHint
+            | Qt.WindowCloseButtonHint
+        )
+        self.setWindowFlag(Qt.WindowMaximizeButtonHint, False)
+        if hasattr(Qt, "WindowFullscreenButtonHint"):
+            self.setWindowFlag(Qt.WindowFullscreenButtonHint, False)
         self.setAttribute(Qt.WA_StyledBackground, True)
 
         self._subtasks: list[QCheckBox] = []

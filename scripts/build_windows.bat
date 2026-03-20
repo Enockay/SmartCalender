@@ -80,6 +80,7 @@ REM ---------------------------------------------------------------------------
 REM  4. Create Windows version-info file
 REM ---------------------------------------------------------------------------
 echo [3/6] Generating Windows version info...
+if not exist "%BUILD_DIR%" mkdir "%BUILD_DIR%"
 
 REM  Convert dotted version to comma-separated tuple
 for /f "tokens=1,2,3,4 delims=." %%a in ("%VERSION%.0") do (
@@ -257,11 +258,21 @@ if not exist "%ROOT%\LICENSE.txt" (
 
 where makensis >nul 2>&1
 if errorlevel 1 (
-    echo   WARNING: makensis ^(NSIS^) not found on PATH.
-    echo   Install NSIS from https://nsis.sourceforge.io/Download
-    echo   Then run:  makensis "%NSI_SCRIPT%"
-    REM Installer can't be created, but the standalone folder is still usable.
-    exit /b 0
+    REM Fallback common NSIS install locations
+    if exist "C:\Program Files (x86)\NSIS\makensis.exe" (
+        set "MAKENSIS_EXE=C:\Program Files (x86)\NSIS\makensis.exe"
+    ) else if exist "C:\Program Files\NSIS\makensis.exe" (
+        set "MAKENSIS_EXE=C:\Program Files\NSIS\makensis.exe"
+    ) else if defined ChocolateyInstall if exist "%ChocolateyInstall%\bin\makensis.exe" (
+        set "MAKENSIS_EXE=%ChocolateyInstall%\bin\makensis.exe"
+    ) else (
+        echo   WARNING: makensis ^(NSIS^) not found on PATH.
+        echo   Install NSIS from https://nsis.sourceforge.io/Download
+        echo   Then run:  makensis "%NSI_SCRIPT%"
+        REM Installer can't be created, but the standalone folder is still usable.
+        exit /b 0
+    )
+    "%MAKENSIS_EXE%" "%NSI_SCRIPT%"
 ) else (
     makensis "%NSI_SCRIPT%"
     if errorlevel 1 (

@@ -90,7 +90,9 @@ QTabWidget#SettingsTabs QTabBar::tab:selected {
 
 /* ── Page background ── */
 QWidget#SettingsPage {
-    background-color: transparent;
+    /* Transparent pages can look washed-out on Windows composition.
+       Use a solid color for predictable contrast. */
+    background-color: #F8FAFC;
 }
 
 /* ── Card (new unified style) ── */
@@ -186,6 +188,19 @@ QPushButton#ThemeToggleDark:hover:!checked,
 QPushButton#ThemeToggleLight:hover:!checked {
     background-color: #E2E8F0;
     color: #334155;
+}
+
+/* Locked (non-toggle) appearance badge */
+QLabel#SettingsLockedPill {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #2563EB,
+        stop:1 #3B82F6);
+    color: #FFFFFF;
+    border: 1px solid #2563EB;
+    border-radius: 10px;
+    padding: 6px 12px;
+    font-size: 14px;
+    font-weight: 700;
 }
 
 /* ── Combo boxes ── */
@@ -390,6 +405,11 @@ QPushButton#SettingsSaveBtn:pressed {
     background: #1E40AF;
 }
 
+QPushButton#SettingsSaveBtn:disabled {
+    background: #93C5FD;
+    color: #E2E8F0;
+}
+
 QPushButton#SettingsResetBtn {
     background-color: transparent;
     color: #94A3B8;
@@ -404,6 +424,12 @@ QPushButton#SettingsResetBtn:hover {
     color: #EF4444;
     border: 1px solid #FECACA;
     background-color: #FEF2F2;
+}
+
+QPushButton#SettingsResetBtn:disabled {
+    color: #94A3B8;
+    border: 1px solid #CBD5E1;
+    background-color: #F1F5F9;
 }
 
 /* ── Action buttons (Backup/Restore/Export) ── */
@@ -486,31 +512,37 @@ QLabel#AccountStatSep {
 }
 
 QLabel#SubscriptionBadge {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #DCFCE7, stop:1 #D1FAE5);
-    color: #166534;
+    background: #DCFCE7;
+    color: #14532D;
     border-radius: 12px;
     padding: 4px 14px;
     font-size: 11px;
     font-weight: 700;
+    border: 1px solid #86EFAC;
 }
 
 QLabel#SubscriptionDetailLabel {
-    color: #6B7280;
+    color: #374151;
     font-size: 11px;
-    font-weight: 500;
+    font-weight: 600;
     padding-top: 2px;
 }
 
 QLabel#AccountSupportLabel {
-    color: #6B7280;
+    color: #374151;
     font-size: 11px;
-    font-weight: 500;
+    font-weight: 600;
     padding-top: 4px;
 }
 
 QLabel#AccountSupportLabel:hover {
     color: #2563EB;
+}
+
+QLabel#AccountSupportLabel a {
+    color: #2563EB;
+    text-decoration: underline;
+    font-weight: 700;
 }
 
 QPushButton#SubscriptionRenewButton {
@@ -535,7 +567,7 @@ QPushButton#SubscriptionRenewButton:pressed {
 
 /* ── Danger zone ── */
 QFrame#DangerCard {
-    background-color: #FFFBFB;
+    background-color: #FFFFFF;
     border: 1px solid #FECACA;
     border-radius: 12px;
 }
@@ -551,9 +583,9 @@ QLabel#DangerLabel {
 }
 
 QLabel#DangerDesc {
-    color: #9CA3AF;
+    color: #6B7280;
     font-size: 12px;
-    font-weight: 400;
+    font-weight: 500;
 }
 
 QPushButton#DangerButton {
@@ -571,6 +603,12 @@ QPushButton#DangerButton:hover {
     border: 1px solid #F87171;
 }
 
+QPushButton#DangerButton:disabled {
+    background-color: #F8FAFC;
+    color: #94A3B8;
+    border: 1px solid #E2E8F0;
+}
+
 QPushButton#DangerButtonRed {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
         stop:0 #DC2626, stop:1 #EF4444);
@@ -584,6 +622,11 @@ QPushButton#DangerButtonRed {
 
 QPushButton#DangerButtonRed:hover {
     background: #B91C1C;
+}
+
+QPushButton#DangerButtonRed:disabled {
+    background: #FCA5A5;
+    color: #FFFFFF;
 }
 
 /* ── Backup stats ── */

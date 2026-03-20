@@ -1,10 +1,12 @@
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt, QTimer, QSize
+from PySide6.QtGui import QIcon, QPixmap, QPainter
+from PySide6.QtSvg import QSvgRenderer
 import sys
 
 from app.ui.windows.main_window import MainWindow
 from app.ui.windows.login_window import LoginWindow
-from app.core.app_config import AppConfig
+from app.core.app_config import AppConfig, get_base_dir
 from app.core.logger import get_logger
 from app.database.db_manager import DatabaseManager
 from app.services.notification_service import NotificationService
@@ -13,12 +15,43 @@ from app.services.settings_service import SettingsService
 from app.models.auth_response import AuthResponse
 
 
+def _position_top_right(window) -> None:
+    """Place a window at the top-right of the active screen before show()."""
+    screen = window.screen() or QApplication.primaryScreen()
+    if not screen:
+        return
+    available = screen.availableGeometry()
+    # Use current widget size so we can place before show and avoid left→right jump.
+    width = window.width()
+    x = available.right() - width
+    y = available.top()
+    window.move(x, y)
+
+
 def main() -> int:
     AppConfig.load()
     logger = get_logger(__name__)
 
     app = QApplication(sys.argv)
     app.setApplicationName("SmartCalender Desktop")
+
+    # Use the same SVG as the dock/app + window icon.
+    try:
+        svg_path = get_base_dir() / "assets" / "logo.svg"
+        renderer = QSvgRenderer(str(svg_path))
+        icon = QIcon()
+        if renderer.isValid():
+            for s in (16, 32, 64, 128):
+                pm = QPixmap(QSize(s, s))
+                pm.fill(Qt.transparent)
+                painter = QPainter(pm)
+                renderer.render(painter)
+                painter.end()
+                icon.addPixmap(pm)
+            app.setWindowIcon(icon)
+    except Exception:
+        # Non-fatal: if SVG rendering fails, fall back to default platform icon.
+        pass
 
     db = DatabaseManager()
     db.initialize()
@@ -37,6 +70,7 @@ def main() -> int:
         login_window.close()
         
         main_window = MainWindow(settings=settings)
+        _position_top_right(main_window)
         main_window.show()
         
         notification_service = NotificationService(main_window, settings)
@@ -58,6 +92,7 @@ def main() -> int:
     login_window._login_widget.loginSuccessful.connect(show_main_window)
     
     # Show login window
+    _position_top_right(login_window)
     login_window.show()
 
     return app.exec()

@@ -197,6 +197,7 @@ class DashboardCard(QFrame):
         self._content_layout = QVBoxLayout()
         self._content_layout.setContentsMargins(0, 0, 0, 0)
         self._content_layout.setSpacing(6)
+        self._content_layout.setAlignment(Qt.AlignTop)
         self._main_layout.addLayout(self._content_layout, stretch=1)
 
     def set_action_button(self, text: str, callback=None, button_id: str = None) -> None:
@@ -553,8 +554,18 @@ class DashboardWidget(QWidget):
                 self._upcoming_events_card.add_content(self._create_empty_box("No upcoming events"))
                 return
 
-            for index, meeting in enumerate(events):
-                self._upcoming_events_card.add_content(self._create_event_item(meeting, highlighted=True))
+            top_list = QVBoxLayout()
+            top_list.setContentsMargins(0, 0, 0, 0)
+            top_list.setSpacing(8)
+            top_list.setAlignment(Qt.AlignTop)
+
+            for meeting in events:
+                top_list.addWidget(self._create_event_item(meeting, highlighted=True))
+
+            top_widget = QWidget()
+            top_widget.setLayout(top_list)
+            self._upcoming_events_card.add_content(top_widget)
+            self._upcoming_events_card.add_stretch()
 
         except Exception:
             self._upcoming_events_card.add_content(self._create_empty_box("Unable to load events"))
@@ -576,6 +587,7 @@ class DashboardWidget(QWidget):
             item = QFrame()
         
         item.setObjectName("DashboardEventItem")
+        item.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         layout = QHBoxLayout(item)
         layout.setContentsMargins(8, 6, 8, 6)
@@ -586,13 +598,11 @@ class DashboardWidget(QWidget):
         icon_label.setObjectName("DashboardEventIcon")
         layout.addWidget(icon_label, alignment=Qt.AlignVCenter)
 
-        text_col = QVBoxLayout()
-        text_col.setContentsMargins(0, 0, 0, 0)
-        text_col.setSpacing(2)
-
         title = QLabel(meeting.title or "Untitled Event", item)
         title.setObjectName("DashboardItemTitle")
-        text_col.addWidget(title)
+        title.setWordWrap(False)
+        title.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        layout.addWidget(title, stretch=1, alignment=Qt.AlignVCenter)
 
         meta_parts = []
         if getattr(meeting, "start_time", None):
@@ -602,9 +612,10 @@ class DashboardWidget(QWidget):
 
         meta = QLabel(" • ".join(meta_parts) if meta_parts else "Scheduled", item)
         meta.setObjectName("DashboardItemMeta")
-        text_col.addWidget(meta)
-
-        layout.addLayout(text_col, stretch=1)
+        meta.setWordWrap(False)
+        meta.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        meta.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        layout.addWidget(meta, alignment=Qt.AlignRight | Qt.AlignVCenter)
 
         return item
 

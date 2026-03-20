@@ -44,11 +44,11 @@ jobs:
         shell: pwsh
         run: |
           choco install nsis -y
-          # Ensure Chocolatey-installed tools are available in the current PATH
+          # Persist Chocolatey bin path for subsequent workflow steps.
           if ($env:ChocolateyInstall) {
-            $env:PATH = $env:PATH + ";" + $env:ChocolateyInstall + "\bin"
+            "$env:ChocolateyInstall\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           }
-          where makensis
+          where.exe makensis
 
       - name: Build (Linux)
         if: matrix.target == 'linux'

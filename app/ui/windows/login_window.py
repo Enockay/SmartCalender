@@ -22,11 +22,11 @@ class _GradientBackground(QWidget):
         painter.setRenderHint(QPainter.Antialiasing)
 
         gradient = QLinearGradient(0, 0, self.width(), self.height())
-        # Match the blue background used in login.qss for QMainWindow
-        gradient.setColorAt(0.0,  QColor("#334155"))  # top-left slate
-        gradient.setColorAt(0.35, QColor("#1D4ED8"))  # rich mid blue
-        gradient.setColorAt(0.75, QColor("#1E40AF"))  # deeper blue
-        gradient.setColorAt(1.0,  QColor("#0F172A"))  # bottom-right dark
+        # Slightly brighten the outer login background so it blends with
+        # the bright blue login card (while still staying in the same theme).
+        gradient.setColorAt(0.0, QColor("#143C7A"))
+        gradient.setColorAt(0.6, QColor("#1B4EA8"))
+        gradient.setColorAt(1.0, QColor("#14386E"))
 
         painter.fillRect(self.rect(), QBrush(gradient))
         painter.end()

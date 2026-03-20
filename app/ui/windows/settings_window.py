@@ -155,43 +155,27 @@ class SettingsWindow(QWidget):
         lay.setSpacing(18)
 
         # ── Theme ──
-        theme_card = self._card("🎨  Appearance", "Choose your preferred theme")
+        theme_card = self._card("🎨  Appearance", "Light mode only")
         card_lay = theme_card.layout()
 
-        theme_row = QHBoxLayout()
-        theme_row.setSpacing(0)
-
-        self._theme_group = QButtonGroup(self)
-        self._dark_btn = QPushButton("  🌙  Dark  ", page)
-        self._dark_btn.setObjectName("ThemeToggleDark")
-        self._dark_btn.setCheckable(True)
-        self._dark_btn.setCursor(Qt.PointingHandCursor)
-        self._dark_btn.setFixedHeight(36)
-
-        self._light_btn = QPushButton("  ☀  Light  ", page)
-        self._light_btn.setObjectName("ThemeToggleLight")
-        self._light_btn.setCheckable(True)
-        self._light_btn.setCursor(Qt.PointingHandCursor)
-        self._light_btn.setFixedHeight(36)
-
-        self._theme_group.addButton(self._dark_btn, 0)
-        self._theme_group.addButton(self._light_btn, 1)
-
-        theme_row.addWidget(self._dark_btn)
-        theme_row.addWidget(self._light_btn)
-        theme_row.addStretch()
-        card_lay.addLayout(theme_row)
+        self._theme_locked_label = QLabel("☀  Light", page)
+        self._theme_locked_label.setObjectName("SettingsLockedPill")
+        self._theme_locked_label.setAlignment(Qt.AlignCenter)
+        self._theme_locked_label.setFixedHeight(36)
+        self._theme_locked_label.setFixedWidth(180)
+        card_lay.addWidget(self._theme_locked_label, alignment=Qt.AlignLeft)
         lay.addWidget(theme_card)
 
         # ── Language ──
-        lang_card = self._card("🌐  Language", "Select display language")
+        lang_card = self._card("🌐  Language", "Language is fixed to English")
         card_lay = lang_card.layout()
 
-        self._lang_combo = QComboBox(page)
-        self._lang_combo.setObjectName("SettingsCombo")
-        self._lang_combo.addItems(["English", "Spanish", "French", "German", "Chinese", "Arabic", "Swahili"])
-        self._lang_combo.setFixedHeight(36)
-        card_lay.addWidget(self._lang_combo)
+        self._lang_fixed = QLineEdit(page)
+        self._lang_fixed.setObjectName("SettingsInput")
+        self._lang_fixed.setText("English")
+        self._lang_fixed.setReadOnly(True)
+        self._lang_fixed.setFixedHeight(36)
+        card_lay.addWidget(self._lang_fixed)
         lay.addWidget(lang_card)
 
         # ── Default category ──
@@ -806,16 +790,9 @@ class SettingsWindow(QWidget):
         s = self._settings
 
         # General
-        theme = s.get_theme()
-        if theme == "dark":
-            self._dark_btn.setChecked(True)
-        else:
-            self._light_btn.setChecked(True)
-
-        lang = s.get_language()
-        idx = self._lang_combo.findText(lang)
-        if idx >= 0:
-            self._lang_combo.setCurrentIndex(idx)
+        # Theme and language are locked
+        self._theme_locked_label.setText("☀  Light")
+        self._lang_fixed.setText("English")
 
         cat = s.get_default_category()
         idx = self._cat_combo.findText(cat)
@@ -920,6 +897,19 @@ class SettingsWindow(QWidget):
         # Database size
         self._update_db_stats()
 
+        # Keep action controls visibly enabled on all platforms (Windows can
+        # sometimes inherit disabled-looking styles after focus/overlay changes).
+        for btn in (
+            getattr(self, "_renew_btn", None),
+            getattr(self, "_logout_btn", None),
+            getattr(self, "_delete_btn", None),
+            getattr(self, "_save_btn", None),
+            getattr(self, "_reset_btn", None),
+        ):
+            if btn is not None:
+                btn.setVisible(True)
+                btn.setEnabled(True)
+
     def refresh_account(self) -> None:
         """Public hook for parent window to refresh account/subscription UI."""
         self._load_from_settings()
@@ -1002,9 +992,8 @@ class SettingsWindow(QWidget):
         s = self._settings
 
         # General
-        theme: ThemeName = "dark" if self._dark_btn.isChecked() else "light"
-        s.set_theme(theme)
-        s.set_language(self._lang_combo.currentText())
+        s.set_theme("light")
+        s.set_language("English")
         s.set_default_category(self._cat_combo.currentText())
 
         freq_map = {0: "Daily", 1: "Weekly", 2: "Monthly"}
@@ -1074,8 +1063,8 @@ class SettingsWindow(QWidget):
             QMessageBox.Yes | QMessageBox.No,
         )
         if reply == QMessageBox.Yes:
-            self._light_btn.setChecked(True)
-            self._lang_combo.setCurrentIndex(0)
+            self._theme_locked_label.setText("☀  Light")
+            self._lang_fixed.setText("English")
             self._cat_combo.setCurrentIndex(0)
             self._freq_daily.setChecked(True)
             self._view_combo.setCurrentIndex(0)
@@ -1084,7 +1073,10 @@ class SettingsWindow(QWidget):
             self._email_alerts_check.setChecked(False)
             self._sound_check.setChecked(True)
             if hasattr(self, '_sound_combo'):
-                self._sound_combo.setCurrentIndex(0)  # Default sound
+                # Reset to app default reminder sound
+                default_sound = self._settings.get_reminder_sound()
+                idx = self._sound_combo.findText(default_sound, Qt.MatchFixedString)
+                self._sound_combo.setCurrentIndex(idx if idx >= 0 else 0)
             self._reminder_spin.setValue(10)
             self._quiet_start.setTime(QTime(22, 0))
             self._quiet_end.setTime(QTime(7, 0))
@@ -1412,21 +1404,24 @@ class SettingsWindow(QWidget):
         card_lay.addLayout(_row("Platform",
             f"{_platform.system()} {_platform.release()} ({_platform.machine()})"))
         card_lay.addLayout(_row("Built by", "blackie-networks"))
-        card_lay.addLayout(
-            _row("License", "Copyright © 2024 blackie-networks. All rights reserved.")
+        license_row = QHBoxLayout()
+        license_lbl = QLabel("<b>License</b>")
+        license_lbl.setFixedWidth(140)
+        license_lbl.setStyleSheet(
+            "background: transparent; color: #6B7280; font-weight: 700;"
         )
-
-        # Link to the builder website
-        builder_link = QLabel(
-            "Visit: <a href='https://www.blackie-networks.com'>www.blackie-networks.com</a>"
+        license_val = QLabel(
+            "Copyright © 2026 "
+            "<a href='https://www.blackie-networks.com'>blackie-networks</a>. "
+            "All rights reserved."
         )
-        builder_link.setAlignment(Qt.AlignCenter)
-        builder_link.setTextFormat(Qt.RichText)
-        builder_link.setOpenExternalLinks(True)
-        builder_link.setStyleSheet(
-            "background: transparent; color: #16A34A; font-weight: 700;"
-        )
-        card_lay.addWidget(builder_link)
+        license_val.setTextFormat(Qt.RichText)
+        license_val.setOpenExternalLinks(True)
+        license_val.setWordWrap(True)
+        license_val.setStyleSheet("background: transparent; color: #111827;")
+        license_row.addWidget(license_lbl)
+        license_row.addWidget(license_val, 1)
+        card_lay.addLayout(license_row)
 
         lay.addWidget(card)
 

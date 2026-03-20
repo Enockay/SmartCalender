@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none">
+  <defs>
+    <linearGradient id="frame" x1="176" y1="160" x2="848" y2="864" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#28B7F6"/>
+      <stop offset="1" stop-color="#1257D6"/>
+    </linearGradient>
+    <linearGradient id="check" x1="354" y1="560" x2="702" y2="560" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38D66B"/>
+      <stop offset="1" stop-color="#09A7C9"/>
+    </linearGradient>
+    <linearGradient id="badge" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#54D7FF"/>
+      <stop offset="1" stop-color="#1A89F5"/>
+    </linearGradient>
+    <filter id="shadow" x="120" y="120" width="784" height="784" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="20" stdDeviation="22" flood-color="#0B3B8F" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" rx="220" fill="#F7FAFF"/>
+
+  <g filter="url(#shadow)">
+    <rect x="176" y="176" width="672" height="672" rx="148" fill="url(#frame)"/>
+    <rect x="216" y="280" width="592" height="528" rx="112" fill="#ffffff"/>
+    <path d="M176 316C176 238.68 238.68 176 316 176H708C785.32 176 848 238.68 848 316V364H176V316Z" fill="#0F63D9"/>
+
+    <rect x="300" y="120" width="48" height="148" rx="24" fill="#0F63D9"/>
+    <rect x="676" y="120" width="48" height="148" rx="24" fill="#0F63D9"/>
+    <rect x="308" y="138" width="32" height="94" rx="16" fill="#78DBFF" opacity="0.45"/>
+    <rect x="684" y="138" width="32" height="94" rx="16" fill="#78DBFF" opacity="0.45"/>
+
+    <g fill="#DCEAF8">
+      <rect x="300" y="430" width="72" height="72" rx="14"/>
+      <rect x="408" y="430" width="72" height="72" rx="14"/>
+      <rect x="516" y="430" width="72" height="72" rx="14"/>
+      <rect x="624" y="430" width="72" height="72" rx="14"/>
+
+      <rect x="300" y="538" width="72" height="72" rx="14"/>
+      <rect x="408" y="538" width="72" height="72" rx="14"/>
+      <rect x="516" y="538" width="72" height="72" rx="14"/>
+      <rect x="624" y="538" width="72" height="72" rx="14"/>
+
+      <rect x="300" y="646" width="72" height="72" rx="14"/>
+      <rect x="408" y="646" width="72" height="72" rx="14"/>
+      <rect x="516" y="646" width="72" height="72" rx="14"/>
+      <rect x="624" y="646" width="72" height="72" rx="14"/>
+    </g>
+
+    <path d="M386 576L472 661L638 492" stroke="url(#check)" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <g transform="translate(638 206)">
+      <rect x="0" y="0" width="170" height="170" rx="44" fill="url(#badge)"/>
+      <rect x="18" y="18" width="134" height="134" rx="34" fill="#F7FCFF" fill-opacity="0.94"/>
+      <circle cx="85" cy="85" r="44" stroke="#8EDDFD" stroke-width="8"/>
+      <path d="M85 56V88L110 103" stroke="#25A7D8" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="150" cy="18" r="30" fill="#FF5A5F"/>
+    </g>
+  </g>
+</svg>
