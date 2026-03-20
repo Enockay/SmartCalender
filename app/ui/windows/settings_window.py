@@ -55,6 +55,9 @@ class SettingsWindow(QWidget):
         self._db = DatabaseManager()
         self._logger = get_logger(__name__)
         self.setObjectName("SettingsDialog")
+        # On Windows, ensure stylesheet backgrounds are actually painted for
+        # this widget subtree instead of falling back to native palette gray.
+        self.setAttribute(Qt.WA_StyledBackground, True)
         
         # Initialize sound service early so it's available when building tabs
         self._sound_service = SoundService()
@@ -145,11 +148,13 @@ class SettingsWindow(QWidget):
     def _build_general_tab(self) -> QWidget:
         scroll = QScrollArea()
         scroll.setObjectName("SettingsScrollArea")
+        scroll.setAttribute(Qt.WA_StyledBackground, True)
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.NoFrame)
 
         page = QWidget()
         page.setObjectName("SettingsPage")
+        page.setAttribute(Qt.WA_StyledBackground, True)
         lay = QVBoxLayout(page)
         lay.setContentsMargins(28, 20, 28, 20)
         lay.setSpacing(18)
@@ -242,11 +247,13 @@ class SettingsWindow(QWidget):
     def _build_account_tab(self) -> QWidget:
         scroll = QScrollArea()
         scroll.setObjectName("SettingsScrollArea")
+        scroll.setAttribute(Qt.WA_StyledBackground, True)
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.NoFrame)
 
         page = QWidget()
         page.setObjectName("SettingsPage")
+        page.setAttribute(Qt.WA_StyledBackground, True)
         lay = QVBoxLayout(page)
         lay.setContentsMargins(28, 20, 28, 20)
         lay.setSpacing(18)
@@ -254,6 +261,7 @@ class SettingsWindow(QWidget):
         # ── Profile card ──
         profile_card = QFrame(page)
         profile_card.setObjectName("SettingsCard")
+        profile_card.setAttribute(Qt.WA_StyledBackground, True)
         pc_lay = QVBoxLayout(profile_card)
         pc_lay.setContentsMargins(20, 20, 20, 20)
         pc_lay.setSpacing(14)
@@ -365,6 +373,7 @@ class SettingsWindow(QWidget):
         # ── Danger zone ──
         danger_card = QFrame(page)
         danger_card.setObjectName("DangerCard")
+        danger_card.setAttribute(Qt.WA_StyledBackground, True)
         dc_lay = QVBoxLayout(danger_card)
         dc_lay.setContentsMargins(20, 16, 20, 16)
         dc_lay.setSpacing(12)
@@ -410,11 +419,13 @@ class SettingsWindow(QWidget):
     def _build_notifications_tab(self) -> QWidget:
         scroll = QScrollArea()
         scroll.setObjectName("SettingsScrollArea")
+        scroll.setAttribute(Qt.WA_StyledBackground, True)
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.NoFrame)
 
         page = QWidget()
         page.setObjectName("SettingsPage")
+        page.setAttribute(Qt.WA_StyledBackground, True)
         lay = QVBoxLayout(page)
         lay.setContentsMargins(28, 20, 28, 20)
         lay.setSpacing(18)
@@ -534,11 +545,13 @@ class SettingsWindow(QWidget):
     def _build_backup_tab(self) -> QWidget:
         scroll = QScrollArea()
         scroll.setObjectName("SettingsScrollArea")
+        scroll.setAttribute(Qt.WA_StyledBackground, True)
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.NoFrame)
 
         page = QWidget()
         page.setObjectName("SettingsPage")
+        page.setAttribute(Qt.WA_StyledBackground, True)
         lay = QVBoxLayout(page)
         lay.setContentsMargins(28, 20, 28, 20)
         lay.setSpacing(18)
@@ -546,6 +559,7 @@ class SettingsWindow(QWidget):
         # ── Stats overview ──
         stats_card = QFrame(page)
         stats_card.setObjectName("SettingsCard")
+        stats_card.setAttribute(Qt.WA_StyledBackground, True)
         sc_lay = QHBoxLayout(stats_card)
         sc_lay.setContentsMargins(20, 16, 20, 16)
         sc_lay.setSpacing(20)
@@ -645,6 +659,7 @@ class SettingsWindow(QWidget):
         """Create a styled card with title and description."""
         card = QFrame()
         card.setObjectName("SettingsCard")
+        card.setAttribute(Qt.WA_StyledBackground, True)
         c_lay = QVBoxLayout(card)
         c_lay.setContentsMargins(20, 16, 20, 16)
         c_lay.setSpacing(10)
@@ -1311,13 +1326,16 @@ class SettingsWindow(QWidget):
 
         page = QWidget()
         page.setObjectName("SettingsPage")
+        page.setAttribute(Qt.WA_StyledBackground, True)
         scroll = QScrollArea(page)
         scroll.setObjectName("SettingsScrollArea")
+        scroll.setAttribute(Qt.WA_StyledBackground, True)
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.NoFrame)
 
         container = QWidget()
         container.setObjectName("SettingsPage")
+        container.setAttribute(Qt.WA_StyledBackground, True)
         lay = QVBoxLayout(container)
         lay.setContentsMargins(32, 32, 32, 32)
         lay.setSpacing(20)
@@ -1365,6 +1383,7 @@ class SettingsWindow(QWidget):
         # ── Author card ───────────────────────────────────────────────
         card = QFrame()
         card.setObjectName("AboutCard")
+        card.setAttribute(Qt.WA_StyledBackground, True)
         card_lay = QVBoxLayout(card)
         card_lay.setSpacing(8)
 
