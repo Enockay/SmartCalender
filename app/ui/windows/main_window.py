@@ -710,9 +710,14 @@ class MainWindow(QMainWindow):
             item = QListWidgetItem(label, self._nav_list)
             item.setSizeHint(QSize(0, 48))
 
-        self._nav_list.setFixedHeight(self._nav_list.count() * 48 + 2 * self._nav_list.frameWidth())
+        # Use dynamic height based on size hint instead of a strict per-row
+        # formula. On Windows (especially with DPI scaling and emoji fonts),
+        # fixed 48px rows + QSS padding can clip the first item ("Dashboard").
+        # Keep a little extra room for top/bottom padding from sidebar.qss.
+        self._nav_list.setFixedHeight(self._nav_list.sizeHintForRow(0) * self._nav_list.count() + 14)
 
         self._nav_list.setCurrentRow(0)
+        self._nav_list.scrollToTop()
         self._nav_list.currentRowChanged.connect(self._on_nav_changed)
         sidebar_layout.addWidget(self._nav_list)
 

@@ -636,6 +636,56 @@ QLabel#BackupStatLabel {
     font-weight: 600;
 }
 
+/* ── About tab (fully QSS-driven; avoids Windows inline-style overrides) ── */
+QLabel#SettingsAboutIcon {
+    background: transparent;
+    color: #0F172A;
+    font-size: 64px;
+}
+
+QLabel#SettingsAboutAppName {
+    background: transparent;
+    color: #22C55E;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+QLabel#SettingsAboutVersion {
+    background: transparent;
+    color: #7B8794;
+    font-size: 13px;
+}
+
+QFrame#AboutCard {
+    background: #F8FAFC;
+    border: 1px solid rgba(34, 197, 94, 0.22);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+QLabel#SettingsAboutMetaLabel {
+    background: transparent;
+    color: #6B7280;
+    font-weight: 700;
+}
+
+QLabel#SettingsAboutMetaValue {
+    background: transparent;
+    color: #111827;
+}
+
+QLabel#SettingsAboutMetaValue a {
+    color: #A855F7;
+    text-decoration: underline;
+}
+
+QLabel#SettingsAboutDescription {
+    color: #6B7280;
+    font-size: 13px;
+    background: transparent;
+    padding: 0 24px;
+}
+
 /* ── Scroll bars ── */
 QScrollBar:vertical {
     background: transparent;

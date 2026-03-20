@@ -1310,14 +1310,14 @@ class SettingsWindow(QWidget):
         import platform as _platform
 
         page = QWidget()
-        page.setStyleSheet("background-color: #FFFFFF;")
+        page.setObjectName("SettingsPage")
         scroll = QScrollArea(page)
-        scroll.setStyleSheet("background-color: #FFFFFF;")
+        scroll.setObjectName("SettingsScrollArea")
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.NoFrame)
 
         container = QWidget()
-        container.setStyleSheet("background-color: #FFFFFF;")
+        container.setObjectName("SettingsPage")
         lay = QVBoxLayout(container)
         lay.setContentsMargins(32, 32, 32, 32)
         lay.setSpacing(20)
@@ -1327,9 +1327,9 @@ class SettingsWindow(QWidget):
         badge_row.setAlignment(Qt.AlignHCenter)
 
         icon_lbl = QLabel()
+        icon_lbl.setObjectName("SettingsAboutIcon")
         icon_lbl.setAlignment(Qt.AlignCenter)
         icon_lbl.setFixedSize(64, 64)
-        icon_lbl.setStyleSheet("background: transparent;")
 
         # Use bundled logo image (works inside packaged app).
         logo_path = get_base_dir() / "assets" / "image.png"
@@ -1343,25 +1343,17 @@ class SettingsWindow(QWidget):
         else:
             # Fallback for development or missing file
             icon_lbl.setText("📆")
-            icon_lbl.setStyleSheet("font-size: 64px; background: transparent;")
         badge_row.addWidget(icon_lbl)
         lay.addLayout(badge_row)
 
-        # App name
-        # Brand accent color (green)
-        accent = "#22C55E"
-
         name_lbl = QLabel("Smart Calender")
+        name_lbl.setObjectName("SettingsAboutAppName")
         name_lbl.setAlignment(Qt.AlignCenter)
-        name_lbl.setStyleSheet(
-            f"font-size: 22px; font-weight: 700; color: {accent};"
-            "background: transparent;"
-        )
         lay.addWidget(name_lbl)
 
         version_lbl = QLabel("Version 1.0.0")
+        version_lbl.setObjectName("SettingsAboutVersion")
         version_lbl.setAlignment(Qt.AlignCenter)
-        version_lbl.setStyleSheet("font-size: 13px; color: #7B8794; background: transparent;")
         lay.addWidget(version_lbl)
 
         # ── Divider ──────────────────────────────────────────────────
@@ -1373,27 +1365,17 @@ class SettingsWindow(QWidget):
         # ── Author card ───────────────────────────────────────────────
         card = QFrame()
         card.setObjectName("AboutCard")
-        card.setStyleSheet(
-            "#AboutCard {"
-            f"  background: #F8FAFC;"
-            f"  border: 1px solid rgba(34,197,94,0.22);"
-            "  border-radius: 12px;"
-            "  padding: 16px;"
-            "}"
-        )
         card_lay = QVBoxLayout(card)
         card_lay.setSpacing(8)
 
         def _row(label: str, value: str) -> QHBoxLayout:
             row = QHBoxLayout()
             lbl = QLabel(f"<b>{label}</b>")
+            lbl.setObjectName("SettingsAboutMetaLabel")
             lbl.setFixedWidth(140)
-            lbl.setStyleSheet(
-                "background: transparent; color: #6B7280; font-weight: 700;"
-            )
             val = QLabel(value)
+            val.setObjectName("SettingsAboutMetaValue")
             val.setWordWrap(True)
-            val.setStyleSheet("background: transparent; color: #111827;")
             row.addWidget(lbl)
             row.addWidget(val, 1)
             return row
@@ -1406,19 +1388,17 @@ class SettingsWindow(QWidget):
         card_lay.addLayout(_row("Built by", "blackie-networks"))
         license_row = QHBoxLayout()
         license_lbl = QLabel("<b>License</b>")
+        license_lbl.setObjectName("SettingsAboutMetaLabel")
         license_lbl.setFixedWidth(140)
-        license_lbl.setStyleSheet(
-            "background: transparent; color: #6B7280; font-weight: 700;"
-        )
         license_val = QLabel(
             "Copyright © 2026 "
             "<a href='https://www.blackie-networks.com'>blackie-networks</a>. "
             "All rights reserved."
         )
+        license_val.setObjectName("SettingsAboutMetaValue")
         license_val.setTextFormat(Qt.RichText)
         license_val.setOpenExternalLinks(True)
         license_val.setWordWrap(True)
-        license_val.setStyleSheet("background: transparent; color: #111827;")
         license_row.addWidget(license_lbl)
         license_row.addWidget(license_val, 1)
         card_lay.addLayout(license_row)
@@ -1433,9 +1413,7 @@ class SettingsWindow(QWidget):
         )
         desc.setWordWrap(True)
         desc.setAlignment(Qt.AlignCenter)
-        desc.setStyleSheet(
-            "color: #6B7280; font-size: 13px; background: transparent; padding: 0 24px;"
-        )
+        desc.setObjectName("SettingsAboutDescription")
         desc.setTextFormat(Qt.RichText)
         lay.addWidget(desc)
 
