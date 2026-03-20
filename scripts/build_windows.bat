@@ -193,13 +193,13 @@ set NSI_SCRIPT=%BUILD_DIR%\installer.nsi
 set INSTALLER_OUT=%DIST_DIR%\%APP_NAME%-Setup-%VERSION%.exe
 
 (
-echo !define APP_NAME        "%APP_NAME%"
-echo !define APP_VERSION     "%VERSION%"
-echo !define APP_AUTHOR      "%AUTHOR%"
-echo !define APP_DESCRIPTION "%DESCRIPTION%"
-echo !define INSTALLER_NAME  "%INSTALLER_OUT%"
-echo !define APP_DIR         "%APP_DIR%"
-echo !define APP_EXE         "%APP_NAME%.exe"
+echo ^!define APP_NAME        "%APP_NAME%"
+echo ^!define APP_VERSION     "%VERSION%"
+echo ^!define APP_AUTHOR      "%AUTHOR%"
+echo ^!define APP_DESCRIPTION "%DESCRIPTION%"
+echo ^!define INSTALLER_NAME  "%INSTALLER_OUT%"
+echo ^!define APP_DIR         "%APP_DIR%"
+echo ^!define APP_EXE         "%APP_NAME%.exe"
 echo.
 echo Name "${APP_NAME}"
 echo OutFile "${INSTALLER_NAME}"
@@ -208,17 +208,17 @@ echo InstallDirRegKey HKLM "Software\${APP_NAME}" "InstallDir"
 echo RequestExecutionLevel admin
 echo.
 echo ; Modern UI
-echo !include "MUI2.nsh"
-echo !define MUI_ABORTWARNING
-echo !define MUI_FINISHPAGE_RUN "$INSTDIR\${APP_EXE}"
-echo !insertmacro MUI_PAGE_WELCOME
-echo !insertmacro MUI_PAGE_LICENSE "%ROOT%\LICENSE.txt"
-echo !insertmacro MUI_PAGE_DIRECTORY
-echo !insertmacro MUI_PAGE_INSTFILES
-echo !insertmacro MUI_PAGE_FINISH
-echo !insertmacro MUI_UNPAGE_CONFIRM
-echo !insertmacro MUI_UNPAGE_INSTFILES
-echo !insertmacro MUI_LANGUAGE "English"
+echo ^!include "MUI2.nsh"
+echo ^!define MUI_ABORTWARNING
+echo ^!define MUI_FINISHPAGE_RUN "$INSTDIR\${APP_EXE}"
+echo ^!insertmacro MUI_PAGE_WELCOME
+echo ^!insertmacro MUI_PAGE_LICENSE "%ROOT%\LICENSE.txt"
+echo ^!insertmacro MUI_PAGE_DIRECTORY
+echo ^!insertmacro MUI_PAGE_INSTFILES
+echo ^!insertmacro MUI_PAGE_FINISH
+echo ^!insertmacro MUI_UNPAGE_CONFIRM
+echo ^!insertmacro MUI_UNPAGE_INSTFILES
+echo ^!insertmacro MUI_LANGUAGE "English"
 echo.
 echo Section "Install"
 echo   SetOutPath "$INSTDIR"
@@ -273,6 +273,11 @@ if errorlevel 1 (
         exit /b 0
     )
     "%MAKENSIS_EXE%" "%NSI_SCRIPT%"
+    if errorlevel 1 (
+        echo   WARNING: NSIS returned an error.
+    ) else (
+        echo   Installer: %INSTALLER_OUT%
+    )
 ) else (
     makensis "%NSI_SCRIPT%"
     if errorlevel 1 (
@@ -317,4 +322,4 @@ echo   Author   : %AUTHOR%
 echo   Version  : %VERSION%
 echo ============================================================
 
-endlocal
+exit /b 0
