@@ -32,6 +32,11 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
+      - name: Install Pillow (Windows icon conversion fallback)
+        if: matrix.target == 'windows'
+        run: |
+          pip install pillow
+
       - name: Install Linux build dependencies (AppImage/.deb)
         if: matrix.target == 'linux'
         run: |

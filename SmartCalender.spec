@@ -47,8 +47,8 @@ if IS_MAC:
 elif IS_WINDOWS:
     if Path(ICON_WIN).exists():
         ICON = ICON_WIN
-    elif Path(ICON_FALLBACK).exists():
-        ICON = ICON_FALLBACK
+    # Windows EXE icons must be .ico (or another .exe). Do not fall back to
+    # PNG here, otherwise PyInstaller fails unless Pillow is installed.
     else:
         ICON = None
 else:
