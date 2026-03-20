@@ -720,7 +720,7 @@ class MainWindow(QMainWindow):
         # card down instead (added below).
         # Nudge the mini calendar slightly downward to visually center it
         # between the nav list and the user card.
-        sidebar_layout.addSpacing(80)
+        sidebar_layout.addSpacing(14)
 
         # ── Mini calendar ──
         self._mini_calendar_widget = MiniCalendarWidget(sidebar_container)
