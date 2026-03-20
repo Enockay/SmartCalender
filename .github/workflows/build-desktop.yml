@@ -43,12 +43,25 @@ jobs:
         if: matrix.target == 'windows'
         shell: pwsh
         run: |
-          choco install nsis -y
-          # Persist Chocolatey bin path for subsequent workflow steps.
+          choco install nsis -y --no-progress
+
+          # NSIS is usually installed here by Chocolatey.
+          $nsisDir = "${env:ProgramFiles(x86)}\NSIS"
+          $nsisExe = Join-Path $nsisDir "makensis.exe"
+          if (-not (Test-Path $nsisExe)) {
+            throw "NSIS installed but makensis.exe not found at $nsisExe"
+          }
+
+          # Persist NSIS folder so cmd/batch steps can resolve makensis.
+          $nsisDir | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+          # Keep Chocolatey bin too (optional fallback tools).
           if ($env:ChocolateyInstall) {
             "$env:ChocolateyInstall\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           }
-          where.exe makensis
+
+          # Verify using absolute path (avoids transient PATH lookup failures).
+          & $nsisExe /VERSION
 
       - name: Build (Linux)
         if: matrix.target == 'linux'
