@@ -454,6 +454,17 @@ QPushButton#SettingsActionBtn:pressed {
     background-color: #DBEAFE;
 }
 
+/* Keep critical action buttons from collapsing to icon-sized width on Windows. */
+QPushButton#DangerButton,
+QPushButton#DangerButtonRed,
+QPushButton#SubscriptionRenewButton,
+QPushButton#SettingsActionBtn,
+QPushButton#SettingsSaveBtn,
+QPushButton#SettingsResetBtn {
+    min-width: 120px;
+    min-height: 34px;
+}
+
 /* ── Test Sound Button ── */
 QPushButton#SettingsTestSoundButton {
     background-color: #3B82F6;

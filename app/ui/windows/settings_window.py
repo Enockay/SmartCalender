@@ -346,7 +346,7 @@ class SettingsWindow(QWidget):
         sub_row.addWidget(self._sub_badge)
 
         # Renew subscription button -> opens browser with user_id + token
-        self._renew_btn = QPushButton("↻  Renew Subscription", page)
+        self._renew_btn = QPushButton("Renew Subscription", page)
         self._renew_btn.setObjectName("SubscriptionRenewButton")
         self._renew_btn.setCursor(Qt.PointingHandCursor)
         self._renew_btn.clicked.connect(self._on_renew_subscription)
@@ -396,13 +396,13 @@ class SettingsWindow(QWidget):
         danger_row = QHBoxLayout()
         danger_row.setSpacing(12)
 
-        self._logout_btn = QPushButton("🚪  Log Out", page)
+        self._logout_btn = QPushButton("Log Out", page)
         self._logout_btn.setObjectName("DangerButton")
         self._logout_btn.setCursor(Qt.PointingHandCursor)
         self._logout_btn.clicked.connect(self._on_logout)
         danger_row.addWidget(self._logout_btn)
 
-        self._delete_btn = QPushButton("🗑  Delete All Data", page)
+        self._delete_btn = QPushButton("Delete All Data", page)
         self._delete_btn.setObjectName("DangerButtonRed")
         self._delete_btn.setCursor(Qt.PointingHandCursor)
         self._delete_btn.clicked.connect(self._on_delete_all_data)
@@ -578,7 +578,7 @@ class SettingsWindow(QWidget):
         card_lay = backup_card.layout()
         backup_row = QHBoxLayout()
         backup_row.setSpacing(12)
-        self._backup_now_btn = QPushButton("  📦  Backup Now  ", page)
+        self._backup_now_btn = QPushButton("Backup Now", page)
         self._backup_now_btn.setObjectName("SettingsActionBtn")
         self._backup_now_btn.setCursor(Qt.PointingHandCursor)
         self._backup_now_btn.setFixedHeight(38)
@@ -614,7 +614,7 @@ class SettingsWindow(QWidget):
         card_lay = restore_card.layout()
         restore_row = QHBoxLayout()
         restore_row.setSpacing(12)
-        self._restore_btn = QPushButton("  📂  Restore from File  ", page)
+        self._restore_btn = QPushButton("Restore from File", page)
         self._restore_btn.setObjectName("SettingsActionBtn")
         self._restore_btn.setCursor(Qt.PointingHandCursor)
         self._restore_btn.setFixedHeight(38)
@@ -629,7 +629,7 @@ class SettingsWindow(QWidget):
         card_lay = export_card.layout()
         export_row = QHBoxLayout()
         export_row.setSpacing(12)
-        self._export_btn = QPushButton("  📤  Export JSON  ", page)
+        self._export_btn = QPushButton("Export JSON", page)
         self._export_btn.setObjectName("SettingsActionBtn")
         self._export_btn.setCursor(Qt.PointingHandCursor)
         self._export_btn.setFixedHeight(38)
@@ -849,9 +849,8 @@ class SettingsWindow(QWidget):
                     self._email_edit.setText(user.email or "")
 
                     # Subscription tier badge
-                    self._sub_badge.setText(
-                        (user.subscription_tier or "free").capitalize()
-                    )
+                    tier = (user.subscription_tier or "free").capitalize()
+                    self._sub_badge.setText(tier)
                     # Subscription details: status + expiry date if present
                     details = []
                     if user.subscription_status:
@@ -862,6 +861,14 @@ class SettingsWindow(QWidget):
                             + user.subscription_expires_at.strftime("%b %d, %Y")
                         )
                     self._sub_detail_label.setText(" · ".join(details))
+
+                    # Keep CTA text clear based on subscription state.
+                    tier_l = (user.subscription_tier or "").lower()
+                    status_l = (user.subscription_status or "").lower()
+                    if tier_l in {"premium", "pro"} and status_l in {"active", "trialing"}:
+                        self._renew_btn.setText("Manage Subscription")
+                    else:
+                        self._renew_btn.setText("Upgrade to Premium")
                 # Stats
                 task_count = session.execute(
                     select(func.count(Task.id))
@@ -924,6 +931,40 @@ class SettingsWindow(QWidget):
             if btn is not None:
                 btn.setVisible(True)
                 btn.setEnabled(True)
+
+        # Windows can still de-emphasize button colors under certain palette/DPI
+        # combinations. Apply a focused fallback style for key account actions.
+        if os.name == "nt":
+            self._apply_windows_action_button_fallback()
+
+    def _apply_windows_action_button_fallback(self) -> None:
+        """Force clear action button contrast on Windows if QSS is muted."""
+        if getattr(self, "_renew_btn", None) is not None:
+            self._renew_btn.setStyleSheet(
+                "QPushButton {"
+                "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #22C55E, stop:1 #16A34A);"
+                "color: #FFFFFF; border: none; border-radius: 10px; padding: 8px 16px; font-weight: 700;"
+                "}"
+                "QPushButton:hover {"
+                "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #4ADE80, stop:1 #22C55E);"
+                "}"
+            )
+        if getattr(self, "_logout_btn", None) is not None:
+            self._logout_btn.setStyleSheet(
+                "QPushButton {"
+                "background-color: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA;"
+                "border-radius: 10px; padding: 8px 20px; font-weight: 700;"
+                "}"
+                "QPushButton:hover { background-color: #FEE2E2; border: 1px solid #F87171; }"
+            )
+        if getattr(self, "_delete_btn", None) is not None:
+            self._delete_btn.setStyleSheet(
+                "QPushButton {"
+                "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #DC2626, stop:1 #EF4444);"
+                "color: #FFFFFF; border: none; border-radius: 10px; padding: 8px 20px; font-weight: 700;"
+                "}"
+                "QPushButton:hover { background: #B91C1C; }"
+            )
 
     def refresh_account(self) -> None:
         """Public hook for parent window to refresh account/subscription UI."""
@@ -1455,8 +1496,12 @@ class SettingsWindow(QWidget):
             qss = qss_path.read_text(encoding="utf-8")
             # Resolve icon paths to absolute so QSS finds them
             icons_dir = root / "ui" / "resources" / "icons"
+            # QSS expects URL paths with forward slashes. On Windows, backslashes
+            # can break stylesheet parsing and cause all following rules to be
+            # ignored (which made About tab styling appear "lost").
+            icons_url = icons_dir.as_posix()
             qss = qss.replace(
                 "url(app/ui/resources/icons/",
-                f"url({icons_dir}/",
+                f"url({icons_url}/",
             )
             self.setStyleSheet(qss)
