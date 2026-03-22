@@ -78,6 +78,9 @@ datas = [
 
     # App configuration (read-only defaults)
     (str(ROOT / "config.ini"), "."),
+
+    # Branding assets used at runtime (window/tray icons, etc.)
+    (str(ROOT / "assets"), "assets"),
 ]
 
 # Only add optional resource subdirs if they are present

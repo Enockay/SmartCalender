@@ -35,11 +35,12 @@ def main() -> int:
     app = QApplication(sys.argv)
     app.setApplicationName("SmartCalender Desktop")
 
-    # Use the same SVG as the dock/app + window icon.
+    # Use packaged assets for dock/app + window icon.
     try:
-        svg_path = get_base_dir() / "assets" / "logo.svg"
-        renderer = QSvgRenderer(str(svg_path))
         icon = QIcon()
+        base_dir = get_base_dir()
+        svg_path = base_dir / "assets" / "logo.svg"
+        renderer = QSvgRenderer(str(svg_path))
         if renderer.isValid():
             for s in (16, 32, 64, 128):
                 pm = QPixmap(QSize(s, s))
@@ -48,6 +49,15 @@ def main() -> int:
                 renderer.render(painter)
                 painter.end()
                 icon.addPixmap(pm)
+        else:
+            for raster_icon in (
+                base_dir / "assets" / "SmartCalender.png",
+                base_dir / "assets" / "image.png",
+            ):
+                if raster_icon.exists():
+                    icon = QIcon(str(raster_icon))
+                    break
+        if not icon.isNull():
             app.setWindowIcon(icon)
     except Exception:
         # Non-fatal: if SVG rendering fails, fall back to default platform icon.

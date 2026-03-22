@@ -76,6 +76,27 @@ if errorlevel 1 (
     exit /b 1
 )
 
+REM Ensure Windows .ico exists for PyInstaller (prevents default Python icon)
+if not exist "%ROOT%\assets\SmartCalender.ico" (
+    if exist "%ROOT%\assets\SmartCalender.png" (
+        echo   Generating assets\SmartCalender.ico from SmartCalender.png...
+        powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+            "$png='%ROOT%\assets\SmartCalender.png'; $ico='%ROOT%\assets\SmartCalender.ico';" ^
+            "try { Add-Type -AssemblyName System.Drawing; $img=[System.Drawing.Image]::FromFile($png); $bmp=New-Object System.Drawing.Bitmap 256,256; $g=[System.Drawing.Graphics]::FromImage($bmp); $g.DrawImage($img,0,0,256,256); $h=$bmp.GetHicon(); $icon=[System.Drawing.Icon]::FromHandle($h); $fs=New-Object System.IO.FileStream($ico,[System.IO.FileMode]::Create); $icon.Save($fs); $fs.Close(); $icon.Dispose(); $g.Dispose(); $bmp.Dispose(); $img.Dispose(); Write-Host '   Icon created:' $ico } catch { Write-Host '   WARNING: Failed to generate .ico:' $_.Exception.Message }"
+    ) else (
+        echo   ERROR: assets\SmartCalender.ico and assets\SmartCalender.png not found.
+        echo   A usable app icon is required to build a distributable Windows package.
+        exit /b 1
+    )
+)
+
+REM Fail fast in CI/local builds if icon is still unavailable after conversion attempt
+if not exist "%ROOT%\assets\SmartCalender.ico" (
+    echo   ERROR: Missing required icon file: assets\SmartCalender.ico
+    echo   Add assets\SmartCalender.ico or assets\SmartCalender.png and rerun build.
+    exit /b 1
+)
+
 REM ---------------------------------------------------------------------------
 REM  4. Create Windows version-info file
 REM ---------------------------------------------------------------------------
