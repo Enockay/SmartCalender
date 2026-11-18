@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from app.core import prefs
+from app.core import theme as _theme
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from typing import Dict, List
@@ -139,9 +141,7 @@ class MonthViewWidget(QWidget):
 
     def _render(self) -> None:
         today = date.today()
-        self._table.setHorizontalHeaderLabels(
-            ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-        )
+        self._table.setHorizontalHeaderLabels(prefs.weekday_labels())
 
         day_font = QFont("Segoe UI", 12, QFont.Bold)
 
@@ -155,8 +155,8 @@ class MonthViewWidget(QWidget):
                 item.setText("")
                 item.setFont(day_font)
                 item.setTextAlignment(Qt.AlignLeft | Qt.AlignTop)
-                item.setData(Qt.BackgroundRole, QBrush(QColor("#FFFFFF")))
-                item.setData(Qt.ForegroundRole, QBrush(QColor("#0F172A")))
+                item.setData(Qt.BackgroundRole, QBrush(_theme.bg("#FFFFFF")))
+                item.setData(Qt.ForegroundRole, QBrush(_theme.fg("#0F172A")))
 
         # Map day -> meetings
         by_day: Dict[int, List[MeetingModel]] = {}
@@ -164,7 +164,7 @@ class MonthViewWidget(QWidget):
             day = m.start_time.day
             by_day.setdefault(day, []).append(m)
 
-        first_weekday = self._month.weekday()  # Monday=0
+        first_weekday = prefs.week_offset(self._month)
         days_in_month = (
             (self._month.replace(day=28) + timedelta(days=4)).replace(day=1)
             - timedelta(days=1)
@@ -178,7 +178,7 @@ class MonthViewWidget(QWidget):
             meetings = by_day.get(day, [])
             current_date = date(self._month.year, self._month.month, day)
             is_today = current_date == today
-            is_weekend = col >= 5
+            is_weekend = current_date.weekday() >= 5
 
             if meetings:
                 m = meetings[0]
@@ -191,18 +191,18 @@ class MonthViewWidget(QWidget):
                     getattr(m, "color_gradient", None)
                 )
                 item.setData(Qt.BackgroundRole, bg_brush)
-                item.setData(Qt.ForegroundRole, QBrush(QColor("#FFFFFF")))
+                item.setData(Qt.ForegroundRole, QBrush(_theme.fg("#FFFFFF")))
             else:
                 item.setText(f" {day}")
                 if is_today:
-                    item.setData(Qt.BackgroundRole, QBrush(QColor("#DBEAFE")))
-                    item.setData(Qt.ForegroundRole, QBrush(QColor("#1D4ED8")))
+                    item.setData(Qt.BackgroundRole, QBrush(_theme.bg("#D1FAE5")))
+                    item.setData(Qt.ForegroundRole, QBrush(_theme.fg("#047857")))
                 elif is_weekend:
-                    item.setData(Qt.BackgroundRole, QBrush(QColor("#F8FAFC")))
-                    item.setData(Qt.ForegroundRole, QBrush(QColor("#64748B")))
+                    item.setData(Qt.BackgroundRole, QBrush(_theme.bg("#F8FAFC")))
+                    item.setData(Qt.ForegroundRole, QBrush(_theme.fg("#64748B")))
                 else:
-                    item.setData(Qt.BackgroundRole, QBrush(QColor("#FFFFFF")))
-                    item.setData(Qt.ForegroundRole, QBrush(QColor("#0F172A")))
+                    item.setData(Qt.BackgroundRole, QBrush(_theme.bg("#FFFFFF")))
+                    item.setData(Qt.ForegroundRole, QBrush(_theme.fg("#0F172A")))
 
             col += 1
             if col >= 7:
@@ -214,7 +214,7 @@ class MonthViewWidget(QWidget):
         self._table.viewport().update()
 
     def _on_cell_clicked(self, row: int, col: int) -> None:
-        first_weekday = self._month.weekday()
+        first_weekday = prefs.week_offset(self._month)
         index = row * 7 + col - first_weekday
         if index < 0:
             return

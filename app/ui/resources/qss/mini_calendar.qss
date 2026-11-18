@@ -56,13 +56,13 @@ QCalendarWidget#MiniCalendar QToolButton {
 
 /* Hover */
 QCalendarWidget#MiniCalendar QToolButton:hover {
-    background-color: rgba(59, 130, 246, 0.15);
+    background-color: rgba(16, 185, 129, 0.15);
 }
 
 
 /* Pressed */
 QCalendarWidget#MiniCalendar QToolButton:pressed {
-    background-color: rgba(59, 130, 246, 0.25);
+    background-color: rgba(16, 185, 129, 0.25);
 }
 
 
@@ -103,7 +103,7 @@ QCalendarWidget#MiniCalendar QAbstractItemView {
     border: none;
     outline: 0;
     gridline-color: transparent;
-    selection-background-color: #3B82F6;
+    selection-background-color: #10B981;
     selection-color: #FFFFFF;
 
     font-size: 11px;
@@ -126,14 +126,14 @@ QCalendarWidget#MiniCalendar QAbstractItemView::item {
 
 /* Hovered day */
 QCalendarWidget#MiniCalendar QAbstractItemView::item:hover {
-    background-color: rgba(59, 130, 246, 0.15);
+    background-color: rgba(16, 185, 129, 0.15);
     color: #FFFFFF;
 }
 
 
 /* Selected day */
 QCalendarWidget#MiniCalendar QAbstractItemView::item:selected {
-    background-color: #3B82F6;
+    background-color: #10B981;
     color: #FFFFFF;
     border-radius: 6px;
 }
@@ -168,7 +168,7 @@ QCalendarWidget#MiniCalendar QTableView {
    MENU
    ========================= */
 QCalendarWidget#MiniCalendar QMenu {
-    background-color: #0F2850;
+    background-color: #111827;
     color: #F8FAFC;
     border: 1px solid rgba(255,255,255,0.10);
     border-radius: 8px;
@@ -181,6 +181,6 @@ QCalendarWidget#MiniCalendar QMenu::item {
 }
 
 QCalendarWidget#MiniCalendar QMenu::item:selected {
-    background-color: rgba(59, 130, 246, 0.25);
+    background-color: rgba(16, 185, 129, 0.25);
     color: #FFFFFF;
 }

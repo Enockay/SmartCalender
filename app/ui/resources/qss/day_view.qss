@@ -11,11 +11,11 @@ QWidget#DayViewRoot {
 QWidget#DayHeaderBar {
     background: qlineargradient(
         x1:0, y1:0, x2:1, y2:0,
-        stop:0 #142F5C,
-        stop:0.5 #1A3B75,
-        stop:1 #1E4384
+        stop:0 #1F2937,
+        stop:0.5 #1F2937,
+        stop:1 #374151
     );
-    border-bottom: 1px solid rgba(200, 210, 235, 0.30);
+    border-bottom: 1px solid rgba(209, 250, 229, 0.30);
 }
 
 QLabel#DayTitle {

@@ -17,7 +17,7 @@ QTableWidget#TodoListTable {
     font-size: 14px;
     gridline-color: #E2E8F0;
     selection-background-color: transparent;
-    selection-color: #0F172A;
+    selection-color: #0B0F14;
 }
 QTableWidget#TodoListTable::item {
     padding: 2px 4px;
@@ -25,14 +25,14 @@ QTableWidget#TodoListTable::item {
 
 QTableWidget#TodoListTable::item:selected {
     background: transparent;
-    border: 2px solid rgba(37, 99, 235, 0.35);
+    border: 2px solid rgba(5, 150, 105, 0.35);
 }
 
 QTableWidget#TodoListTable QHeaderView::section {
     background: qlineargradient(
         x1:0, y1:0, x2:0, y2:1,
-        stop:0 #1E3A6E,
-        stop:1 #142F5C
+        stop:0 #065F46,
+        stop:1 #1F2937
     );
     color: rgba(255, 255, 255, 0.92);
     border: none;
@@ -51,7 +51,7 @@ QTableWidget#TodoListTable QHeaderView::section:last {
 }
 
 QTableCornerButton::section {
-    background: #142F5C;
+    background: #1F2937;
     border: none;
 }
 

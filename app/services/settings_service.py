@@ -6,7 +6,7 @@ from app.database.db_manager import DatabaseManager
 from app.repositories.settings_repository import SettingsRepository
 
 
-ThemeName = Literal["light", "dark"]
+ThemeName = Literal["system", "light", "dark"]
 ViewName = Literal["day", "week", "month", "year"]
 
 
@@ -52,11 +52,31 @@ class SettingsService:
         finally:
             session.close()
 
+    # --- Background / tray -------------------------------------------------
+
+    def get_run_in_background(self) -> bool:
+        return self._get("run_in_background", "1") == "1"
+
+    def set_run_in_background(self, enabled: bool) -> None:
+        self._set("run_in_background", "1" if enabled else "0")
+
+    # Public generic accessors (onboarding flags, UI preferences)
+    def get_value(self, key: str, default: str = "") -> str:
+        return self._get(key, default)
+
+    def set_value(self, key: str, value: str) -> None:
+        self._set(key, value)
+
     # --- Theme -----------------------------------------------------------
 
     def get_theme(self) -> ThemeName:
-        val = self._get(self.THEME_KEY, "light")
-        return val if val in ("light", "dark") else "light"
+        if self._get("theme_migrated", "") != "dark-default":
+            # Dark is the default theme. Older versions always stored "light",
+            # so switch everyone to dark once; later choices are respected.
+            self._set(self.THEME_KEY, "dark")
+            self._set("theme_migrated", "dark-default")
+        val = self._get(self.THEME_KEY, "dark")
+        return val if val in ("system", "light", "dark") else "dark"
 
     def set_theme(self, theme: ThemeName) -> None:
         self._set(self.THEME_KEY, theme)

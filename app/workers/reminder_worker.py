@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from app.core import prefs
 from datetime import datetime
 
 from PySide6.QtCore import QObject, QTimer
@@ -59,7 +60,7 @@ class ReminderWorker(QObject):
             self._logger.info(f"Processing due reminder: ID={info.id}, Title='{info.title}', remind_at={info.remind_at.strftime('%Y-%m-%d %H:%M:%S')}")
             # Build notification text
             remind_at = info.remind_at
-            time_str = remind_at.strftime("%I:%M %p").lstrip("0")
+            time_str = prefs.fmt_time(remind_at)
 
             # If linked to a meeting, show meeting context
             if info.meeting_title:

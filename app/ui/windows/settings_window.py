@@ -48,6 +48,9 @@ class SettingsWindow(QWidget):
     settingsSaved = Signal()
     # Emitted when user clicks renew so the main window can open websocket, etc.
     renewSubscriptionRequested = Signal()
+    welcomeTourRequested = Signal()
+    sampleDataLoadRequested = Signal()
+    sampleDataClearRequested = Signal()
 
     def __init__(self, settings: SettingsService, parent=None) -> None:
         super().__init__(parent)
@@ -86,7 +89,7 @@ class SettingsWindow(QWidget):
         h_lay.addStretch()
 
         # Version badge
-        ver = QLabel("v1.0", header)
+        ver = QLabel("v1.3", header)
         ver.setObjectName("SettingsVersionBadge")
         ver.setAlignment(Qt.AlignCenter)
         h_lay.addWidget(ver)
@@ -160,16 +163,55 @@ class SettingsWindow(QWidget):
         lay.setSpacing(18)
 
         # ── Theme ──
-        theme_card = self._card("🎨  Appearance", "Light mode only")
+        theme_card = self._card("🎨  Appearance", "Light, dark, or follow your computer's setting")
         card_lay = theme_card.layout()
 
-        self._theme_locked_label = QLabel("☀  Light", page)
-        self._theme_locked_label.setObjectName("SettingsLockedPill")
-        self._theme_locked_label.setAlignment(Qt.AlignCenter)
-        self._theme_locked_label.setFixedHeight(36)
-        self._theme_locked_label.setFixedWidth(180)
-        card_lay.addWidget(self._theme_locked_label, alignment=Qt.AlignLeft)
+        self._theme_combo = QComboBox(page)
+        self._theme_combo.setObjectName("SettingsCombo")
+        self._theme_combo.addItem("Match my computer", "system")
+        self._theme_combo.addItem("Light", "light")
+        self._theme_combo.addItem("Dark", "dark")
+        self._theme_combo.setFixedHeight(36)
+        self._theme_combo.setAccessibleName("Appearance")
+        card_lay.addWidget(self._theme_combo)
         lay.addWidget(theme_card)
+
+        # ── Date & time (review §4.10) ──
+        dt_card = self._card("🕑  Date & time", "How weeks and times are shown everywhere in SmartCalender")
+        card_lay = dt_card.layout()
+        dt_row = QHBoxLayout()
+        dt_row.setSpacing(12)
+        ws_col = QVBoxLayout()
+        ws_col.addWidget(self._field_label("Week starts on"))
+        self._week_start_combo = QComboBox(page)
+        self._week_start_combo.setObjectName("SettingsCombo")
+        for label, val in (("Monday", 0), ("Sunday", 6), ("Saturday", 5)):
+            self._week_start_combo.addItem(label, val)
+        self._week_start_combo.setFixedHeight(36)
+        self._week_start_combo.setAccessibleName("Week starts on")
+        ws_col.addWidget(self._week_start_combo)
+        dt_row.addLayout(ws_col, 1)
+        clock_col = QVBoxLayout()
+        clock_col.addWidget(self._field_label("Clock"))
+        self._clock_combo = QComboBox(page)
+        self._clock_combo.setObjectName("SettingsCombo")
+        self._clock_combo.addItem("24-hour (14:30)", "24h")
+        self._clock_combo.addItem("12-hour (2:30 PM)", "12h")
+        self._clock_combo.setFixedHeight(36)
+        self._clock_combo.setAccessibleName("Clock format")
+        clock_col.addWidget(self._clock_combo)
+        dt_row.addLayout(clock_col, 1)
+        card_lay.addLayout(dt_row)
+        from app.core import prefs as _prefs
+        self._tz_label = QLabel(
+            f"Time zone: {_prefs.time_zone_name()}. Events use your computer's time zone; "
+            "change it in your system settings when you travel.",
+            page,
+        )
+        self._tz_label.setObjectName("SettingsCardDesc")
+        self._tz_label.setWordWrap(True)
+        card_lay.addWidget(self._tz_label)
+        lay.addWidget(dt_card)
 
         # ── Language ──
         lang_card = self._card("🌐  Language", "Language is fixed to English")
@@ -230,7 +272,7 @@ class SettingsWindow(QWidget):
         lay.addWidget(view_card)
 
         # ── Weather city ──
-        weather_card = self._card("🌤  Weather City", "Auto-detect from IP if left blank")
+        weather_card = self._card("🌤  Weather City", "Optional. Leave blank to detect it automatically, or to hide weather if it cannot be found.")
         card_lay = weather_card.layout()
 
         self._weather_edit = QLineEdit(page)
@@ -239,6 +281,29 @@ class SettingsWindow(QWidget):
         self._weather_edit.setFixedHeight(36)
         card_lay.addWidget(self._weather_edit)
         lay.addWidget(weather_card)
+
+        # ── Getting started (review §4.6: tour + removable sample data) ──
+        start_card = self._card(
+            "🚀  Getting started",
+            "Replay the welcome tour, or add a sample week to explore. Sample items can be removed in one click.",
+        )
+        card_lay = start_card.layout()
+        start_row = QHBoxLayout()
+        start_row.setSpacing(10)
+        tour_btn = QPushButton("Show welcome tour", page)
+        tour_btn.setObjectName("SettingsActionBtn")
+        tour_btn.setCursor(Qt.PointingHandCursor)
+        tour_btn.clicked.connect(self.welcomeTourRequested.emit)
+        start_row.addWidget(tour_btn)
+        self._sample_btn = QPushButton("", page)
+        self._sample_btn.setObjectName("SettingsActionBtn")
+        self._sample_btn.setCursor(Qt.PointingHandCursor)
+        self._sample_btn.clicked.connect(self._on_sample_btn)
+        start_row.addWidget(self._sample_btn)
+        start_row.addStretch()
+        card_lay.addLayout(start_row)
+        lay.addWidget(start_card)
+        self.refresh_sample_data()
 
         lay.addStretch()
         scroll.setWidget(page)
@@ -434,9 +499,15 @@ class SettingsWindow(QWidget):
         notif_card = self._card("🖥  Desktop Notifications", "Get alerts for upcoming events")
         card_lay = notif_card.layout()
         self._notif_check = QCheckBox("Enable desktop notifications", page)
+        self._background_check = QCheckBox(
+            "Keep SmartCalender running in the menu bar / system tray when the window is closed", page
+        )
         self._notif_check.setObjectName("SettingsCheckbox")
         self._notif_check.setCursor(Qt.PointingHandCursor)
         card_lay.addWidget(self._notif_check)
+        self._background_check.setObjectName("SettingsCheckbox")
+        self._background_check.setCursor(Qt.PointingHandCursor)
+        card_lay.addWidget(self._background_check)
         lay.addWidget(notif_card)
 
         # ── Email alerts ──
@@ -655,6 +726,18 @@ class SettingsWindow(QWidget):
     #  WIDGET HELPERS
     # =====================================================================
 
+    def refresh_sample_data(self) -> None:
+        from app.services.onboarding_service import OnboardingService
+
+        self._has_sample = OnboardingService(self._settings).has_sample_data()
+        self._sample_btn.setText("Remove sample data" if self._has_sample else "Add a sample week")
+
+    def _on_sample_btn(self) -> None:
+        if self._has_sample:
+            self.sampleDataClearRequested.emit()
+        else:
+            self.sampleDataLoadRequested.emit()
+
     def _card(self, title: str, description: str) -> QFrame:
         """Create a styled card with title and description."""
         card = QFrame()
@@ -740,7 +823,7 @@ class SettingsWindow(QWidget):
         box.setStyleSheet("""
             QMessageBox {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #0D2147, stop:0.5 #132D5B, stop:1 #1A3A6E);
+                    stop:0 #0B0F14, stop:0.5 #111827, stop:1 #1F2937);
                 border: 1px solid rgba(100, 160, 255, 0.2);
             }
             QMessageBox QLabel {
@@ -753,7 +836,7 @@ class SettingsWindow(QWidget):
             }
             QMessageBox QPushButton {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #3B82F6, stop:1 #60A5FA);
+                    stop:0 #10B981, stop:1 #34D399);
                 color: #FFFFFF;
                 border: none;
                 border-radius: 8px;
@@ -765,10 +848,10 @@ class SettingsWindow(QWidget):
             }
             QMessageBox QPushButton:hover {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #2563EB, stop:1 #3B82F6);
+                    stop:0 #059669, stop:1 #10B981);
             }
             QMessageBox QPushButton:pressed {
-                background: #1D4ED8;
+                background: #047857;
             }
         """)
 
@@ -805,8 +888,14 @@ class SettingsWindow(QWidget):
         s = self._settings
 
         # General
-        # Theme and language are locked
-        self._theme_locked_label.setText("☀  Light")
+        idx = self._theme_combo.findData(s.get_theme())
+        self._theme_combo.setCurrentIndex(idx if idx >= 0 else 0)
+        from app.core import prefs as _prefs
+        _prefs.reload()
+        idx = self._week_start_combo.findData(_prefs.week_start())
+        self._week_start_combo.setCurrentIndex(idx if idx >= 0 else 0)
+        idx = self._clock_combo.findData(_prefs.clock())
+        self._clock_combo.setCurrentIndex(idx if idx >= 0 else 0)
         self._lang_fixed.setText("English")
 
         cat = s.get_default_category()
@@ -883,6 +972,7 @@ class SettingsWindow(QWidget):
 
         # Notifications
         self._notif_check.setChecked(s.get_notifications_enabled())
+        self._background_check.setChecked(s.get_run_in_background())
         self._email_alerts_check.setChecked(s.get_email_alerts())
         self._sound_check.setChecked(s.get_sound_alerts())
         # Reminder sound
@@ -1048,7 +1138,12 @@ class SettingsWindow(QWidget):
         s = self._settings
 
         # General
-        s.set_theme("light")
+        s.set_theme(self._theme_combo.currentData() or "dark")
+        s.set_value("week_start", str(self._week_start_combo.currentData()))
+        s.set_value("clock_format", self._clock_combo.currentData() or "24h")
+        from app.core import prefs as _prefs, theme as _th
+        _prefs.reload()
+        _th.set_preference(self._theme_combo.currentData() or "dark")
         s.set_language("English")
         s.set_default_category(self._cat_combo.currentText())
 
@@ -1080,6 +1175,7 @@ class SettingsWindow(QWidget):
 
         # Notifications
         s.set_notifications_enabled(self._notif_check.isChecked())
+        s.set_run_in_background(self._background_check.isChecked())
         s.set_email_alerts(self._email_alerts_check.isChecked())
         s.set_sound_alerts(self._sound_check.isChecked())
         # Reminder sound - remove emoji prefix if present
@@ -1119,13 +1215,14 @@ class SettingsWindow(QWidget):
             QMessageBox.Yes | QMessageBox.No,
         )
         if reply == QMessageBox.Yes:
-            self._theme_locked_label.setText("☀  Light")
             self._lang_fixed.setText("English")
             self._cat_combo.setCurrentIndex(0)
             self._freq_daily.setChecked(True)
             self._view_combo.setCurrentIndex(0)
             self._weather_edit.clear()
             self._notif_check.setChecked(True)
+            self._background_check.setChecked(True)
+            self._theme_combo.setCurrentIndex(self._theme_combo.findData("dark"))
             self._email_alerts_check.setChecked(False)
             self._sound_check.setChecked(True)
             if hasattr(self, '_sound_combo'):
@@ -1405,12 +1502,12 @@ class SettingsWindow(QWidget):
         badge_row.addWidget(icon_lbl)
         lay.addLayout(badge_row)
 
-        name_lbl = QLabel("Smart Calender")
+        name_lbl = QLabel("SmartCalender")
         name_lbl.setObjectName("SettingsAboutAppName")
         name_lbl.setAlignment(Qt.AlignCenter)
         lay.addWidget(name_lbl)
 
-        version_lbl = QLabel("Version 1.0.0")
+        version_lbl = QLabel("Version 1.3.0")
         version_lbl.setObjectName("SettingsAboutVersion")
         version_lbl.setAlignment(Qt.AlignCenter)
         lay.addWidget(version_lbl)
@@ -1441,8 +1538,8 @@ class SettingsWindow(QWidget):
             return row
 
         card_lay.addLayout(_row("Designed by", "blackie-networks"))
-        card_lay.addLayout(_row("Application",  "Smart Calender Desktop"))
-        card_lay.addLayout(_row("Version",       "1.0.0"))
+        card_lay.addLayout(_row("Application",  "SmartCalender"))
+        card_lay.addLayout(_row("Version",       "1.3.0"))
         card_lay.addLayout(_row("Platform",
             f"{_platform.system()} {_platform.release()} ({_platform.machine()})"))
         card_lay.addLayout(_row("Built by", "blackie-networks"))
@@ -1467,7 +1564,7 @@ class SettingsWindow(QWidget):
 
         # ── Description ───────────────────────────────────────────────
         desc = QLabel(
-            "Smart Calender is a productivity desktop application for managing "
+            "SmartCalender is a productivity desktop application for managing "
             "events, meetings, tasks and reminders — all in one place.\n\n"
             "Designed and built by <b>blackie-networks</b> with ❤️."
         )

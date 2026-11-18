@@ -27,7 +27,7 @@ set -euo pipefail
 # Configuration – edit these values for your environment
 # ---------------------------------------------------------------------------
 APP_NAME="SmartCalender"
-VERSION="1.0.0"
+VERSION="1.3.0"
 AUTHOR="Enock Mwems"
 BUNDLE_ID="com.enockmwems.smartcalender"
 
@@ -51,7 +51,7 @@ BUILD_DIR="$ROOT/build"
 # ---------------------------------------------------------------------------
 cd "$ROOT"
 echo "============================================================"
-echo "  Smart Calender – macOS Build"
+echo "  SmartCalender – macOS Build"
 echo "  Designed by $AUTHOR  |  v$VERSION"
 echo "============================================================"
 

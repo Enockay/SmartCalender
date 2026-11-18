@@ -1,5 +1,5 @@
 QMainWindow, QWidget {
-    background-color: #020617;
+    background-color: #0B0F14;
     font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
     font-size: 14px;
 }
@@ -33,7 +33,7 @@ QLabel[viewTitle="true"] {
 }
 
 #LeftSidebar {
-    background-color: #020617;
+    background-color: #0B0F14;
     border-right: 1px solid #1F2937;
 }
 
@@ -55,7 +55,7 @@ QListWidget#NavList::item {
 }
 
 QListWidget#NavList::item:selected {
-    background-color: #4F46E5;
+    background-color: #059669;
     color: #FFFFFF;
 }
 
@@ -74,19 +74,19 @@ QPushButton#SegmentButton {
 }
 
 QPushButton#SegmentButton:checked {
-    background-color: #4F46E5;
+    background-color: #059669;
     color: #FFFFFF;
 }
 
 QPushButton#PrimaryButton {
-    background-color: #6366F1;
+    background-color: #10B981;
     color: #FFFFFF;
     border-radius: 999px;
     padding: 6px 16px;
 }
 
 QPushButton#PrimaryButton:hover {
-    background-color: #4F46E5;
+    background-color: #059669;
 }
 
 QPushButton#SecondaryIconButton {
@@ -101,7 +101,7 @@ QPushButton#SecondaryIconButton:hover {
 }
 
 #UpcomingSidebar {
-    background-color: #020617;
+    background-color: #0B0F14;
     border-left: 1px solid #1F2937;
 }
 

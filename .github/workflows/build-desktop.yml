@@ -80,6 +80,22 @@ jobs:
           cd /d "%GITHUB_WORKSPACE%"
           scripts\build_windows.bat
 
+      - name: Package MSIX for the Microsoft Store (Windows)
+        if: matrix.target == 'windows' && vars.MSIX_IDENTITY_NAME != ''
+        shell: pwsh
+        env:
+          MSIX_IDENTITY_NAME: ${{ vars.MSIX_IDENTITY_NAME }}
+          MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
+          MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
+        run: |
+          ./scripts/build_msix.ps1
+
+      - name: MSIX skipped (Store identity not configured)
+        if: matrix.target == 'windows' && vars.MSIX_IDENTITY_NAME == ''
+        shell: pwsh
+        run: |
+          Write-Host "::warning::MSIX not built. Add repository variables MSIX_IDENTITY_NAME, MSIX_PUBLISHER and MSIX_PUBLISHER_DISPLAY_NAME (Settings > Secrets and variables > Actions > Variables) using the values from Partner Center > Product identity."
+
       - name: Build (macOS)
         if: matrix.target == 'mac'
         run: |
@@ -110,6 +126,13 @@ jobs:
             dist/windows/**/SmartCalender-Setup-*.exe
             # Upload the FULL one-folder app (exe + _internal runtime files)
             dist/windows/**/SmartCalender/**
+
+      - name: Upload MSIX (Windows)
+        if: matrix.target == 'windows' && vars.MSIX_IDENTITY_NAME != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-msix
+          path: dist/windows/*.msix
 
       - name: Upload artifacts (macOS)
         if: matrix.target == 'mac'

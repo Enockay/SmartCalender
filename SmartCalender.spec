@@ -18,8 +18,8 @@ from pathlib import Path
 ROOT = Path(SPECPATH)          # project root (where this .spec lives)
 APP_NAME    = "SmartCalender"
 AUTHOR      = "Enock Mwema"
-VERSION     = "1.0.0"
-DESCRIPTION = "Smart Calender – Designed by Enock Mwema"
+VERSION     = "1.3.0"
+DESCRIPTION = "SmartCalender – Designed by Enock Mwema"
 BUNDLE_ID   = "com.enockmwems.smartcalender"  # reverse-DNS, macOS only
 
 # ---------------------------------------------------------------------------
@@ -208,7 +208,7 @@ if IS_MAC:
         bundle_identifier=BUNDLE_ID,
         info_plist={
             "CFBundleName": APP_NAME,
-            "CFBundleDisplayName": "Smart Calender",
+            "CFBundleDisplayName": "SmartCalender",
             "CFBundleIdentifier": BUNDLE_ID,
             "CFBundleVersion": VERSION,
             "CFBundleShortVersionString": VERSION,
@@ -216,8 +216,8 @@ if IS_MAC:
             "NSHumanReadableCopyright": f"© 2024 {AUTHOR}. All rights reserved.",
             "NSHighResolutionCapable": True,
             "LSMinimumSystemVersion": "10.14",
-            "NSMicrophoneUsageDescription": "Smart Calender may need microphone access.",
-            "NSCalendarsUsageDescription":  "Smart Calender reads calendar data.",
+            "NSMicrophoneUsageDescription": "SmartCalender may need microphone access.",
+            "NSCalendarsUsageDescription":  "SmartCalender reads calendar data.",
             "LSApplicationCategoryType": "public.app-category.productivity",
             # Allow connecting to the internet for weather / API features
             "com.apple.security.network.client": True,

@@ -9,19 +9,19 @@
 QWidget#DashboardHeader {
     background: qlineargradient(
         x1:0, y1:0, x2:1, y2:0,
-        stop:0    #1E1B4B,
-        stop:0.30 #3730A3,
-        stop:0.65 #7C3AED,
-        stop:1    #EC4899
+        stop:0    #0B0F14,
+        stop:0.30 #065F46,
+        stop:0.65 #0E7490,
+        stop:1    #22D3EE
     );
-    border-bottom: 1px solid rgba(236, 72, 153, 0.35);
+    border-bottom: 1px solid rgba(34, 211, 238, 0.35);
 }
 
 QLabel#DashboardGreeting {
     font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
     font-size: 24px;
     font-weight: 700;
-    color: #F0F4FF;
+    color: #F3F4F6;
     letter-spacing: -0.3px;
 }
 
@@ -29,7 +29,7 @@ QLabel#DashboardDate {
     font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
     font-size: 13px;
     font-weight: 500;
-    color: #C8D4F0;
+    color: #D1FAE5;
     margin-top: 2px;
 }
 
@@ -42,9 +42,9 @@ QLabel#DashboardHeroNote {
 
 QLabel#DashboardStatus {
     background-color: rgba(255, 255, 255, 0.70);
-    border: 1px solid rgba(200, 210, 235, 0.50);
+    border: 1px solid rgba(209, 250, 229, 0.50);
     border-radius: 8px;
-    color: #1A2A4A;
+    color: #111827;
     font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
     font-size: 12px;
     font-weight: 600;
@@ -70,13 +70,13 @@ QScrollBar:vertical {
 }
 
 QScrollBar::handle:vertical {
-    background: rgba(107, 127, 212, 0.35);
+    background: rgba(16, 185, 129, 0.35);
     border-radius: 4px;
     min-height: 28px;
 }
 
 QScrollBar::handle:vertical:hover {
-    background: rgba(107, 127, 212, 0.55);
+    background: rgba(16, 185, 129, 0.55);
 }
 
 QScrollBar::add-line:vertical,
@@ -121,7 +121,7 @@ QLabel#DashboardCardTitle {
     font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
     font-size: 15px;
     font-weight: 700;
-    color: #1A1A3E;
+    color: #111827;
 }
 
 /* Base button styles */
@@ -143,9 +143,9 @@ QFrame#DashboardCard QPushButton#DashboardCardAction {
 /* Today's Tasks button - Blue */
 QPushButton#DashboardCardActionTasks {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #6B7DFF,
-        stop:1 #5C6DFD) !important;
-    border: 1px solid rgba(92, 109, 253, 0.3) !important;
+        stop:0 #6EE7B7,
+        stop:1 #10B981) !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
     border: none !important;
     border-radius: 10px;
     padding: 5px 10px;
@@ -161,16 +161,16 @@ QPushButton#DashboardCardActionTasks {
 QWidget#DashboardRoot QPushButton#DashboardCardActionTasks,
 QFrame#DashboardCard QPushButton#DashboardCardActionTasks {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #6B7DFF,
-        stop:1 #5C6DFD) !important;
-    border: 1px solid rgba(92, 109, 253, 0.3) !important;
+        stop:0 #6EE7B7,
+        stop:1 #10B981) !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
 }
 
 QPushButton#DashboardCardActionTasks:hover {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #5C6DFD,
-        stop:1 #4C5DED) !important;
-    border: 1px solid rgba(76, 93, 237, 0.5) !important;
+        stop:0 #10B981,
+        stop:1 #059669) !important;
+    border: 1px solid rgba(16, 185, 129, 0.5) !important;
     color: #ffffff !important;
     opacity: 1.0 !important;
     padding: 11px 21px;
@@ -179,9 +179,9 @@ QPushButton#DashboardCardActionTasks:hover {
 QWidget#DashboardRoot QPushButton#DashboardCardActionTasks:hover,
 QFrame#DashboardCard QPushButton#DashboardCardActionTasks:hover {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #5C6DFD,
-        stop:1 #4C5DED) !important;
-    border: 1px solid rgba(76, 93, 237, 0.5) !important;
+        stop:0 #10B981,
+        stop:1 #059669) !important;
+    border: 1px solid rgba(16, 185, 129, 0.5) !important;
     color: #ffffff !important;
     opacity: 1.0 !important;
     padding: 11px 21px;
@@ -189,25 +189,25 @@ QFrame#DashboardCard QPushButton#DashboardCardActionTasks:hover {
 
 QPushButton#DashboardCardActionTasks:pressed {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #4C5DED,
-        stop:1 #3C4DDD) !important;
+        stop:0 #059669,
+        stop:1 #10B981) !important;
     padding: 9px 19px;
 }
 
 QWidget#DashboardRoot QPushButton#DashboardCardActionTasks:pressed,
 QFrame#DashboardCard QPushButton#DashboardCardActionTasks:pressed {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #4C5DED,
-        stop:1 #3C4DDD) !important;
+        stop:0 #059669,
+        stop:1 #10B981) !important;
     padding: 9px 19px;
 }
 
 /* Upcoming Events button - Purple */
 QPushButton#DashboardCardActionEvents {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #9B6CF8,
-        stop:1 #8B5CF6) !important;
-    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+        stop:0 #10B981,
+        stop:1 #0891B2) !important;
+    border: 1px solid rgba(8, 145, 178, 0.3) !important;
     border: none !important;
     border-radius: 10px;
     padding: 5px 10px;
@@ -223,16 +223,16 @@ QPushButton#DashboardCardActionEvents {
 QWidget#DashboardRoot QPushButton#DashboardCardActionEvents,
 QFrame#DashboardCard QPushButton#DashboardCardActionEvents {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #9B6CF8,
-        stop:1 #8B5CF6) !important;
-    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+        stop:0 #10B981,
+        stop:1 #0891B2) !important;
+    border: 1px solid rgba(8, 145, 178, 0.3) !important;
 }
 
 QPushButton#DashboardCardActionEvents:hover {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #8B5CF6,
-        stop:1 #7C3AED) !important;
-    border: 1px solid rgba(124, 58, 237, 0.5) !important;
+        stop:0 #0891B2,
+        stop:1 #0E7490) !important;
+    border: 1px solid rgba(14, 116, 144, 0.5) !important;
     color: #ffffff !important;
     opacity: 1.0 !important;
     padding: 11px 21px;
@@ -241,9 +241,9 @@ QPushButton#DashboardCardActionEvents:hover {
 QWidget#DashboardRoot QPushButton#DashboardCardActionEvents:hover,
 QFrame#DashboardCard QPushButton#DashboardCardActionEvents:hover {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #8B5CF6,
-        stop:1 #7C3AED) !important;
-    border: 1px solid rgba(124, 58, 237, 0.5) !important;
+        stop:0 #0891B2,
+        stop:1 #0E7490) !important;
+    border: 1px solid rgba(14, 116, 144, 0.5) !important;
     color: #ffffff !important;
     opacity: 1.0 !important;
     padding: 11px 21px;
@@ -251,16 +251,16 @@ QFrame#DashboardCard QPushButton#DashboardCardActionEvents:hover {
 
 QPushButton#DashboardCardActionEvents:pressed {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #7C3AED,
-        stop:1 #6D2BDD) !important;
+        stop:0 #0E7490,
+        stop:1 #059669) !important;
     padding: 9px 19px;
 }
 
 QWidget#DashboardRoot QPushButton#DashboardCardActionEvents:pressed,
 QFrame#DashboardCard QPushButton#DashboardCardActionEvents:pressed {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #7C3AED,
-        stop:1 #6D2BDD) !important;
+        stop:0 #0E7490,
+        stop:1 #059669) !important;
     padding: 9px 19px;
 }
 
@@ -392,29 +392,29 @@ QFrame#DashboardCard QPushButton#DashboardCardActionOverdue:pressed {
 
 /* Regular task items - faded blue tint */
 QFrame#DashboardTaskItem {
-    background-color: rgba(92, 109, 253, 0.08);
-    border: 1px solid rgba(92, 109, 253, 0.25);
+    background-color: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
     border-radius: 10px;
     padding: 2px;
 }
 
 QFrame#DashboardTaskItem:hover {
-    background-color: rgba(92, 109, 253, 0.15);
-    border: 1px solid rgba(92, 109, 253, 0.35);
+    background-color: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.35);
 }
 
 /* Event items - faded purple tint */
 QFrame#DashboardEventItem {
     /* Match the same visual weight as other dashboard item cards */
-    background-color: rgba(74, 108, 247, 0.08);
-    border: 1px solid rgba(74, 108, 247, 0.22);
+    background-color: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.22);
     border-radius: 10px;
     padding: 4px 6px;
 }
 
 QFrame#DashboardEventItem:hover {
-    background-color: rgba(74, 108, 247, 0.16);
-    border: 1px solid rgba(74, 108, 247, 0.35);
+    background-color: rgba(16, 185, 129, 0.16);
+    border: 1px solid rgba(16, 185, 129, 0.35);
 }
 
 /* Priority-based task item backgrounds */
@@ -443,29 +443,29 @@ QFrame#DashboardTaskItemMedium:hover {
 }
 
 QFrame#DashboardTaskItemLow {
-    background-color: rgba(74, 108, 247, 0.08) !important;
-    border: 1px solid rgba(74, 108, 247, 0.22) !important;
+    background-color: rgba(16, 185, 129, 0.08) !important;
+    border: 1px solid rgba(16, 185, 129, 0.22) !important;
     border-radius: 10px;
     padding: 2px;
 }
 
 QFrame#DashboardTaskItemLow:hover {
-    background-color: rgba(74, 108, 247, 0.16) !important;
-    border: 1px solid rgba(74, 108, 247, 0.35) !important;
+    background-color: rgba(16, 185, 129, 0.16) !important;
+    border: 1px solid rgba(16, 185, 129, 0.35) !important;
 }
 
 QLabel#DashboardItemTitle {
     font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
     font-size: 13px;
     font-weight: 600;
-    color: #1A1A3E;
+    color: #111827;
 }
 
 QLabel#DashboardItemMeta {
     font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
     font-size: 11px;
     font-weight: 400;
-    color: #6B7FD4;
+    color: #10B981;
 }
 
 /* Icons */
@@ -478,7 +478,7 @@ QLabel#DashboardTaskIcon {
 
 QLabel#DashboardEventIcon {
     font-size: 14px;
-    color: #4A6CF7;
+    color: #059669;
     min-width: 16px;
 }
 
@@ -524,7 +524,7 @@ QFrame#DashboardEventItem QPushButton#DashboardMiniActionGreen:pressed {
 }
 
 QPushButton#DashboardMiniActionBlue {
-    background-color: #4A6CF7;
+    background-color: #059669;
     color: #ffffff;
     border: none;
     border-radius: 6px;
@@ -535,12 +535,12 @@ QPushButton#DashboardMiniActionBlue {
 }
 
 QPushButton#DashboardMiniActionBlue:hover {
-    background-color: #3A5CE6;
+    background-color: #10B981;
     color: #ffffff;
 }
 
 QPushButton#DashboardMiniActionBlue:pressed {
-    background-color: #2A4CD5;
+    background-color: #059669;
     color: #ffffff;
 }
 
@@ -548,14 +548,14 @@ QPushButton#DashboardMiniActionBlue:pressed {
 
 QFrame#DashboardReminderItem {
     background-color: rgba(255, 255, 255, 0.70);
-    border: 1px solid rgba(200, 210, 240, 0.60);
+    border: 1px solid rgba(209, 250, 229, 0.60);
     border-radius: 10px;
     margin-bottom: 2px;
 }
 
 QFrame#DashboardReminderItem:hover {
     background-color: rgba(255, 255, 255, 0.85);
-    border: 1px solid rgba(200, 210, 240, 0.80);
+    border: 1px solid rgba(209, 250, 229, 0.80);
 }
 
 QWidget#DashboardReminderRow {
@@ -570,14 +570,14 @@ QWidget#DashboardReminderRow QLabel#DashboardReminderText {
 QWidget#DashboardReminderRow QLabel#DashboardReminderIconPurple,
 QFrame#DashboardCard QLabel#DashboardReminderIconPurple,
 QFrame#DashboardReminderItem QLabel#DashboardReminderIconPurple {
-    color: #7C6FD4 !important;
+    color: #10B981 !important;
     font-size: 16px;
     font-weight: 700;
     min-width: 24px;
     max-width: 24px;
     min-height: 24px;
     max-height: 24px;
-    background-color: rgba(124, 111, 212, 0.15) !important;
+    background-color: rgba(16, 185, 129, 0.15) !important;
     border-radius: 6px;
     padding: 0px;
     border: none;
@@ -622,10 +622,10 @@ QFrame#DashboardReminderItem QLabel#DashboardReminderIconGreen {
 QWidget#DashboardReminderRow QLabel#DashboardReminderIconBlue,
 QFrame#DashboardCard QLabel#DashboardReminderIconBlue,
 QFrame#DashboardReminderItem QLabel#DashboardReminderIconBlue {
-    color: #4A6CF7 !important;
+    color: #059669 !important;
     font-size: 15px;
     font-weight: 600;
-    background-color: rgba(74, 108, 247, 0.15) !important;
+    background-color: rgba(16, 185, 129, 0.15) !important;
     border-radius: 6px;
     padding: 0px;
     min-width: 24px;
@@ -639,7 +639,7 @@ QLabel#DashboardReminderText {
     font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
     font-size: 13px;
     font-weight: 600;
-    color: #1A1A3E;
+    color: #111827;
     background-color: transparent !important;
 }
 
@@ -647,7 +647,7 @@ QFrame#DashboardReminderItem QLabel#DashboardReminderText {
     font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
     font-size: 13px;
     font-weight: 600;
-    color: #1A1A3E;
+    color: #111827;
     background-color: transparent !important;
 }
 
@@ -670,8 +670,8 @@ QFrame#DashboardOverdueCheckboxGreen {
 }
 
 QFrame#DashboardOverdueCheckboxBlue {
-    background-color: #4A6CF7 !important;
-    border-color: #4A6CF7 !important;
+    background-color: #059669 !important;
+    border-color: #059669 !important;
 }
 
 QFrame#DashboardOverdueCheckboxRed {
@@ -702,12 +702,12 @@ QFrame#DashboardChartWrap {
 /* ---------------- Empty ---------------- */
 
 QLabel#DashboardEmpty {
-    background-color: rgba(255, 255, 255, 0.40);
-    border: 1px dashed rgba(107, 127, 212, 0.40);
+    background-color: transparent;
+    border: none;
     border-radius: 10px;
-    color: #8B95CC;
+    color: #4B5563;
     font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     padding: 16px;
 }
@@ -718,3 +718,48 @@ QFrame#DashboardOverdueItem {
     background: transparent;
     border: none;
 }
+/* =========================
+   EMPTY STATES (review A3)
+   ========================= */
+QFrame#DashboardEmptyBanner {
+    background-color: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    border-radius: 12px;
+    margin: 12px 12px 4px 12px;
+}
+QLabel#DashboardEmptyBannerText {
+    color: #065F46;
+    font-size: 14px;
+    font-weight: 500;
+    background: transparent;
+}
+QPushButton#DashboardPrimaryAction {
+    background-color: #10B981;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+}
+QPushButton#DashboardPrimaryAction:hover { background-color: #059669; }
+QPushButton#DashboardSecondaryAction {
+    background-color: #FFFFFF;
+    color: #065F46;
+    border: 1px solid #A7F3D0;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+}
+QPushButton#DashboardSecondaryAction:hover { background-color: #D1FAE5; }
+QPushButton#DashboardEmptyAction {
+    background-color: transparent;
+    color: #047857;
+    border: 1px solid #A7F3D0;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+}
+QPushButton#DashboardEmptyAction:hover { background-color: #ECFDF5; }

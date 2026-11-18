@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from app.core import prefs
 import calendar
 from datetime import datetime, date, timedelta
 from pathlib import Path
@@ -55,13 +56,13 @@ _CATEGORY_DOT_COLOR = {
     "Bills": "#F97316",
 }
 
-_FILTER_ICON = {
-    "all":       "\u2630",
-    "active":    "\u25A1",
-    "today":     "\u229E",
-    "completed": "\u2611",
-    "overdue":   "\u25A3",
-}
+_FILTER_TABS = [
+    ("upcoming", "Upcoming"),
+    ("today", "Today"),
+    ("overdue", "Overdue"),
+    ("completed", "Completed"),
+]
+
 
 _STAT_PILL_COLORS = {
     "active":    ("#E0F2FE", "#0369A1"),
@@ -74,146 +75,6 @@ _STAT_PILL_COLORS = {
 
 # ══════════════════════════════════════════════════════════════════
 #  MINI CALENDAR with dots
-# ══════════════════════════════════════════════════════════════════
-class _ReminderMiniCalendar(QWidget):
-    """Tiny calendar widget that draws coloured dots for reminder dates."""
-
-    monthChanged = Signal(int, int)  # year, month
-
-    def __init__(self, parent: QWidget | None = None) -> None:
-        super().__init__(parent)
-        self.setObjectName("ReminderMiniCal")
-        self.setAttribute(Qt.WA_StyledBackground, True)
-        self._year = date.today().year
-        self._month = date.today().month
-        self._dots: dict[int, list[str]] = {}   # day -> [category, ...]
-        self.setMinimumSize(260, 200)
-        self.setMaximumHeight(200)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-
-    def set_month(self, year: int, month: int) -> None:
-        self._year = year
-        self._month = month
-        self.update()
-
-    def set_dots(self, dots: dict[int, list[str]]) -> None:
-        self._dots = dots
-        self.update()
-
-    def go_prev(self) -> None:
-        if self._month == 1:
-            self._month = 12
-            self._year -= 1
-        else:
-            self._month -= 1
-        self.monthChanged.emit(self._year, self._month)
-        self.update()
-
-    def go_next(self) -> None:
-        if self._month == 12:
-            self._month = 1
-            self._year += 1
-        else:
-            self._month += 1
-        self.monthChanged.emit(self._year, self._month)
-        self.update()
-
-    def paintEvent(self, event) -> None:  # noqa: N802
-        p = QPainter(self)
-        p.setRenderHint(QPainter.Antialiasing)
-        w, h = self.width(), self.height()
-
-        # Header
-        header_h = 28
-        month_name = f"{calendar.month_name[self._month]} {self._year}"
-        hdr_font = QFont("Helvetica Neue", 11, QFont.Bold)
-        hdr_font.setFamilies(["Helvetica Neue", "Segoe UI", "sans-serif"])
-        p.setFont(hdr_font)
-        p.setPen(QColor("#1E293B"))
-        # Chevron placeholder (drawn as text)
-        p.drawText(8, 2, w - 16, header_h, Qt.AlignLeft | Qt.AlignVCenter, f"{month_name}  \u25BE")
-
-        # Weekday headers
-        top = header_h + 2
-        cell_w = w / 7
-        cell_h = (h - top - 14) / 7  # 1 row weekday + max 6 rows
-        day_font = QFont("Helvetica Neue", 9)
-        day_font.setFamilies(["Helvetica Neue", "Segoe UI", "sans-serif"])
-        p.setFont(day_font)
-        p.setPen(QColor("#94A3B8"))
-        for i, dn in enumerate(["S", "M", "T", "W", "T", "F", "S"]):
-            x = i * cell_w
-            p.drawText(int(x), int(top), int(cell_w), int(cell_h), Qt.AlignCenter, dn)
-
-        # Days
-        top += cell_h
-        first_wd, n_days = calendar.monthrange(self._year, self._month)
-        # calendar.monthrange returns weekday of first day (Mon=0), adjust for Sun=0
-        first_col = (first_wd + 1) % 7
-
-        today = date.today()
-        num_font = QFont("Helvetica Neue", 9)
-        num_font.setFamilies(["Helvetica Neue", "Segoe UI", "sans-serif"])
-        p.setFont(num_font)
-
-        day = 1
-        for row in range(6):
-            for col in range(7):
-                if row == 0 and col < first_col:
-                    continue
-                if day > n_days:
-                    break
-                x = col * cell_w
-                y = top + row * cell_h
-                cx = x + cell_w / 2
-                cy = y + cell_h * 0.42
-
-                # Today highlight
-                is_today = (self._year == today.year and self._month == today.month and day == today.day)
-                if is_today:
-                    p.setBrush(QColor("#6366F1"))
-                    p.setPen(Qt.NoPen)
-                    r = min(cell_w, cell_h) * 0.38
-                    p.drawEllipse(int(cx - r), int(cy - r), int(2 * r), int(2 * r))
-                    p.setPen(QColor("#FFFFFF"))
-                else:
-                    p.setPen(QColor("#334155"))
-
-                p.drawText(int(x), int(y), int(cell_w), int(cell_h * 0.85), Qt.AlignCenter, str(day))
-
-                # Dots for reminders
-                cats = self._dots.get(day, [])
-                if cats:
-                    dot_y = y + cell_h * 0.78
-                    total = min(len(cats), 3)
-                    start_x = cx - (total * 6) / 2
-                    for di, cat in enumerate(cats[:3]):
-                        color = _CATEGORY_DOT_COLOR.get(cat, "#94A3B8")
-                        p.setBrush(QColor(color))
-                        p.setPen(Qt.NoPen)
-                        p.drawEllipse(int(start_x + di * 6), int(dot_y), 5, 5)
-
-                day += 1
-
-        # Legend
-        legend_y = h - 14
-        leg_font = QFont("Helvetica Neue", 8)
-        leg_font.setFamilies(["Helvetica Neue", "Segoe UI", "sans-serif"])
-        p.setFont(leg_font)
-        lx = 8
-        for cat, color in list(_CATEGORY_DOT_COLOR.items())[:4]:
-            p.setBrush(QColor(color))
-            p.setPen(Qt.NoPen)
-            p.drawEllipse(int(lx), int(legend_y + 1), 5, 5)
-            p.setPen(QColor("#64748B"))
-            p.drawText(int(lx + 8), int(legend_y - 1), 60, 12, Qt.AlignLeft | Qt.AlignVCenter, cat)
-            lx += 60
-
-        p.end()
-
-
-# ══════════════════════════════════════════════════════════════════
-#  ENHANCED REMINDER CARD
 # ══════════════════════════════════════════════════════════════════
 class ReminderCardWidget(QFrame):
     """Single reminder card with meeting info."""
@@ -263,7 +124,7 @@ class ReminderCardWidget(QFrame):
         top.addWidget(title, 1)
 
         # Time badge (right aligned)
-        time_str = d.remind_at.strftime("%I:%M %p")
+        time_str = prefs.fmt_time(d.remind_at)
         time_lbl = QLabel(time_str, self)
         time_lbl.setObjectName("ReminderCardTimeBadge")
         top.addWidget(time_lbl, 0, Qt.AlignRight | Qt.AlignTop)
@@ -387,8 +248,9 @@ class ReminderDashboardWidget(QWidget):
         self.setAttribute(Qt.WA_StyledBackground, True)
 
         self._service = ReminderService()
-        self._current_filter = "all"
+        self._current_filter = "upcoming"
         self._search_query = ""
+        self._category = ""
 
         # Sync existing meeting reminders on first load
         QTimer.singleShot(500, self._sync_existing_reminders)
@@ -435,7 +297,7 @@ class ReminderDashboardWidget(QWidget):
         # Search in header
         self._search_edit = QLineEdit(header)
         self._search_edit.setObjectName("ReminderSearchField")
-        self._search_edit.setPlaceholderText("\U0001F50D  All Reminders")
+        self._search_edit.setPlaceholderText("Search reminders")
         self._search_edit.setFixedWidth(220)
         self._search_edit.textChanged.connect(self._on_search)
         h_lay.addWidget(self._search_edit)
@@ -461,7 +323,7 @@ class ReminderDashboardWidget(QWidget):
         h_lay.addWidget(add_btn)
         lp_lay.addWidget(header)
 
-        # ── Filter tabs bar ──
+        # ── One row of filter tabs (review A4: no duplicate filters) ──
         filter_bar = QWidget(list_page)
         filter_bar.setObjectName("ReminderFilterBar")
         filter_bar.setFixedHeight(44)
@@ -470,53 +332,36 @@ class ReminderDashboardWidget(QWidget):
         fb_lay.setSpacing(4)
 
         self._filter_buttons: dict[str, QPushButton] = {}
-        for key, label in [
-            ("all", "All"), ("today", "Today"), ("upcoming", "Upcoming"),
-            ("completed", "Completed"), ("overdue", "Overdue"),
-        ]:
+        for key, label in _FILTER_TABS:
             btn = QPushButton(label, filter_bar)
             btn.setObjectName("ReminderFilterBtn")
             btn.setCheckable(True)
             btn.setCursor(Qt.PointingHandCursor)
-            btn.setChecked(key == "all")
+            btn.setChecked(key == self._current_filter)
+            btn.setAccessibleName(f"Show {label.lower()} reminders")
             btn.clicked.connect(lambda checked, k=key: self._set_filter(k))
             fb_lay.addWidget(btn)
             self._filter_buttons[key] = btn
 
-        # Today count badge (updated dynamically)
-        self._today_badge = QLabel("", filter_bar)
-        self._today_badge.setObjectName("ReminderTodayBadge")
-        self._today_badge.setVisible(False)
-        fb_lay.addWidget(self._today_badge)
-
         fb_lay.addStretch()
         lp_lay.addWidget(filter_bar)
 
-        # ── Two-column body ──
+        # ── Reminder list ──
         body = QWidget(list_page)
         body.setObjectName("ReminderBody")
-        body_lay = QHBoxLayout(body)
+        body_lay = QVBoxLayout(body)
         body_lay.setContentsMargins(0, 0, 0, 0)
         body_lay.setSpacing(0)
 
-        # ──── LEFT COLUMN: Reminder list ────
-        left_col = QWidget(body)
-        left_col.setObjectName("ReminderLeftCol")
-        left_lay = QVBoxLayout(left_col)
-        left_lay.setContentsMargins(0, 0, 0, 0)
-        left_lay.setSpacing(0)
-
-        # Section header "Today (N)"
-        self._section_header = QLabel("Today (0)", left_col)
+        self._section_header = QLabel("", body)
         self._section_header.setObjectName("ReminderSectionHeader")
         _shf = QFont("Helvetica Neue", 14, QFont.Bold)
-        _shf.setFamilies(["Helvetica Neue", "Segoe UI", "sans-serif"])
+        _shf.setFamilies(["Inter", "Helvetica Neue", "Segoe UI", "sans-serif"])
         self._section_header.setFont(_shf)
-        self._section_header.setContentsMargins(24, 4, 24, 6)
-        left_lay.addWidget(self._section_header)
+        self._section_header.setContentsMargins(24, 8, 24, 6)
+        body_lay.addWidget(self._section_header)
 
-        # Scrollable card list
-        self._scroll = QScrollArea(left_col)
+        self._scroll = QScrollArea(body)
         self._scroll.setObjectName("ReminderListScroll")
         self._scroll.setWidgetResizable(True)
         self._scroll.setFrameShape(QFrame.NoFrame)
@@ -526,98 +371,12 @@ class ReminderDashboardWidget(QWidget):
         self._list_widget.setObjectName("ReminderListContainer")
         self._list_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         self._list_layout = QVBoxLayout(self._list_widget)
-        self._list_layout.setContentsMargins(0, 0, 0, 0)
+        self._list_layout.setContentsMargins(24, 0, 24, 16)
         self._list_layout.setSpacing(10)
         self._list_layout.addStretch()
 
         self._scroll.setWidget(self._list_widget)
-        left_lay.addWidget(self._scroll, 1)
-
-        body_lay.addWidget(left_col, 70)
-
-        # ──── RIGHT COLUMN: Stats, Calendar, Category sidebar ────
-        right_col = QWidget(body)
-        right_col.setObjectName("ReminderRightCol")
-        right_lay = QVBoxLayout(right_col)
-        right_lay.setContentsMargins(12, 8, 12, 8)
-        right_lay.setSpacing(8)
-
-        # Stats pills row
-        stats_frame = QWidget(right_col)
-        stats_frame.setObjectName("ReminderStatsFrame")
-        stats_lay = QHBoxLayout(stats_frame)
-        stats_lay.setContentsMargins(0, 0, 0, 0)
-        stats_lay.setSpacing(4)
-
-        self._stat_pills: dict[str, QLabel] = {}
-        for key, label in [("active", "Active"), ("today", "Today's"), ("completed", "Completed"), ("overdue", "Overdue")]:
-            pill = QLabel(f"{label} 0", stats_frame)
-            pill.setObjectName(f"ReminderPill_{key}")
-            pill.setAlignment(Qt.AlignCenter)
-            stats_lay.addWidget(pill)
-            self._stat_pills[key] = pill
-
-        # Alert bell badge
-        self._alert_pill = QLabel("\U0001F514 0", stats_frame)
-        self._alert_pill.setObjectName("ReminderPill_alert")
-        self._alert_pill.setAlignment(Qt.AlignCenter)
-        stats_lay.addWidget(self._alert_pill)
-
-        right_lay.addWidget(stats_frame)
-
-        # Mini calendar with dots
-        cal_header = QHBoxLayout()
-        cal_header.setSpacing(4)
-
-        self._mini_cal = _ReminderMiniCalendar(right_col)
-        right_lay.addWidget(self._mini_cal)
-
-        # Search + category combo (right panel)
-        search_row = QHBoxLayout()
-        search_row.setSpacing(4)
-        self._right_search = QLineEdit(right_col)
-        self._right_search.setObjectName("ReminderSearchField")
-        self._right_search.setPlaceholderText("\U0001F50D Search")
-        self._right_search.textChanged.connect(self._on_search)
-        search_row.addWidget(self._right_search)
-
-        self._right_cat = QComboBox(right_col)
-        self._right_cat.setObjectName("ReminderCatCombo")
-        self._right_cat.addItem("All")
-        for c in CATEGORIES:
-            self._right_cat.addItem(c)
-        self._right_cat.currentTextChanged.connect(self._on_right_cat_changed)
-        search_row.addWidget(self._right_cat)
-        right_lay.addLayout(search_row)
-
-        # Category filter buttons (sidebar style)
-        filter_frame = QFrame(right_col)
-        filter_frame.setObjectName("ReminderCategoryFrame")
-        ff_lay = QVBoxLayout(filter_frame)
-        ff_lay.setContentsMargins(0, 4, 0, 4)
-        ff_lay.setSpacing(1)
-
-        self._sidebar_filter_buttons: dict[str, QPushButton] = {}
-        for key, icon, label in [
-            ("all",       "\u2630", "All Reminders"),
-            ("active",    "\u25A1", "Active"),
-            ("today",     "\u229E", "Today's"),
-            ("completed", "\u2611", "Completed"),
-            ("overdue",   "\u25A3", "Overdue"),
-        ]:
-            btn = QPushButton(f"  {icon}  {label}", filter_frame)
-            btn.setObjectName("ReminderSideFilterBtn")
-            btn.setCheckable(True)
-            btn.setCursor(Qt.PointingHandCursor)
-            btn.setChecked(key == "all")
-            btn.clicked.connect(lambda checked, k=key: self._set_filter_from_sidebar(k))
-            ff_lay.addWidget(btn)
-            self._sidebar_filter_buttons[key] = btn
-
-        right_lay.addWidget(filter_frame)
-        right_lay.addStretch()
-
-        body_lay.addWidget(right_col, 30)
+        body_lay.addWidget(self._scroll, 1)
         lp_lay.addWidget(body, 1)
 
         self._pages.addWidget(list_page)  # index 0
@@ -659,79 +418,39 @@ class ReminderDashboardWidget(QWidget):
     def _refresh(self) -> None:
         self._service.update_overdue()
 
-        # Update stats
         counts = self._service.get_counts()
-        for key, pill in self._stat_pills.items():
-            n = counts.get(key, 0)
-            labels = {"active": "Active", "today": "Today's", "completed": "Completed", "overdue": "Overdue"}
-            pill.setText(f"{labels.get(key, key)} {n}")
-        self._alert_pill.setText(f"\U0001F514 {counts.get('overdue', 0)}")
+        tab_counts = {
+            "upcoming": counts.get("active", 0) + counts.get("snoozed", 0),
+            "today": counts.get("today", 0),
+            "overdue": counts.get("overdue", 0),
+            "completed": counts.get("completed", 0),
+        }
+        for key, label in _FILTER_TABS:
+            n = tab_counts.get(key, 0)
+            self._filter_buttons[key].setText(f"{label}  {n}" if n else label)
 
-        # Update sidebar filter counts
-        for key, btn in self._sidebar_filter_buttons.items():
-            icon = _FILTER_ICON.get(key, "")
-            labels = {"all": "All Reminders", "active": "Active", "today": "Today's", "completed": "Completed", "overdue": "Overdue"}
-            n = counts.get(key, counts.get("total", 0)) if key == "all" else counts.get(key, 0)
-            btn.setText(f"  {icon}  {labels.get(key, key)}")
-            # Add count label to the right
-            btn.setProperty("count", str(n))
-            btn.setStyleSheet(btn.styleSheet())  # force re-read
-
-        # Update today badge
-        today_n = counts.get("today", 0)
-        if today_n > 0:
-            fkey = "today"
-            if fkey in self._filter_buttons:
-                self._filter_buttons[fkey].setText(f"Today  {today_n}")
-        self._today_badge.setVisible(today_n > 0)
-        self._today_badge.setText(str(today_n))
-
-        # Update section header
-        filter_labels = {"all": "All", "today": "Today", "upcoming": "Upcoming", "active": "Active", "completed": "Completed", "overdue": "Overdue"}
-        label = filter_labels.get(self._current_filter, "All")
-
-        # Get reminders
         if self._search_query:
             reminders = self._service.search(self._search_query)
+            heading = f'Results for "{self._search_query}"'
         else:
             reminders = self._service.get_by_filter(self._current_filter)
-        
-        # Debug logging for overdue filter
-        if self._current_filter == "overdue":
-            from app.core.logger import get_logger
-            logger = get_logger(__name__)
-            logger.info(f"Overdue filter: found {len(reminders)} reminders")
-            for r in reminders[:5]:  # Log first 5
-                logger.info(f"  - ID={r.id}, title='{r.title}', status={r.status}, remind_at={r.remind_at}")
+            heading = dict(_FILTER_TABS).get(self._current_filter, "Reminders")
+        if self._category:
+            reminders = [r for r in reminders if (getattr(r, "category", "") or "") == self._category]
+            heading = f"{heading} · {self._category}"
 
-        self._section_header.setText(f"{label} ({len(reminders)})")
+        self._section_header.setText(f"{heading} ({len(reminders)})")
         self._populate_list(reminders)
-
-        # Update mini calendar dots
-        try:
-            date_cats = self._service.get_reminder_dates()
-            today = date.today()
-            cal_month = self._mini_cal._month
-            cal_year = self._mini_cal._year
-            dots: dict[int, list[str]] = {}
-            for d, cats in date_cats.items():
-                if d.year == cal_year and d.month == cal_month:
-                    dots[d.day] = cats
-            self._mini_cal.set_dots(dots)
-        except Exception:
-            pass
 
     def _populate_list(self, reminders: list[ReminderData]) -> None:
         while self._list_layout.count() > 1:
             item = self._list_layout.takeAt(0)
             if item.widget():
+                item.widget().hide()  # hide now; deletion happens on the next event loop pass
                 item.widget().deleteLater()
 
         if not reminders:
-            empty = QLabel("\U0001F4ED  No reminders found", self._list_widget)
-            empty.setObjectName("ReminderEmptyLabel")
-            empty.setAlignment(Qt.AlignCenter)
-            self._list_layout.insertWidget(0, empty)
+            self._list_layout.insertWidget(0, self._empty_state())
             return
 
         for r in reminders:
@@ -742,56 +461,56 @@ class ReminderDashboardWidget(QWidget):
             card.snoozeClicked.connect(self._on_snooze)
             self._list_layout.insertWidget(self._list_layout.count() - 1, card)
 
+    def _empty_state(self) -> QWidget:
+        """Empty lists explain what belongs there and offer the next step (review A3)."""
+        messages = {
+            "upcoming": "No upcoming reminders. Add one and SmartCalender will notify you at the right time.",
+            "today": "Nothing to be reminded about today.",
+            "overdue": "Nothing overdue. You are all caught up.",
+            "completed": "Reminders you complete will appear here.",
+        }
+        text = (
+            "No reminders match your search."
+            if self._search_query
+            else messages.get(self._current_filter, "No reminders yet.")
+        )
+        box = QWidget(self._list_widget)
+        box.setObjectName("ReminderEmptyState")
+        lay = QVBoxLayout(box)
+        lay.setContentsMargins(0, 48, 0, 0)
+        lay.setSpacing(12)
+        lbl = QLabel(text, box)
+        lbl.setObjectName("ReminderEmptyLabel")
+        lbl.setAlignment(Qt.AlignCenter)
+        lbl.setWordWrap(True)
+        lay.addWidget(lbl)
+        if self._current_filter in ("upcoming", "today") and not self._search_query:
+            btn = QPushButton("Add a reminder", box)
+            btn.setObjectName("ReminderAddBtn")
+            btn.setCursor(Qt.PointingHandCursor)
+            btn.clicked.connect(self._on_add)
+            lay.addWidget(btn, alignment=Qt.AlignHCenter)
+        return box
+
     # ── Filter / Search ───────────────────────────────────────────
     def _set_filter(self, key: str) -> None:
         self._current_filter = key
         for k, btn in self._filter_buttons.items():
             btn.setChecked(k == key)
-        for k, btn in self._sidebar_filter_buttons.items():
-            btn.setChecked(k == key)
         self._search_query = ""
+        self._search_edit.blockSignals(True)
         self._search_edit.clear()
-        self._right_search.clear()
+        self._search_edit.blockSignals(False)
         self._refresh()
-
-    def _set_filter_from_sidebar(self, key: str) -> None:
-        self._set_filter(key)
 
     def _on_search(self, text: str) -> None:
         self._search_query = text.strip()
-        # Sync both search boxes
-        sender = self.sender()
-        if sender == self._search_edit:
-            self._right_search.blockSignals(True)
-            self._right_search.setText(text)
-            self._right_search.blockSignals(False)
-        elif sender == self._right_search:
-            self._search_edit.blockSignals(True)
-            self._search_edit.setText(text)
-            self._search_edit.blockSignals(False)
-
-        if self._search_query:
-            for btn in self._filter_buttons.values():
-                btn.setChecked(False)
-            for btn in self._sidebar_filter_buttons.values():
-                btn.setChecked(False)
-        else:
-            self._filter_buttons.get(self._current_filter, self._filter_buttons["all"]).setChecked(True)
-            self._sidebar_filter_buttons.get(self._current_filter, self._sidebar_filter_buttons["all"]).setChecked(True)
+        for k, btn in self._filter_buttons.items():
+            btn.setChecked(not self._search_query and k == self._current_filter)
         self._refresh()
 
     def _on_category_changed(self, text: str) -> None:
-        if text == "All Categories":
-            self._search_query = ""
-        else:
-            self._search_query = text
-        self._refresh()
-
-    def _on_right_cat_changed(self, text: str) -> None:
-        if text == "All":
-            self._search_query = ""
-        else:
-            self._search_query = text
+        self._category = "" if text == "All Categories" else text
         self._refresh()
 
     # ── Actions ───────────────────────────────────────────────────
@@ -832,7 +551,7 @@ class ReminderDashboardWidget(QWidget):
             if "Desktop" in (r.notification_type or ""):
                 try:
                     from app.ui.windows.reminder_popup import ReminderPopup
-                    popup = ReminderPopup(r.title, r.remind_at.strftime("%I:%M %p"), self)
+                    popup = ReminderPopup(r.title, prefs.fmt_time(r.remind_at), self)
                     popup.show()
                 except Exception:
                     pass

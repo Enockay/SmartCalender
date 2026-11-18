@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from app.core import prefs
+from app.core import theme as _theme
 import threading
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -102,7 +104,7 @@ class DonutChartWidget(QWidget):
 
         if not self._segments or self._total == 0:
             # Draw empty ring
-            pen.setColor(QColor("#E0E4EE"))
+            pen.setColor(_theme.bg("#E0E4EE"))
             painter.setPen(pen)
             painter.drawEllipse(rect)
         else:
@@ -118,7 +120,7 @@ class DonutChartWidget(QWidget):
 
         # Draw centre background circle
         painter.setPen(Qt.NoPen)
-        painter.setBrush(QBrush(QColor(255, 255, 255, 235)))
+        painter.setBrush(QBrush(_theme.bg("#FFFFFF")))
         centre_r = inner_radius - 2
         painter.drawEllipse(
             QRectF(center_x - centre_r, center_y - centre_r, centre_r * 2, centre_r * 2)
@@ -128,7 +130,7 @@ class DonutChartWidget(QWidget):
         if self._center_text:
             font = QFont("Segoe UI", 18, QFont.Bold)
             painter.setFont(font)
-            painter.setPen(QColor("#3A3A6A"))
+            painter.setPen(_theme.fg("#3A3A6A"))
             painter.drawText(
                 QRectF(center_x - centre_r, center_y - centre_r - 4, centre_r * 2, centre_r * 2),
                 Qt.AlignCenter,
@@ -138,7 +140,7 @@ class DonutChartWidget(QWidget):
         if self._center_sub:
             font = QFont("Segoe UI", 9, QFont.Normal)
             painter.setFont(font)
-            painter.setPen(QColor("#8B95CC"))
+            painter.setPen(_theme.fg("#8B95CC"))
             painter.drawText(
                 QRectF(center_x - centre_r, center_y + 4, centre_r * 2, centre_r * 2 - 8),
                 Qt.AlignHCenter | Qt.AlignTop,
@@ -257,6 +259,8 @@ class DashboardWidget(QWidget):
     navigateToEventDay = Signal(object)         # "Open" specific event (date)
     navigateToReminders = Signal()              # Reminders "Show – Today"
     navigateToOverdue = Signal()                # Overdue "View Report"
+    quickAddRequested = Signal(str)             # focus quick add, optionally prefilled
+    sampleDataRequested = Signal()              # load the sample week
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -308,14 +312,15 @@ class DashboardWidget(QWidget):
         top_row.setContentsMargins(0, 0, 0, 0)
         top_row.setSpacing(12)
 
-        self._greeting_label = QLabel(f"{self._get_greeting()}, {self._get_user_name()}", header)
+        self._greeting_label = QLabel(f"Welcome, {self._get_first_name()}", header)
         self._greeting_label.setObjectName("DashboardGreeting")
         top_row.addWidget(self._greeting_label)
 
         top_row.addStretch()
 
-        self._status_label = QLabel("🌡  Loading weather…", header)
+        self._status_label = QLabel("", header)
         self._status_label.setObjectName("DashboardStatus")
+        self._status_label.setVisible(False)  # shown only once real weather arrives
         top_row.addWidget(self._status_label)
 
         header_layout.addLayout(top_row)
@@ -324,7 +329,7 @@ class DashboardWidget(QWidget):
         self._date_label.setObjectName("DashboardDate")
         header_layout.addWidget(self._date_label)
 
-        self._hero_note = QLabel("Appointments, tasks, and reminders for today", header)
+        self._hero_note = QLabel("Your events, tasks due and next reminders", header)
         self._hero_note.setObjectName("DashboardHeroNote")
         header_layout.addWidget(self._hero_note)
 
@@ -345,6 +350,32 @@ class DashboardWidget(QWidget):
         content_layout.setContentsMargins(0, 0, 0, 0)
         content_layout.setSpacing(0)
 
+        # Shown when the day is completely empty (review A3)
+        self._empty_banner = QFrame(content)
+        self._empty_banner.setObjectName("DashboardEmptyBanner")
+        eb = QHBoxLayout(self._empty_banner)
+        eb.setContentsMargins(20, 14, 20, 14)
+        eb.setSpacing(12)
+        eb_text = QLabel(
+            "Your day is clear. Add your first event, or explore with a sample week.",
+            self._empty_banner,
+        )
+        eb_text.setObjectName("DashboardEmptyBannerText")
+        eb_text.setWordWrap(True)
+        eb.addWidget(eb_text, 1)
+        eb_add = QPushButton("Add your first event", self._empty_banner)
+        eb_add.setObjectName("DashboardPrimaryAction")
+        eb_add.setCursor(Qt.PointingHandCursor)
+        eb_add.clicked.connect(lambda: self.quickAddRequested.emit(""))
+        eb.addWidget(eb_add)
+        self._sample_btn = QPushButton("Try sample data", self._empty_banner)
+        self._sample_btn.setObjectName("DashboardSecondaryAction")
+        self._sample_btn.setCursor(Qt.PointingHandCursor)
+        self._sample_btn.clicked.connect(self.sampleDataRequested.emit)
+        eb.addWidget(self._sample_btn)
+        self._empty_banner.setVisible(False)
+        content_layout.addWidget(self._empty_banner)
+
         grid = QGridLayout()
         grid.setHorizontalSpacing(1)
         grid.setVerticalSpacing(1)
@@ -354,17 +385,17 @@ class DashboardWidget(QWidget):
         grid.setRowStretch(0, 1)
         grid.setRowStretch(1, 1)
 
-        self._today_tasks_card = DashboardCard("Today's Tasks", "✓", content)
+        self._today_tasks_card = DashboardCard("Due today", "✓", content)
         self._today_tasks_card.set_action_button("View All", self._on_view_tasks, "DashboardCardActionTasks")
 
-        self._upcoming_events_card = DashboardCard("Upcoming Events", "🗓️", content)
+        self._upcoming_events_card = DashboardCard("Coming up", "🗓️", content)
         self._upcoming_events_card.set_action_button("View All", self._on_view_events, "DashboardCardActionEvents")
 
         self._reminders_card = DashboardCard("Reminders", content)
-        self._reminders_card.set_action_button("Show – Today", self._on_manage_reminders, "DashboardCardActionReminders")
+        self._reminders_card.set_action_button("View All", self._on_manage_reminders, "DashboardCardActionReminders")
 
         self._overdue_card = DashboardCard("Overdue", content)
-        self._overdue_card.set_action_button("✓ View Report", self._on_review_overdue, "DashboardCardActionOverdue")
+        self._overdue_card.set_action_button("View Tasks", self._on_review_overdue, "DashboardCardActionOverdue")
 
         grid.addWidget(self._today_tasks_card, 0, 0)
         grid.addWidget(self._upcoming_events_card, 0, 1)
@@ -413,24 +444,31 @@ class DashboardWidget(QWidget):
         except Exception:
             return "User"
 
+    def _get_first_name(self) -> str:
+        name = (self._get_user_name() or "").strip()
+        if not name:
+            return "User"
+        return name.split()[0]
+
     # ---------------------------------------------------------
     # Refresh
     # ---------------------------------------------------------
     def _refresh_data(self) -> None:
-        self._greeting_label.setText(f"{self._get_greeting()}, {self._get_user_name()}")
+        self._greeting_label.setText(f"Welcome, {self._get_first_name()}")
         self._date_label.setText(self._get_date_string())
 
+        self._empty_sections = 0
         self._load_today_tasks()
         self._load_upcoming_events()
         self._load_reminders()
         self._load_overdue()
+        self._empty_banner.setVisible(self._empty_sections >= 3)
 
     # ---------------------------------------------------------
     # Weather (async — runs in a background thread)
     # ---------------------------------------------------------
     def _fetch_weather_async(self) -> None:
         """Kick off a background thread to fetch weather data."""
-        self._status_label.setText("🌡  Loading weather…")
         thread = threading.Thread(target=self._weather_worker, daemon=True)
         thread.start()
 
@@ -439,12 +477,20 @@ class DashboardWidget(QWidget):
         try:
             data = self._weather_service.get_current_weather()
         except Exception:
-            data = WeatherData(description="Unavailable", icon="🌡")
+            data = None
         # Schedule UI update on the main thread
         QTimer.singleShot(0, lambda: self._apply_weather(data))
 
-    def _apply_weather(self, data: WeatherData) -> None:
-        """Apply weather data to the header label (runs on main thread)."""
+    def _apply_weather(self, data: WeatherData | None) -> None:
+        """Apply weather data to the header label (runs on main thread).
+
+        Weather is optional: if it cannot be loaded the label stays hidden
+        rather than showing a loading or error message (review A3).
+        """
+        if data is None or not data.description or data.description in ("Unknown", "Unavailable"):
+            self._status_label.setVisible(False)
+            return
+        self._status_label.setVisible(True)
         if data.city:
             text = f"{data.icon}  {data.description} • {data.temperature_c:.0f}°C / {data.temperature_f:.0f}°F  —  {data.city}"
         else:
@@ -467,7 +513,10 @@ class DashboardWidget(QWidget):
             today_tasks = [t for t in tasks if getattr(t, "status", "") != "completed"][:3]
 
             if not today_tasks:
-                self._today_tasks_card.add_content(self._create_empty_box("No tasks for today"))
+                self._empty_sections += 1
+                self._today_tasks_card.add_content(
+                    self._create_empty_box("Nothing due today.", "Add a task", "task: ")
+                )
                 return
 
             # Add tasks with proper spacing
@@ -524,7 +573,7 @@ class DashboardWidget(QWidget):
 
         meta_parts = []
         if getattr(task, "deadline", None):
-            meta_parts.append(task.deadline.strftime("%I:%M %p").lstrip("0"))
+            meta_parts.append(prefs.fmt_time(task.deadline))
         if getattr(task, "priority", None):
             meta_parts.append(str(task.priority).capitalize())
 
@@ -551,7 +600,10 @@ class DashboardWidget(QWidget):
             events = events[:3]
 
             if not events:
-                self._upcoming_events_card.add_content(self._create_empty_box("No upcoming events"))
+                self._empty_sections += 1
+                self._upcoming_events_card.add_content(
+                    self._create_empty_box("No events in the next 7 days.", "Add an event", "")
+                )
                 return
 
             top_list = QVBoxLayout()
@@ -593,8 +645,10 @@ class DashboardWidget(QWidget):
         layout.setContentsMargins(8, 6, 8, 6)
         layout.setSpacing(8)
 
-        # Event icon
-        icon_label = QLabel("📅", item)
+        # Event icon (line icon, not emoji: review §4.3)
+        from app.ui import icons as _icons
+        icon_label = QLabel(item)
+        icon_label.setPixmap(_icons.pixmap("calendar", 16, "#047857"))
         icon_label.setObjectName("DashboardEventIcon")
         layout.addWidget(icon_label, alignment=Qt.AlignVCenter)
 
@@ -606,7 +660,10 @@ class DashboardWidget(QWidget):
 
         meta_parts = []
         if getattr(meeting, "start_time", None):
-            meta_parts.append(meeting.start_time.strftime("%I:%M %p").lstrip("0"))
+            d = meeting.start_time.date()
+            delta = (d - date.today()).days
+            day = "Today" if delta == 0 else "Tomorrow" if delta == 1 else meeting.start_time.strftime("%a %d %b")
+            meta_parts.append(f'{day}, {prefs.fmt_time(meeting.start_time)}')
         if getattr(meeting, "location", None):
             meta_parts.append(str(meeting.location))
 
@@ -662,14 +719,17 @@ class DashboardWidget(QWidget):
                 # Determine icon and color based on reminder status and category
                 icon, icon_type = self._get_reminder_icon(reminder)
                 # Format reminder text with time
-                time_str = reminder.remind_at.strftime("%I:%M %p").lstrip("0")
+                time_str = prefs.fmt_time(reminder.remind_at)
                 reminder_text = f"{reminder.title} - {time_str}"
                 if reminder.meeting_title:
                     reminder_text = f"{reminder.meeting_title} - {time_str}"
                 
                 top_list.addWidget(self._create_reminder_row(icon, icon_type, reminder_text))
         else:
-            top_list.addWidget(self._create_empty_box("No reminders"))
+            self._empty_sections += 1
+            top_list.addWidget(
+                self._create_empty_box("No reminders coming up.", "Add a reminder", "remind me to ")
+            )
 
         top_widget = QWidget()
         top_widget.setLayout(top_list)
@@ -764,11 +824,16 @@ class DashboardWidget(QWidget):
             left_col.setContentsMargins(0, 0, 0, 0)
             left_col.setSpacing(10)
 
+            if not all_tasks:
+                self._overdue_card.add_content(
+                    self._create_empty_box("Tasks that pass their deadline will show up here.")
+                )
+                return
             if overdue_tasks:
                 for task in overdue_tasks:
                     left_col.addWidget(self._create_overdue_item(task))
             else:
-                no_items = QLabel("✅  All caught up!")
+                no_items = QLabel("Nothing overdue. You are all caught up.")
                 no_items.setStyleSheet(
                     "color: #10B981; font-size: 13px; font-weight: 600; "
                     "font-family: 'Segoe UI', 'Inter', Arial, sans-serif; "
@@ -860,7 +925,7 @@ class DashboardWidget(QWidget):
         total = completed + in_progress + overdue + backlog
         segments: list[tuple[float, QColor, str]] = [
             (completed, QColor("#10B981"), "Completed"),
-            (in_progress, QColor("#4A6CF7"), "In Progress"),
+            (in_progress, QColor("#0891B2"), "In Progress"),
             (backlog, QColor("#F59E0B"), "Backlog"),
             (overdue, QColor("#EF4444"), "Overdue"),
         ]
@@ -905,11 +970,29 @@ class DashboardWidget(QWidget):
     # ---------------------------------------------------------
     # Shared
     # ---------------------------------------------------------
-    def _create_empty_box(self, text: str) -> QWidget:
-        label = QLabel(text)
+    def _create_empty_box(self, text: str, action: str | None = None, prefill: str = "") -> QWidget:
+        """Empty states explain what belongs here and offer the next step (review A3)."""
+        box = QWidget()
+        lay = QVBoxLayout(box)
+        lay.setContentsMargins(0, 8, 0, 8)
+        lay.setSpacing(10)
+        lay.addStretch()
+        label = QLabel(text, box)
         label.setObjectName("DashboardEmpty")
         label.setAlignment(Qt.AlignCenter)
-        return label
+        label.setWordWrap(True)
+        lay.addWidget(label)
+        if action:
+            btn = QPushButton(action, box)
+            btn.setObjectName("DashboardEmptyAction")
+            btn.setCursor(Qt.PointingHandCursor)
+            btn.clicked.connect(lambda: self.quickAddRequested.emit(prefill))
+            lay.addWidget(btn, alignment=Qt.AlignHCenter)
+        lay.addStretch()
+        return box
+
+    def set_sample_data_available(self, available: bool) -> None:
+        self._sample_btn.setVisible(available)
 
     # ---------------------------------------------------------
     # Actions

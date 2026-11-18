@@ -59,7 +59,7 @@ QDialog#MeetingDialogRoot QSpinBox {
     padding: 2px 8px;
     font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
     font-size: 15px;
-    selection-background-color: #DCEBFF;
+    selection-background-color: #D1FAE5;
     selection-color: #111827;
 }
 
@@ -87,7 +87,7 @@ QDialog#MeetingDialogRoot QTimeEdit:focus,
 QDialog#MeetingDialogRoot QComboBox:focus,
 QDialog#MeetingDialogRoot QTextEdit:focus,
 QDialog#MeetingDialogRoot QSpinBox:focus {
-    border: 1px solid #93C5FD;
+    border: 1px solid #6EE7B7;
     background-color: #FFFFFF;
 }
 
@@ -110,7 +110,7 @@ QDialog#MeetingDialogRoot QComboBox QAbstractItemView {
     background-color: #FFFFFF;
     color: #111827;
     border: 1px solid #D1D5DB;
-    selection-background-color: #DBEAFE;
+    selection-background-color: #D1FAE5;
     selection-color: #111827;
 }
 
@@ -119,7 +119,7 @@ QDialog#MeetingDialogRoot QComboBox QAbstractItemView::item {
 }
 
 QDialog#MeetingDialogRoot QComboBox QAbstractItemView::item:selected {
-    background-color: #DBEAFE;
+    background-color: #D1FAE5;
     color: #111827;
 }
 
@@ -183,7 +183,7 @@ QCalendarWidget QSpinBox {
 }
 
 QCalendarWidget QAbstractItemView {
-    selection-background-color: #DBEAFE;
+    selection-background-color: #D1FAE5;
     selection-color: #111827;
     background-color: #FFFFFF;
     color: #111827;
@@ -218,19 +218,19 @@ QDialog#MeetingDialogRoot QDialogButtonBox QPushButton:pressed {
 }
 
 QDialog#MeetingDialogRoot QDialogButtonBox QPushButton:default {
-    background-color: #2563EB;
+    background-color: #059669;
     color: #FFFFFF;
-    border: 1px solid #2563EB;
+    border: 1px solid #059669;
 }
 
 QDialog#MeetingDialogRoot QDialogButtonBox QPushButton:default:hover {
-    background-color: #1D4ED8;
-    border: 1px solid #1D4ED8;
+    background-color: #047857;
+    border: 1px solid #047857;
 }
 
 QDialog#MeetingDialogRoot QDialogButtonBox QPushButton:default:pressed {
-    background-color: #1E40AF;
-    border: 1px solid #1E40AF;
+    background-color: #065F46;
+    border: 1px solid #065F46;
 }
 
 /* Disabled */

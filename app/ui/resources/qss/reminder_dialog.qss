@@ -9,7 +9,7 @@ QWidget#ReminderFormPanel {
 /* ── Header ─────────────────────────────── */
 QWidget#ReminderDialogHeader {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #142F5C, stop:0.6 #1E4384, stop:1 #3B6BC4);
+        stop:0 #1F2937, stop:0.6 #374151, stop:1 #059669);
 }
 QLabel#ReminderDialogTitle {
     color: #FFFFFF;
@@ -67,7 +67,7 @@ QLineEdit#ReminderField:focus,
 QComboBox#ReminderField:focus,
 QDateEdit#ReminderField:focus,
 QTimeEdit#ReminderField:focus {
-    border: 1px solid #3B82F6;
+    border: 1px solid #10B981;
 }
 
 QTextEdit#ReminderFieldText {
@@ -80,7 +80,7 @@ QTextEdit#ReminderFieldText {
     font-family: "Helvetica Neue", "Segoe UI", sans-serif;
 }
 QTextEdit#ReminderFieldText:focus {
-    border: 1px solid #3B82F6;
+    border: 1px solid #10B981;
 }
 
 QComboBox#ReminderField::drop-down {
@@ -91,8 +91,8 @@ QComboBox#ReminderField QAbstractItemView {
     background: #FFFFFF;
     border: 1px solid #E2E8F0;
     border-radius: 6px;
-    selection-background-color: #DBEAFE;
-    selection-color: #1D4ED8;
+    selection-background-color: #D1FAE5;
+    selection-color: #047857;
     padding: 4px;
 }
 
@@ -117,7 +117,7 @@ QPushButton#ReminderCancelBtn:hover {
 }
 QPushButton#ReminderSaveBtn {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #3B82F6, stop:1 #60A5FA);
+        stop:0 #10B981, stop:1 #34D399);
     color: #FFFFFF;
     border: none;
     border-radius: 8px;
@@ -128,8 +128,8 @@ QPushButton#ReminderSaveBtn {
 }
 QPushButton#ReminderSaveBtn:hover {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #2563EB, stop:1 #3B82F6);
+        stop:0 #059669, stop:1 #10B981);
 }
 QPushButton#ReminderSaveBtn:pressed {
-    background: #1D4ED8;
+    background: #047857;
 }

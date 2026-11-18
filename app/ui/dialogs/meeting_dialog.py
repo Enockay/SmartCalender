@@ -293,7 +293,7 @@ class MeetingDialog(QDialog):
                 url = match.group(1)
                 return (
                     f'<a href="{url}" '
-                    'style="color:#2563EB; text-decoration:none; font-weight:600;">'
+                    'style="color:#047857; text-decoration:none; font-weight:600;">'
                     f"{url}"
                     "</a>"
                 )

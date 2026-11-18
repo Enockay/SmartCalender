@@ -11,11 +11,11 @@ QWidget#MonthViewRoot {
 QWidget#MonthHeaderBar {
     background: qlineargradient(
         x1:0, y1:0, x2:1, y2:0,
-        stop:0 #142F5C,
-        stop:0.5 #1A3B75,
-        stop:1 #1E4384
+        stop:0 #1F2937,
+        stop:0.5 #1F2937,
+        stop:1 #374151
     );
-    border-bottom: 1px solid rgba(200, 210, 235, 0.30);
+    border-bottom: 1px solid rgba(209, 250, 229, 0.30);
 }
 
 QLabel#MonthTitle {
@@ -40,7 +40,7 @@ QTableWidget#MonthGrid {
     outline: none;
     gridline-color: #E2E8F0;
     selection-background-color: transparent;
-    selection-color: #0F172A;
+    selection-color: #0B0F14;
 }
 
 QTableWidget#MonthGrid::item {
@@ -63,8 +63,8 @@ QHeaderView#MonthGridHeader::section {
     color: #FFFFFF;
     background: qlineargradient(
         x1:0, y1:0, x2:0, y2:1,
-        stop:0 #1E3A6E,
-        stop:1 #142F5C
+        stop:0 #065F46,
+        stop:1 #1F2937
     );
     border: none;
     border-right: 1px solid rgba(255, 255, 255, 0.08);

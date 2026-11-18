@@ -6,7 +6,7 @@
 #  Produces:
 #    dist/linux/SmartCalender/          – standalone directory (run directly)
 #    dist/linux/SmartCalender-x86_64.AppImage   – portable single-file image
-#    dist/linux/smartcalender_1.0.0_amd64.deb  – Debian/Ubuntu package
+#    dist/linux/smartcalender_1.3.0_amd64.deb  – Debian/Ubuntu package
 #
 #  Prerequisites:
 #    pip install pyinstaller
@@ -29,9 +29,9 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 APP_NAME="SmartCalender"
 APP_NAME_LOWER="smartcalender"
-VERSION="1.0.0"
+VERSION="1.3.0"
 AUTHOR="Enock Mwems"
-DESCRIPTION="Smart Calender – Productivity calendar application"
+DESCRIPTION="SmartCalender – Productivity calendar application"
 ARCH="amd64"
 
 GPG_KEY_ID="${GPG_KEY_ID:-}"    # optional: GPG key to sign the AppImage/deb
@@ -45,7 +45,7 @@ BUILD_DIR="$ROOT/build"
 cd "$ROOT"
 
 echo "============================================================"
-echo "  Smart Calender – Linux Build"
+echo "  SmartCalender – Linux Build"
 echo "  Designed by $AUTHOR  |  v$VERSION"
 echo "============================================================"
 
@@ -98,7 +98,7 @@ cp -r "$APP_DIR"/. "$APPDIR_STAGING/usr/bin/"
 cat > "$APPDIR_STAGING/usr/share/applications/$APP_NAME_LOWER.desktop" <<DESKTOP
 [Desktop Entry]
 Type=Application
-Name=Smart Calender
+Name=SmartCalender
 Comment=$DESCRIPTION
 Exec=$APP_NAME
 Icon=$APP_NAME_LOWER
@@ -180,7 +180,7 @@ chmod +x "$DEB_ROOT/usr/local/bin/$APP_NAME_LOWER"
 cat > "$DEB_ROOT/usr/share/applications/$APP_NAME_LOWER.desktop" <<DESKTOP
 [Desktop Entry]
 Type=Application
-Name=Smart Calender
+Name=SmartCalender
 Comment=$DESCRIPTION
 Exec=/opt/$APP_NAME_LOWER/$APP_NAME
 Icon=$APP_NAME_LOWER
@@ -209,7 +209,7 @@ Depends: libglib2.0-0, libgl1, libegl1
 Section: misc
 Priority: optional
 Description: $DESCRIPTION
- Smart Calender is a productivity desktop application for managing
+ SmartCalender is a productivity desktop application for managing
  events, tasks, reminders and meetings.
  .
  Designed by $AUTHOR.

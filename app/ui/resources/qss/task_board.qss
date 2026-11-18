@@ -12,10 +12,10 @@ QWidget#TaskBoard {
 QWidget#TaskBoardHeader {
     background: qlineargradient(
         x1:0, y1:0, x2:1, y2:0,
-        stop:0    #0D2147,
-        stop:0.35 #1A3A6E,
-        stop:0.7  #2E5090,
-        stop:1    #4A7CC9
+        stop:0    #0B0F14,
+        stop:0.35 #1F2937,
+        stop:0.7  #065F46,
+        stop:1    #059669
     );
     border: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -36,14 +36,14 @@ QLabel#TaskBoardSummary {
 
 /* ── Instruction ribbon ── */
 QWidget#TaskBoardRibbon {
-    background-color: #EEF2FF;
-    border-bottom: 1px solid #E0E7FF;
+    background-color: #ECFDF5;
+    border-bottom: 1px solid #D1FAE5;
 }
 
 QLabel#TaskBoardInstruction {
     font-size: 12px;
     font-weight: 500;
-    color: #4338CA;
+    color: #059669;
 }
 
 /* ── Scroll area ── */
@@ -85,7 +85,7 @@ QFrame#ColumnAccentBacklog {
 }
 
 QFrame#ColumnAccentInProgress {
-    background-color: #3B82F6;
+    background-color: #10B981;
     border-radius: 2px;
 }
 
@@ -104,7 +104,7 @@ QLabel#ColumnTitleBacklog {
 QLabel#ColumnTitleInProgress {
     font-size: 14px;
     font-weight: 700;
-    color: #2563EB;
+    color: #059669;
 }
 
 QLabel#ColumnTitleCompleted {
@@ -177,14 +177,14 @@ QFrame#TaskCard {
 }
 
 QFrame#TaskCard:hover {
-    border: 1px solid #93C5FD;
+    border: 1px solid #6EE7B7;
     background-color: #FAFBFF;
 }
 
 QLabel#TaskName {
     font-size: 14px;
     font-weight: 700;
-    color: #0F172A;
+    color: #0B0F14;
 }
 
 QLabel#TaskDescription {
@@ -268,7 +268,7 @@ QLabel#TaskAttachmentThumbnail {
 }
 
 QLabel#TaskAttachmentThumbnail:hover {
-    border: 1px solid #93C5FD;
+    border: 1px solid #6EE7B7;
 }
 
 QLabel#TaskAttachmentMore {
@@ -282,9 +282,9 @@ QLabel#TaskAttachmentMore {
 }
 
 QLabel#TaskTag {
-    background: #EEF2FF;
-    color: #4338CA;
-    border: 1px solid #C7D2FE;
+    background: #ECFDF5;
+    color: #059669;
+    border: 1px solid #A7F3D0;
     border-radius: 10px;
     padding: 2px 8px;
     font-size: 10px;

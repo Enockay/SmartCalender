@@ -142,7 +142,7 @@ class LoginWidget(QWidget):
 
         header_layout.addWidget(icon_label)
         
-        title_label = QLabel("Smart Calender", header_frame)
+        title_label = QLabel("SmartCalender", header_frame)
         title_label.setObjectName("LoginTitle")
         header_layout.addWidget(title_label)
         

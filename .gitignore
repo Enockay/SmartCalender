@@ -13,3 +13,10 @@ data/app.db
 data/backups/
 data/exports/
 
+
+# Personal data: never commit databases, backups or exports
+*.db
+*.sqlite
+*_backup_*.db
+smart_calendar_export_*.json
+data/

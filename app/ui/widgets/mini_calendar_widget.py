@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from app.core import prefs
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QDate
@@ -23,7 +24,7 @@ class MiniCalendarWidget(QWidget):
         self._calendar.setObjectName("MiniCalendar")
         self._calendar.setGridVisible(False)
         self._calendar.setHorizontalHeaderFormat(QCalendarWidget.SingleLetterDayNames)
-        self._calendar.setFirstDayOfWeek(Qt.Sunday)
+        self._calendar.setFirstDayOfWeek(prefs.qt_first_day())
         self._calendar.setSelectedDate(QDate.currentDate())
         self._calendar.setNavigationBarVisible(True)
 
@@ -82,7 +83,7 @@ class MiniCalendarWidget(QWidget):
 
         today_fmt = QTextCharFormat()
         today_fmt.setForeground(QColor("#FFFFFF"))
-        today_fmt.setBackground(QColor("#3B82F6"))
+        today_fmt.setBackground(QColor("#10B981"))
         today_fmt.setFont(QFont("Helvetica Neue", 12, QFont.Bold))
 
         first_of_month = QDate(year, month, 1)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Smart Calender – Cross-Platform Build Helper
+SmartCalender – Cross-Platform Build Helper
 Designed by Enock Mwems
 
 This script detects the current OS and delegates to the appropriate
@@ -34,7 +34,7 @@ ROOT    = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 ASSETS  = ROOT / "assets"
 DIST    = ROOT / "dist"
-VERSION = "1.0.0"
+VERSION = "1.3.0"
 AUTHOR  = "Enock Mwems"
 
 # ---------------------------------------------------------------------------
@@ -159,7 +159,7 @@ def ensure_assets_dir() -> None:
     lic = ROOT / "LICENSE.txt"
     if not lic.exists():
         lic.write_text(
-            f"Smart Calender\nDesigned by {AUTHOR}\n"
+            f"SmartCalender\nDesigned by {AUTHOR}\n"
             f"Copyright (c) 2024 {AUTHOR}. All rights reserved.\n",
             encoding="utf-8",
         )
@@ -249,7 +249,7 @@ def _generate_macos_icns_from_png(src_png: Path, out_icns: Path) -> None:
 
 def build() -> int:
     system = platform.system()
-    _banner(f"Starting build for {system}  |  Smart Calender v{VERSION}")
+    _banner(f"Starting build for {system}  |  SmartCalender v{VERSION}")
     _banner(f"Designed by {AUTHOR}")
 
     ensure_assets_dir()
@@ -292,7 +292,7 @@ def build() -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description=f"Smart Calender build helper – Designed by {AUTHOR}"
+        description=f"SmartCalender build helper – Designed by {AUTHOR}"
     )
     parser.add_argument(
         "--check",

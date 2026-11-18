@@ -9,8 +9,8 @@ QWidget#ReminderRoot {
 /* ── Header ─────────────────────────────── */
 QWidget#ReminderHeader {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #142F5C, stop:0.6 #1E4384, stop:1 #3B6BC4);
-    border-bottom: 1px solid rgba(100, 160, 255, 0.15);
+        stop:0 #1F2937, stop:0.6 #374151, stop:1 #059669);
+    border-bottom: 1px solid rgba(16, 185, 129, 0.15);
 }
 QLabel#ReminderHeaderTitle {
     color: #FFFFFF;
@@ -20,7 +20,7 @@ QLabel#ReminderHeaderTitle {
 }
 QPushButton#ReminderAddBtn {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #3B82F6, stop:1 #60A5FA);
+        stop:0 #10B981, stop:1 #34D399);
     color: #FFFFFF;
     border: none;
     border-radius: 8px;
@@ -31,10 +31,10 @@ QPushButton#ReminderAddBtn {
 }
 QPushButton#ReminderAddBtn:hover {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #2563EB, stop:1 #3B82F6);
+        stop:0 #059669, stop:1 #10B981);
 }
 QPushButton#ReminderAddBtn:pressed {
-    background: #1D4ED8;
+    background: #047857;
 }
 
 /* ── Search + Combo in header ──────────── */
@@ -72,8 +72,8 @@ QComboBox#ReminderCatCombo QAbstractItemView {
     background: #FFFFFF;
     border: 1px solid #E2E8F0;
     border-radius: 6px;
-    selection-background-color: #DBEAFE;
-    selection-color: #1D4ED8;
+    selection-background-color: #D1FAE5;
+    selection-color: #047857;
     padding: 4px;
     color: #334155;
 }
@@ -100,12 +100,12 @@ QPushButton#ReminderFilterBtn:hover {
 QPushButton#ReminderFilterBtn:checked {
     background: transparent;
     color: #1E293B;
-    border-bottom: 2px solid #3B82F6;
+    border-bottom: 2px solid #10B981;
     border-radius: 0px;
     font-weight: 700;
 }
 QLabel#ReminderTodayBadge {
-    background: #3B82F6;
+    background: #10B981;
     color: #FFFFFF;
     border-radius: 9px;
     min-width: 18px;
@@ -158,7 +158,7 @@ QFrame#ReminderCard {
     width: 400px;
 }
 QFrame#ReminderCard:hover {
-    border: 1px solid #93C5FD;
+    border: 1px solid #6EE7B7;
     background: #FAFBFF;
 }
 
@@ -200,9 +200,9 @@ QPushButton#ReminderCardActionBtn {
     color: #475569;
 }
 QPushButton#ReminderCardActionBtn:hover {
-    background: #DBEAFE;
-    border: 1px solid #93C5FD;
-    color: #1D4ED8;
+    background: #D1FAE5;
+    border: 1px solid #6EE7B7;
+    color: #047857;
 }
 QPushButton#ReminderActionBtnDanger {
     background: #FEF2F2;
@@ -221,24 +221,24 @@ QWidget#ReminderStatsFrame {
     background: transparent;
 }
 QLabel#ReminderPill_active {
-    background: #E0F2FE;
-    color: #0369A1;
+    background: #D1FAE5;
+    color: #065F46;
     border-radius: 8px;
     padding: 3px 8px;
     font-size: 10px;
     font-weight: 700;
     font-family: "Helvetica Neue", "Segoe UI", sans-serif;
-    border: 1px solid #BAE6FD;
+    border: 1px solid #D1FAE5;
 }
 QLabel#ReminderPill_today {
-    background: #E0F2FE;
-    color: #0369A1;
+    background: #D1FAE5;
+    color: #065F46;
     border-radius: 8px;
     padding: 3px 8px;
     font-size: 10px;
     font-weight: 700;
     font-family: "Helvetica Neue", "Segoe UI", sans-serif;
-    border: 1px solid #BAE6FD;
+    border: 1px solid #D1FAE5;
 }
 QLabel#ReminderPill_completed {
     background: #D1FAE5;
@@ -300,10 +300,10 @@ QPushButton#ReminderSideFilterBtn:hover {
     color: #1E293B;
 }
 QPushButton#ReminderSideFilterBtn:checked {
-    background: #EFF6FF;
-    color: #1D4ED8;
+    background: #ECFDF5;
+    color: #047857;
     font-weight: 700;
-    border-left: 3px solid #3B82F6;
+    border-left: 3px solid #10B981;
 }
 
 /* ── Right panel search ────────────────── */
@@ -316,7 +316,7 @@ QWidget#ReminderRightCol QLineEdit#ReminderSearchField::placeholder {
     color: #94A3B8;
 }
 QWidget#ReminderRightCol QLineEdit#ReminderSearchField:focus {
-    border: 1px solid #3B82F6;
+    border: 1px solid #10B981;
     background: #FFFFFF;
 }
 QWidget#ReminderRightCol QComboBox#ReminderCatCombo {
@@ -332,8 +332,8 @@ QWidget#ReminderRightCol QComboBox#ReminderCatCombo QAbstractItemView {
     background: #FFFFFF;
     border: 1px solid #E2E8F0;
     border-radius: 6px;
-    selection-background-color: #DBEAFE;
-    selection-color: #1D4ED8;
+    selection-background-color: #D1FAE5;
+    selection-color: #047857;
     padding: 4px;
     color: #334155;
 }

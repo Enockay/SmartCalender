@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from app.core import theme as _theme
 from dataclasses import dataclass
 from datetime import datetime, time
 from pathlib import Path
@@ -210,23 +211,23 @@ class TodoListWidget(QWidget):
         # Soft gradient for the time column background to give it a lifted,
         # "pill-like" feel, with slightly lighter tone for future hours.
         if is_past:
-            time_fg = QColor("#94A3B8")
-            event_fg = QColor("#94A3B8")
+            time_fg = _theme.fg("#94A3B8")
+            event_fg = _theme.fg("#94A3B8")
             grad = QLinearGradient(0, 0, 1, 0)
             grad.setCoordinateMode(QLinearGradient.ObjectBoundingMode)
-            grad.setColorAt(0.0, QColor("#CBD5E1"))   # darker on the left
-            grad.setColorAt(1.0, QColor("#E5E7EB"))   # lighter on the right
+            grad.setColorAt(0.0, _theme.bg("#CBD5E1"))   # darker on the left
+            grad.setColorAt(1.0, _theme.bg("#E5E7EB"))   # lighter on the right
             time_bg = QBrush(grad)
-            event_bg = QColor("#F8FAFC")
+            event_bg = _theme.bg("#F8FAFC")
         else:
-            time_fg = QColor("#475569")
-            event_fg = QColor("#334155")
+            time_fg = _theme.fg("#475569")
+            event_fg = _theme.fg("#334155")
             grad = QLinearGradient(0, 0, 1, 0)
             grad.setCoordinateMode(QLinearGradient.ObjectBoundingMode)
-            grad.setColorAt(0.0, QColor("#E2E8F0"))
-            grad.setColorAt(1.0, QColor("#F8FAFC"))
+            grad.setColorAt(0.0, _theme.bg("#E2E8F0"))
+            grad.setColorAt(1.0, _theme.bg("#F8FAFC"))
             time_bg = QBrush(grad)
-            event_bg = QColor("#FFFFFF")
+            event_bg = _theme.bg("#FFFFFF")
 
         time_item.setForeground(QBrush(time_fg))
         event_item.setForeground(QBrush(event_fg))
@@ -371,10 +372,10 @@ class TodoListWidget(QWidget):
                     time_font.setItalic(False)
                     time_item.setFont(time_font)
                 else:
-                    time_item.setForeground(QBrush(QColor("#1D4ED8")))
-                    time_item.setBackground(QBrush(QColor("#DBEAFE")))
-                    event_item.setForeground(QBrush(QColor("#0F172A")))
-                    event_item.setBackground(QBrush(QColor("#EFF6FF")))
+                    time_item.setForeground(QBrush(_theme.fg("#047857")))
+                    time_item.setBackground(QBrush(_theme.bg("#D1FAE5")))
+                    event_item.setForeground(QBrush(_theme.fg("#0F172A")))
+                    event_item.setBackground(QBrush(_theme.bg("#EFF6FF")))
             else:
                 if not event:
                     is_past = row_time.hour < current_hour

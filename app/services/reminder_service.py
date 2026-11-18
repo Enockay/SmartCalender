@@ -188,7 +188,8 @@ class ReminderService:
             if filter_name == "today":
                 items = repo.get_today()
             elif filter_name == "upcoming":
-                items = repo.get_upcoming()
+                # All future reminders, soonest first (the Upcoming tab replaces "All").
+                items = repo.get_upcoming(days=365 * 100)
             elif filter_name == "completed":
                 items = repo.get_completed()
             elif filter_name == "overdue":

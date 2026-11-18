@@ -1,5 +1,11 @@
-from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import Qt, QTimer, QSize
+from PySide6.QtWidgets import (
+    QApplication,
+    QAbstractButton,
+    QComboBox,
+    QTabBar,
+    QAbstractItemView,
+)
+from PySide6.QtCore import Qt, QTimer, QSize, QObject, QEvent
 from PySide6.QtGui import QIcon, QPixmap, QPainter
 from PySide6.QtSvg import QSvgRenderer
 import sys
@@ -13,6 +19,24 @@ from app.services.notification_service import NotificationService
 from app.workers.reminder_worker import ReminderWorker
 from app.services.settings_service import SettingsService
 from app.models.auth_response import AuthResponse
+
+
+class _PointerCursorFilter(QObject):
+    """Give every clickable control the pointing-hand cursor (UX review W4, §4.6).
+
+    Applied app-wide when each widget is first polished, so new controls inherit
+    it without anyone having to remember setCursor().
+    """
+
+    _CLICKABLE = (QAbstractButton, QComboBox, QTabBar)
+
+    def eventFilter(self, obj, event):  # noqa: N802
+        if event.type() == QEvent.Polish:
+            if isinstance(obj, self._CLICKABLE):
+                obj.setCursor(Qt.PointingHandCursor)
+            elif isinstance(obj, QAbstractItemView) and obj.objectName() in ("NavList",):
+                obj.viewport().setCursor(Qt.PointingHandCursor)
+        return False
 
 
 def _position_top_right(window) -> None:
@@ -33,7 +57,9 @@ def main() -> int:
     logger = get_logger(__name__)
 
     app = QApplication(sys.argv)
-    app.setApplicationName("SmartCalender Desktop")
+    app.setApplicationName("SmartCalender")
+    _cursor_filter = _PointerCursorFilter(app)
+    app.installEventFilter(_cursor_filter)
 
     # Use packaged assets for dock/app + window icon.
     try:
@@ -67,6 +93,10 @@ def main() -> int:
     db.initialize()
 
     settings = SettingsService(db)
+
+    # Light / dark theme following the computer unless the user picked one (review §4.6)
+    from app.core import theme
+    theme.install(settings.get_theme())
     
     # Show login window first
     login_window = LoginWindow()
@@ -84,6 +114,10 @@ def main() -> int:
         main_window.show()
         
         notification_service = NotificationService(main_window, settings)
+        main_window.attach_notification_service(notification_service)
+        # From now on the tray keeps the app alive when the window is closed;
+        # "Quit SmartCalender" in the tray menu (or Cmd/Ctrl+Q) quits for real.
+        app.setQuitOnLastWindowClosed(not notification_service.tray_available)
         # Always start the reminder worker – it checks notification settings internally
         ReminderWorker(notification_service, main_window)
         
@@ -96,7 +130,7 @@ def main() -> int:
         if missed_count > 0:
             logger.info(f"Found {missed_count} reminder(s) that were due while app was closed")
         
-        QTimer.singleShot(0, lambda: logger.info("Smart Calender started"))
+        QTimer.singleShot(0, lambda: logger.info("SmartCalender started"))
     
     # Connect login success to show main window
     login_window._login_widget.loginSuccessful.connect(show_main_window)

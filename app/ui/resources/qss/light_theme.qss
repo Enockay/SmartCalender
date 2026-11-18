@@ -1,13 +1,13 @@
 QMainWindow, QWidget {
     /* Soft purple background like the desktop mockup */
-    background-color: #130F40;
+    background-color: #111827;
     font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
     font-size: 14px;
-    color: #0F172A;
+    color: #0B0F14;
 }
 
 QCalendarWidget {
-    background-color: #0B1020;
+    background-color: #0B0F14;
     border: none;
     color: #E5E7EB;
 }
@@ -34,7 +34,7 @@ QLabel[viewTitle="true"] {
 
 #LeftSidebar {
     /* Dark indigo sidebar */
-    background-color: #020617;
+    background-color: #0B0F14;
     border-right: none;
 }
 
@@ -47,7 +47,7 @@ QLabel#AppTitle {
 QListWidget#NavList {
     background: transparent;
     border: none;
-    color: #CBD5F5;
+    color: #D1FAE5;
 }
 
 QListWidget#NavList::item {
@@ -56,31 +56,31 @@ QListWidget#NavList::item {
 }
 
 QListWidget#NavList::item:selected {
-    background-color: #1D4ED8;
+    background-color: #047857;
     color: #FFFFFF;
 }
 
 QLabel#HeaderDateLabel {
     font-size: 22px;
     font-weight: 600;
-    color: #0F172A;
+    color: #0B0F14;
 }
 
 QPushButton#SegmentButton {
     background-color: transparent;
-    border: 1px solid #1D4ED8;
+    border: 1px solid #047857;
     padding: 6px 18px;
     border-radius: 18px;
     color: #1E293B;
 }
 
 QPushButton#SegmentButton:checked {
-    background-color: #1D4ED8;
+    background-color: #047857;
     color: #FFFFFF;
 }
 
 QPushButton#PrimaryButton {
-    background-color: #2563EB;
+    background-color: #059669;
     color: #FFFFFF;
     border-radius: 10px;
     padding: 6px 18px;
@@ -88,7 +88,7 @@ QPushButton#PrimaryButton {
 }
 
 QPushButton#PrimaryButton:hover {
-    background-color: #1D4ED8;
+    background-color: #047857;
 }
 
 QPushButton#SecondaryIconButton {

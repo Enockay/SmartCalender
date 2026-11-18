@@ -46,12 +46,12 @@ QPushButton#ReminderSnoozeButton:hover {
 }
 
 QPushButton#ReminderDismissButton {
-    background-color: #2563EB;
+    background-color: #059669;
     color: #FFFFFF;
-    border: 1px solid #2563EB;
+    border: 1px solid #059669;
 }
 
 QPushButton#ReminderDismissButton:hover {
-    background-color: #1D4ED8;
+    background-color: #047857;
 }
 

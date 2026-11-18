@@ -26,9 +26,9 @@ REM ---------------------------------------------------------------------------
 REM  Configuration – edit these values
 REM ---------------------------------------------------------------------------
 set APP_NAME=SmartCalender
-set VERSION=1.0.0
+set VERSION=1.3.0
 set AUTHOR=Enock Mwems
-set DESCRIPTION=Smart Calender – Designed by Enock Mwems
+set DESCRIPTION=SmartCalender – Designed by Enock Mwems
 
 REM Path to your code-signing certificate (leave empty to skip signing)
 REM  Example: set SIGN_CERT_PATH=C:\certs\my_certificate.pfx
@@ -49,7 +49,7 @@ REM ---------------------------------------------------------------------------
 REM  Banner
 REM ---------------------------------------------------------------------------
 echo ============================================================
-echo   Smart Calender – Windows Build
+echo   SmartCalender – Windows Build
 echo   Designed by %AUTHOR%  ^|  v%VERSION%
 echo ============================================================
 
@@ -131,7 +131,7 @@ echo            StringStruct^(u'FileVersion',      u'%VERSION%'^),
 echo            StringStruct^(u'InternalName',     u'%APP_NAME%'^),
 echo            StringStruct^(u'LegalCopyright',   u'Copyright ^(c^) 2024 %AUTHOR%. All rights reserved.'^),
 echo            StringStruct^(u'OriginalFilename', u'%APP_NAME%.exe'^),
-echo            StringStruct^(u'ProductName',      u'Smart Calender'^),
+echo            StringStruct^(u'ProductName',      u'SmartCalender'^),
 echo            StringStruct^(u'ProductVersion',   u'%VERSION%'^)]
 echo         ^)
 echo       ]
@@ -180,14 +180,14 @@ if defined SIGN_CERT_PATH (
                 signtool sign /fd SHA256 ^
                     /tr "%TIMESTAMP_URL%" /td SHA256 ^
                     /f "%SIGN_CERT_PATH%" /p "%SIGN_CERT_PASS%" ^
-                    /d "Smart Calender" ^
+                    /d "SmartCalender" ^
                     /du "https://enockmwems.com" ^
                     "!EXE_PATH!"
             ) else (
                 signtool sign /fd SHA256 ^
                     /tr "%TIMESTAMP_URL%" /td SHA256 ^
                     /f "%SIGN_CERT_PATH%" ^
-                    /d "Smart Calender" ^
+                    /d "SmartCalender" ^
                     /du "https://enockmwems.com" ^
                     "!EXE_PATH!"
             )
@@ -273,7 +273,7 @@ echo SectionEnd
 
 REM Create a dummy LICENSE.txt if none exists
 if not exist "%ROOT%\LICENSE.txt" (
-    echo Smart Calender - Designed by Enock Mwems > "%ROOT%\LICENSE.txt"
+    echo SmartCalender - Designed by Enock Mwems > "%ROOT%\LICENSE.txt"
     echo Copyright ^(c^) 2024 Enock Mwems. All rights reserved. >> "%ROOT%\LICENSE.txt"
 )
 
@@ -315,13 +315,13 @@ if errorlevel 1 (
                         signtool sign /fd SHA256 ^
                             /tr "%TIMESTAMP_URL%" /td SHA256 ^
                             /f "%SIGN_CERT_PATH%" /p "%SIGN_CERT_PASS%" ^
-                            /d "Smart Calender Installer" ^
+                            /d "SmartCalender Installer" ^
                             "%INSTALLER_OUT%"
                     ) else (
                         signtool sign /fd SHA256 ^
                             /tr "%TIMESTAMP_URL%" /td SHA256 ^
                             /f "%SIGN_CERT_PATH%" ^
-                            /d "Smart Calender Installer" ^
+                            /d "SmartCalender Installer" ^
                             "%INSTALLER_OUT%"
                     )
                     echo   Installer signed: OK

@@ -11,11 +11,11 @@ QWidget#YearViewRoot {
 QWidget#YearHeader {
     background: qlineargradient(
         x1:0, y1:0, x2:1, y2:0,
-        stop:0 #142F5C,
-        stop:0.5 #1A3B75,
-        stop:1 #1E4384
+        stop:0 #1F2937,
+        stop:0.5 #1F2937,
+        stop:1 #374151
     );
-    border-bottom: 1px solid rgba(200, 210, 235, 0.30);
+    border-bottom: 1px solid rgba(209, 250, 229, 0.30);
 }
 
 QLabel#YearTitle {
@@ -76,14 +76,14 @@ QFrame#YearMonthCard:hover {
 QFrame#YearMonthCard[current="true"] {
     background: qlineargradient(
         x1:0, y1:0, x2:1, y2:1,
-        stop:0 #EFF6FF,
-        stop:1 #DBEAFE
+        stop:0 #ECFDF5,
+        stop:1 #D1FAE5
     );
-    border: 1.5px solid #93C5FD;
+    border: 1.5px solid #6EE7B7;
 }
 
 QFrame#YearMonthCard[current="true"]:hover {
-    border: 1.5px solid #60A5FA;
+    border: 1.5px solid #34D399;
 }
 
 /* Month name label */
@@ -97,12 +97,12 @@ QLabel#YearMonthName {
 }
 
 QFrame#YearMonthCard[current="true"] QLabel#YearMonthName {
-    color: #1D4ED8;
+    color: #047857;
 }
 
 /* Meeting count badge */
 QLabel#YearMeetingBadge {
-    background: #2563EB;
+    background: #059669;
     color: #FFFFFF;
     border-radius: 12px;
     font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
@@ -122,7 +122,7 @@ QLabel#YearMeetingLine {
 
 QLabel#YearMeetingMore {
     background: transparent;
-    color: #2563EB;
+    color: #059669;
     font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
     font-size: 10px;
     font-weight: 600;

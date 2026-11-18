@@ -10,11 +10,11 @@ QWidget#SettingsDialog {
 /* ── Header bar (gradient blending sidebar → body) ── */
 QWidget#SettingsHeader {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #142F5C,
-        stop:0.4 #1E4384,
-        stop:0.8 #2B5BA8,
-        stop:1.0 #4A7FD4);
-    border-bottom: 2px solid rgba(74, 127, 212, 0.3);
+        stop:0 #1F2937,
+        stop:0.4 #374151,
+        stop:0.8 #059669,
+        stop:1.0 #10B981);
+    border-bottom: 2px solid rgba(16, 185, 129, 0.3);
     min-height: 52px;
 }
 
@@ -78,12 +78,12 @@ QTabWidget#SettingsTabs QTabBar::tab {
 QTabWidget#SettingsTabs QTabBar::tab:hover {
     color: #1E293B;
     background-color: #E2E6F0;
-    border-bottom: 3px solid rgba(37, 99, 235, 0.3);
+    border-bottom: 3px solid rgba(5, 150, 105, 0.3);
 }
 
 QTabWidget#SettingsTabs QTabBar::tab:selected {
-    color: #2563EB;
-    border-bottom: 3px solid #2563EB;
+    color: #059669;
+    border-bottom: 3px solid #059669;
     background-color: #FFFFFF;
     font-weight: 700;
 }
@@ -103,11 +103,11 @@ QFrame#SettingsCard {
 }
 
 QFrame#SettingsCard:hover {
-    border: 1px solid rgba(147, 197, 253, 0.5);
+    border: 1px solid rgba(110, 231, 183, 0.5);
 }
 
 QLabel#SettingsCardTitle {
-    color: #0F172A;
+    color: #0B0F14;
     font-size: 14px;
     font-weight: 700;
 }
@@ -121,7 +121,7 @@ QLabel#SettingsCardDesc {
 
 /* ── Section labels ── */
 QLabel#SettingsSectionLabel {
-    color: #0F172A;
+    color: #0B0F14;
     font-size: 13px;
     font-weight: 700;
 }
@@ -177,10 +177,10 @@ QPushButton#ThemeToggleLight {
 QPushButton#ThemeToggleDark:checked,
 QPushButton#ThemeToggleLight:checked {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #2563EB,
-        stop:1 #3B82F6);
+        stop:0 #059669,
+        stop:1 #10B981);
     color: #FFFFFF;
-    border: 1px solid #2563EB;
+    border: 1px solid #059669;
     font-weight: 700;
 }
 
@@ -193,10 +193,10 @@ QPushButton#ThemeToggleLight:hover:!checked {
 /* Locked (non-toggle) appearance badge */
 QLabel#SettingsLockedPill {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #2563EB,
-        stop:1 #3B82F6);
+        stop:0 #059669,
+        stop:1 #10B981);
     color: #FFFFFF;
-    border: 1px solid #2563EB;
+    border: 1px solid #059669;
     border-radius: 10px;
     padding: 6px 12px;
     font-size: 14px;
@@ -215,11 +215,11 @@ QComboBox#SettingsCombo {
 }
 
 QComboBox#SettingsCombo:hover {
-    border: 1px solid #93C5FD;
+    border: 1px solid #6EE7B7;
 }
 
 QComboBox#SettingsCombo:focus {
-    border: 1px solid #3B82F6;
+    border: 1px solid #10B981;
 }
 
 QComboBox#SettingsCombo::drop-down {
@@ -237,8 +237,8 @@ QComboBox#SettingsCombo QAbstractItemView {
     border: 1px solid #E2E8F0;
     border-radius: 8px;
     color: #1E293B;
-    selection-background-color: #EEF2FF;
-    selection-color: #2563EB;
+    selection-background-color: #ECFDF5;
+    selection-color: #059669;
     padding: 4px;
     font-size: 13px;
 }
@@ -255,11 +255,11 @@ QLineEdit#SettingsInput {
 }
 
 QLineEdit#SettingsInput:hover {
-    border: 1px solid #93C5FD;
+    border: 1px solid #6EE7B7;
 }
 
 QLineEdit#SettingsInput:focus {
-    border: 2px solid #3B82F6;
+    border: 2px solid #10B981;
     padding: 6px 13px;
 }
 
@@ -282,12 +282,12 @@ QRadioButton#SettingsRadio::indicator {
 QRadioButton#SettingsRadio::indicator:checked {
     background: qradialgradient(cx:0.5, cy:0.5, radius:0.35,
         fx:0.5, fy:0.5,
-        stop:0 #3B82F6, stop:0.8 #3B82F6, stop:0.81 #FFFFFF, stop:1 #FFFFFF);
-    border: 2px solid #3B82F6;
+        stop:0 #10B981, stop:0.8 #10B981, stop:0.81 #FFFFFF, stop:1 #FFFFFF);
+    border: 2px solid #10B981;
 }
 
 QRadioButton#SettingsRadio::indicator:hover {
-    border: 2px solid #93C5FD;
+    border: 2px solid #6EE7B7;
 }
 
 /* ── Checkboxes ── */
@@ -308,14 +308,14 @@ QCheckBox#SettingsCheckbox::indicator {
 
 QCheckBox#SettingsCheckbox::indicator:checked {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-        stop:0 #2563EB, stop:1 #3B82F6);
-    border: 2px solid #2563EB;
+        stop:0 #059669, stop:1 #10B981);
+    border: 2px solid #059669;
     border-radius: 5px;
     image: url(app/ui/resources/icons/check_white.svg);
 }
 
 QCheckBox#SettingsCheckbox::indicator:hover {
-    border: 2px solid #93C5FD;
+    border: 2px solid #6EE7B7;
 }
 
 /* ── Spin box ── */
@@ -330,11 +330,11 @@ QSpinBox#SettingsSpin {
 }
 
 QSpinBox#SettingsSpin:hover {
-    border: 1px solid #93C5FD;
+    border: 1px solid #6EE7B7;
 }
 
 QSpinBox#SettingsSpin:focus {
-    border: 2px solid #3B82F6;
+    border: 2px solid #10B981;
 }
 
 /* ── Time edit ── */
@@ -349,24 +349,24 @@ QTimeEdit#SettingsTimeEdit {
 }
 
 QTimeEdit#SettingsTimeEdit:hover {
-    border: 1px solid #93C5FD;
+    border: 1px solid #6EE7B7;
 }
 
 QTimeEdit#SettingsTimeEdit:focus {
-    border: 2px solid #3B82F6;
+    border: 2px solid #10B981;
 }
 
 /* ── Info panel ── */
 QFrame#SettingsInfoPanel {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #EEF2FF, stop:1 #F0F4FF);
-    border: 1px solid #C7D2FE;
+        stop:0 #ECFDF5, stop:1 #F3F4F6);
+    border: 1px solid #A7F3D0;
     border-radius: 12px;
     margin-top: 4px;
 }
 
 QLabel#SettingsInfoText {
-    color: #3730A3;
+    color: #065F46;
     font-size: 12px;
     font-weight: 500;
 }
@@ -385,8 +385,8 @@ QLabel#SettingsSaveStatus {
 
 QPushButton#SettingsSaveBtn {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #2563EB,
-        stop:1 #3B82F6);
+        stop:0 #059669,
+        stop:1 #10B981);
     color: #FFFFFF;
     border: none;
     border-radius: 10px;
@@ -397,16 +397,16 @@ QPushButton#SettingsSaveBtn {
 
 QPushButton#SettingsSaveBtn:hover {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #1D4ED8,
-        stop:1 #2563EB);
+        stop:0 #047857,
+        stop:1 #059669);
 }
 
 QPushButton#SettingsSaveBtn:pressed {
-    background: #1E40AF;
+    background: #065F46;
 }
 
 QPushButton#SettingsSaveBtn:disabled {
-    background: #93C5FD;
+    background: #6EE7B7;
     color: #E2E8F0;
 }
 
@@ -445,13 +445,13 @@ QPushButton#SettingsActionBtn {
 
 QPushButton#SettingsActionBtn:hover {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #EEF2FF, stop:1 #DBEAFE);
-    border: 1px solid #93C5FD;
-    color: #2563EB;
+        stop:0 #ECFDF5, stop:1 #D1FAE5);
+    border: 1px solid #6EE7B7;
+    color: #059669;
 }
 
 QPushButton#SettingsActionBtn:pressed {
-    background-color: #DBEAFE;
+    background-color: #D1FAE5;
 }
 
 /* Keep critical action buttons from collapsing to icon-sized width on Windows. */
@@ -467,7 +467,7 @@ QPushButton#SettingsResetBtn {
 
 /* ── Test Sound Button ── */
 QPushButton#SettingsTestSoundButton {
-    background-color: #3B82F6;
+    background-color: #10B981;
     color: #FFFFFF;
     border: none;
     border-radius: 8px;
@@ -478,29 +478,29 @@ QPushButton#SettingsTestSoundButton {
 }
 
 QPushButton#SettingsTestSoundButton:hover {
-    background-color: #2563EB;
+    background-color: #059669;
 }
 
 QPushButton#SettingsTestSoundButton:pressed {
-    background-color: #1E40AF;
+    background-color: #065F46;
     transform: scale(0.98);
 }
 
 /* ── Account tab ── */
 QLabel#AccountAvatar {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-        stop:0 #2563EB,
-        stop:0.5 #7C3AED,
-        stop:1 #EC4899);
+        stop:0 #059669,
+        stop:0.5 #0E7490,
+        stop:1 #22D3EE);
     color: #FFFFFF;
     font-size: 22px;
     font-weight: 800;
     border-radius: 28px;
-    border: 3px solid rgba(37, 99, 235, 0.25);
+    border: 3px solid rgba(5, 150, 105, 0.25);
 }
 
 QLabel#AccountName {
-    color: #0F172A;
+    color: #0B0F14;
     font-size: 18px;
     font-weight: 700;
 }
@@ -547,11 +547,11 @@ QLabel#AccountSupportLabel {
 }
 
 QLabel#AccountSupportLabel:hover {
-    color: #2563EB;
+    color: #059669;
 }
 
 QLabel#AccountSupportLabel a {
-    color: #2563EB;
+    color: #059669;
     text-decoration: underline;
     font-weight: 700;
 }
@@ -650,7 +650,7 @@ QLabel#BackupStatLabel {
 /* ── About tab (fully QSS-driven; avoids Windows inline-style overrides) ── */
 QLabel#SettingsAboutIcon {
     background: transparent;
-    color: #0F172A;
+    color: #0B0F14;
     font-size: 64px;
 }
 
@@ -686,7 +686,7 @@ QLabel#SettingsAboutMetaValue {
 }
 
 QLabel#SettingsAboutMetaValue a {
-    color: #A855F7;
+    color: #22D3EE;
     text-decoration: underline;
 }
 
@@ -729,8 +729,8 @@ QScrollBar::sub-page:vertical {
 
 QMessageBox {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #0D2147, stop:0.5 #132D5B, stop:1 #1A3A6E);
-    border: 1px solid rgba(100, 160, 255, 0.2);
+        stop:0 #0B0F14, stop:0.5 #111827, stop:1 #1F2937);
+    border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 QMessageBox QLabel {
@@ -744,7 +744,7 @@ QMessageBox QLabel {
 
 QMessageBox QPushButton {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #3B82F6, stop:1 #60A5FA);
+        stop:0 #10B981, stop:1 #34D399);
     color: #FFFFFF;
     border: none;
     border-radius: 8px;
@@ -757,11 +757,11 @@ QMessageBox QPushButton {
 
 QMessageBox QPushButton:hover {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #2563EB, stop:1 #3B82F6);
+        stop:0 #059669, stop:1 #10B981);
 }
 
 QMessageBox QPushButton:pressed {
-    background: #1D4ED8;
+    background: #047857;
 }
 
 /* "No" / "Cancel" style buttons */

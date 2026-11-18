@@ -24,9 +24,9 @@ class _GradientBackground(QWidget):
         gradient = QLinearGradient(0, 0, self.width(), self.height())
         # Slightly brighten the outer login background so it blends with
         # the bright blue login card (while still staying in the same theme).
-        gradient.setColorAt(0.0, QColor("#143C7A"))
-        gradient.setColorAt(0.6, QColor("#1B4EA8"))
-        gradient.setColorAt(1.0, QColor("#14386E"))
+        gradient.setColorAt(0.0, QColor("#0B0F14"))
+        gradient.setColorAt(0.6, QColor("#065F46"))
+        gradient.setColorAt(1.0, QColor("#111827"))
 
         painter.fillRect(self.rect(), QBrush(gradient))
         painter.end()
@@ -37,8 +37,11 @@ class LoginWindow(QMainWindow):
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Smart Calender - Login")
-        self.setFixedSize(1000, 750)
+        self.setWindowTitle("Log in to SmartCalender")
+        from PySide6.QtGui import QGuiApplication as _QGA
+        _avail = _QGA.primaryScreen().availableGeometry()
+        # Never taller than the usable screen area (minus the title bar).
+        self.setFixedSize(min(1000, _avail.width()), min(750, _avail.height() - 32))
 
         # Use Qt.Window so the window has a normal frame but no extra buttons.
         self.setWindowFlags(Qt.Window | Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)

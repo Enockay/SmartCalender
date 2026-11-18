@@ -5,7 +5,7 @@ from calendar import monthrange
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QDate, QSize, QTimer, QUrl, Signal, Slot
-from PySide6.QtGui import QGuiApplication, QDesktopServices, QPixmap, QColor, QPainter
+from PySide6.QtGui import QGuiApplication, QDesktopServices, QPixmap, QColor, QPainter, QKeySequence, QShortcut
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import (
     QMainWindow,
@@ -53,6 +53,18 @@ from app.database.db_manager import DatabaseManager
 from app.database.schema import User
 from app.core.app_config import get_base_dir
 from sqlalchemy import select
+from app.ui import icons
+from app.core import quick_add
+from app.services.onboarding_service import OnboardingService
+from app.services.reminder_service import ReminderService
+from app.ui.dialogs.welcome_dialog import WelcomeDialog
+
+# Sidebar rows (review A2: name what people look for)
+NAV_TODAY, NAV_CALENDAR, NAV_TASKS, NAV_REMINDERS, NAV_SETTINGS, NAV_HELP = range(6)
+# Stack indexes
+VIEW_TODAY, VIEW_DAY, VIEW_WEEK, VIEW_MONTH, VIEW_YEAR, VIEW_TASKS, VIEW_SETTINGS, VIEW_REMINDERS = range(8)
+CALENDAR_VIEWS = (VIEW_DAY, VIEW_WEEK, VIEW_MONTH, VIEW_YEAR)
+HELP_URL = "https://www.deskhab.com/help"
 
 
 class MainWindow(QMainWindow):
@@ -68,12 +80,22 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("SmartCalender")
         # Avoid clipping/pushed sidebar content on Windows high-DPI displays.
         # Use a comfortable default size but allow resizing.
-        self.resize(1100, 780)
-        self.setMinimumSize(1000, 750)
+        # Fit the screen: on smaller laptops the usable height (below the menu bar,
+        # above the Dock) can be less than 780 pt, which pushed the bottom of the
+        # sidebar off-screen.
+        avail = (self.screen() or QGuiApplication.primaryScreen()).availableGeometry()
+        frame_extra = 32  # title bar
+        width = min(1100, avail.width())
+        height = min(780, avail.height() - frame_extra)
+        self.setMinimumSize(min(900, width), min(600, height))
+        self.resize(width, height)
         self._apply_window_controls()
 
         self._settings = settings or SettingsService()
         self._current_date = date.today()
+        default_view = {"day": VIEW_DAY, "week": VIEW_WEEK, "month": VIEW_MONTH, "year": VIEW_YEAR}
+        self._calendar_view = default_view.get(self._settings.get_default_view(), VIEW_WEEK)
+        self._onboarding = OnboardingService(self._settings)
         self._db = DatabaseManager()
         
         # Cached logged-in user info for sidebar / title
@@ -98,6 +120,9 @@ class MainWindow(QMainWindow):
         self._apply_default_view()
         self._reload_current_day()
         self._sync_title()
+        self._install_shortcuts()
+        if self._onboarding.needs_welcome():
+            QTimer.singleShot(600, self._show_welcome)
 
         # After the window is up, enforce subscription status. This dialog
         # is modal and cannot be bypassed from within the app.
@@ -125,6 +150,33 @@ class MainWindow(QMainWindow):
         # Always remove the macOS green-button fullscreen capability (no hasattr guard
         # needed – PySide6 exposes this flag on all supported versions).
         self.setWindowFlag(Qt.WindowFullscreenButtonHint, False)
+
+    def attach_notification_service(self, service) -> None:
+        """Called by main.py once the tray icon exists."""
+        self._notification_service = service
+
+    def closeEvent(self, event) -> None:  # noqa: N802
+        """Closing the window keeps SmartCalender running in the tray so reminders still arrive."""
+        svc = getattr(self, "_notification_service", None)
+        # Only the window's own close button hides to the tray. A close that comes
+        # from Quit (Cmd+Q, tray menu) is not spontaneous and is allowed through.
+        if (
+            event.spontaneous()
+            and not getattr(self, "_really_quit", False)
+            and svc is not None
+            and svc.tray_available
+            and self._settings.get_run_in_background()
+        ):
+            event.ignore()
+            self.hide()
+            if self._settings.get_value("tray_hint_shown", "") != "1":
+                svc.show_tray_message(
+                    "SmartCalender is still running",
+                    "Your reminders will keep working. Open SmartCalender or quit it from the icon in your menu bar or system tray.",
+                )
+                self._settings.set_value("tray_hint_shown", "1")
+            return
+        super().closeEvent(event)
 
     def showEvent(self, event) -> None:  # noqa: N802
         super().showEvent(event)
@@ -437,7 +489,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(title)
 
         body = QLabel(
-            "Your subscription has expired. To continue using Smart Calender,\n"
+            "Your subscription has expired. To continue using SmartCalender,\n"
             "please renew your subscription.",
             card,
         )
@@ -596,7 +648,7 @@ class MainWindow(QMainWindow):
 
         header_layout.addWidget(logo_label)
 
-        self._header_title = QLabel("Smart Calender", header_bar)
+        self._header_title = QLabel("SmartCalender", header_bar)
         self._header_title.setObjectName("AppTitle")
         header_layout.addWidget(self._header_title)
 
@@ -609,49 +661,58 @@ class MainWindow(QMainWindow):
         self._add_task_button.setVisible(False)
         header_layout.addWidget(self._add_task_button)
 
-        # Day / Week / Month buttons in the header
-        self._day_button = QPushButton("Day", header_bar)
-        self._day_button.setCheckable(True)
-        self._day_button.setObjectName("SegmentButton")
-        self._day_button.clicked.connect(lambda: self._set_view(1))
+        # Quick add: one way to add anything (review §4.6)
+        self._quick_add = QLineEdit(header_bar)
+        self._quick_add.setObjectName("QuickAddInput")
+        mod = "⌘" if __import__("sys").platform == "darwin" else "Ctrl"
+        self._quick_add.setPlaceholderText(f"Add anything… e.g. Lunch with Ana Friday 1pm   ({mod}+K)")
+        self._quick_add.setAccessibleName("Quick add an event, task or reminder")
+        self._quick_add.setMinimumWidth(320)
+        self._quick_add.setClearButtonEnabled(True)
+        self._quick_add.textChanged.connect(self._on_quick_add_preview)
+        self._quick_add.returnPressed.connect(self._on_quick_add_submit)
+        header_layout.addWidget(self._quick_add, 1)
 
-        self._week_button = QPushButton("Week", header_bar)
-        self._week_button.setCheckable(True)
-        self._week_button.setObjectName("SegmentButton")
-        self._week_button.clicked.connect(lambda: self._set_view(2))
+        self._quick_add_hint = QLabel("", header_bar)
+        self._quick_add_hint.setObjectName("QuickAddHint")
+        self._quick_add_hint.setMinimumWidth(170)
+        header_layout.addWidget(self._quick_add_hint)
 
-        self._month_button = QPushButton("Month", header_bar)
-        self._month_button.setCheckable(True)
-        self._month_button.setObjectName("SegmentButton")
-        self._month_button.clicked.connect(lambda: self._set_view(3))
+        # Day / Week / Month / Year switch, shown only inside Calendar
+        self._view_buttons: dict[int, QPushButton] = {}
+        for idx, label, key in (
+            (VIEW_DAY, "Day", "D"), (VIEW_WEEK, "Week", "W"),
+            (VIEW_MONTH, "Month", "M"), (VIEW_YEAR, "Year", "Y"),
+        ):
+            btn = QPushButton(label, header_bar)
+            btn.setCheckable(True)
+            btn.setObjectName("SegmentButton")
+            btn.setToolTip(f"{label} view ({key})")
+            btn.clicked.connect(lambda _=False, i=idx: self._set_view(i))
+            header_layout.addWidget(btn)
+            self._view_buttons[idx] = btn
+        self._day_button = self._view_buttons[VIEW_DAY]
+        self._week_button = self._view_buttons[VIEW_WEEK]
+        self._month_button = self._view_buttons[VIEW_MONTH]
+        self._year_button = self._view_buttons[VIEW_YEAR]
 
-        self._year_button = QPushButton("Year", header_bar)
-        self._year_button.setCheckable(True)
-        self._year_button.setObjectName("SegmentButton")
-        self._year_button.clicked.connect(lambda: self._set_view(4))
-
-        self._day_button.setChecked(True)
-
-        header_layout.addWidget(self._day_button)
-        header_layout.addWidget(self._week_button)
-        header_layout.addWidget(self._month_button)
-        header_layout.addWidget(self._year_button)
-
-        # Small search bar on the far right
+        # Search (press / to focus)
         search_container = QWidget(header_bar)
         search_container.setObjectName("SearchContainer")
         search_layout = QHBoxLayout(search_container)
         search_layout.setContentsMargins(8, 4, 8, 4)
         search_layout.setSpacing(6)
 
-        search_icon = QLabel("🔍", search_container)
+        search_icon = QLabel(search_container)
         search_icon.setObjectName("SearchIcon")
+        search_icon.setPixmap(icons.pixmap("search", 16, "#6B7280"))
         search_layout.addWidget(search_icon)
 
         self._search_input = QLineEdit(search_container)
         self._search_input.setObjectName("SearchInput")
-        self._search_input.setPlaceholderText("Search...")
-        self._search_input.setFixedWidth(180)
+        self._search_input.setPlaceholderText("Search  (/)")
+        self._search_input.setAccessibleName("Search tasks")
+        self._search_input.setFixedWidth(150)
         self._search_input.textChanged.connect(self._on_search_changed)
         self._search_input.returnPressed.connect(self._on_search_executed)
         search_layout.addWidget(self._search_input)
@@ -700,15 +761,18 @@ class MainWindow(QMainWindow):
         # Keep sidebar navigation fixed: ignore mouse-wheel scrolling on this list.
         self._nav_list.viewport().installEventFilter(self)
 
-        for label in [
-            "  🏠  Dashboard",
-            "  📅  Todo List",
-            "  📋  Tasks Board",
-            "  ⏰  Reminders",
-            "  ⚙️  Settings",
+        for label, icon_name, tip in [
+            ("Today", "today", "Today (T)"),
+            ("Calendar", "calendar", "Calendar: Day, Week, Month, Year"),
+            ("Tasks", "tasks", "Tasks board"),
+            ("Reminders", "reminders", "Reminders"),
+            ("Settings", "settings", "Settings"),
+            ("Help", "help", "Open help on deskhab.com"),
         ]:
-            item = QListWidgetItem(label, self._nav_list)
-            item.setSizeHint(QSize(0, 48))
+            item = QListWidgetItem(icons.icon(icon_name, "#9CA3AF", "#FFFFFF"), f"  {label}", self._nav_list)
+            item.setSizeHint(QSize(0, 44))
+            item.setToolTip(tip)
+            item.setData(Qt.AccessibleTextRole, label)
 
         # Use dynamic height based on size hint instead of a strict per-row
         # formula. On Windows (especially with DPI scaling and emoji fonts),
@@ -772,8 +836,9 @@ class MainWindow(QMainWindow):
             except Exception:
                 sys_user = os.environ.get("USER", os.environ.get("USERNAME", "User"))
             display_name = sys_user.replace("_", " ").replace("-", " ").title()
-        
-        initial = display_name[0].upper() if display_name else "U"
+        # Show only the first name
+        first_name = (display_name.strip().split()[0]) if display_name else "User"
+        initial = first_name[0].upper() if first_name else "U"
 
         user_card = QFrame(sidebar_container)
         user_card.setObjectName("SidebarUserCard")
@@ -794,7 +859,7 @@ class MainWindow(QMainWindow):
         info_col.setSpacing(1)
         info_col.setContentsMargins(0, 0, 0, 0)
 
-        self._user_id_label = QLabel(display_name, user_card)
+        self._user_id_label = QLabel(first_name, user_card)
         self._user_id_label.setObjectName("SidebarUserName")
         
         self._status_label = QLabel("● Online", user_card)
@@ -864,6 +929,12 @@ class MainWindow(QMainWindow):
         self._settings_view.renewSubscriptionRequested.connect(
             lambda: QTimer.singleShot(0, self._ensure_subscription_socket)
         )
+        self._settings_view.welcomeTourRequested.connect(self._show_welcome)
+        self._settings_view.settingsSaved.connect(self._apply_preferences)
+        from app.core import theme as _theme_mod
+        _theme_mod.notifier.changed.connect(lambda *_: self._apply_preferences())
+        self._settings_view.sampleDataLoadRequested.connect(self._load_sample_data)
+        self._settings_view.sampleDataClearRequested.connect(self.clear_sample_data)
         self._reminder_view = ReminderDashboardWidget(main_container)
 
         self._stack.addWidget(self._dashboard)      # index 0
@@ -909,6 +980,8 @@ class MainWindow(QMainWindow):
         self._dashboard.navigateToEventDay.connect(self._on_dashboard_open_event)
         self._dashboard.navigateToReminders.connect(self._on_dashboard_view_reminders)
         self._dashboard.navigateToOverdue.connect(self._on_dashboard_view_overdue)
+        self._dashboard.quickAddRequested.connect(self._prefill_quick_add)
+        self._dashboard.sampleDataRequested.connect(self._load_sample_data)
 
         root_layout.addWidget(main_container, stretch=1)
 
@@ -996,6 +1069,9 @@ class MainWindow(QMainWindow):
 
     def _set_view(self, index: int) -> None:
         self._stack.setCurrentIndex(index)
+        if index in CALENDAR_VIEWS:
+            self._calendar_view = index
+        self._sync_nav_selection(index)
         if hasattr(self, "_day_button"):
             self._day_button.setChecked(index == 1)
         if hasattr(self, "_week_button"):
@@ -1013,14 +1089,8 @@ class MainWindow(QMainWindow):
         show_calendar_btns = not is_task_board and not is_dashboard and not is_settings and not is_reminders
         if hasattr(self, "_add_task_button"):
             self._add_task_button.setVisible(is_task_board)
-        if hasattr(self, "_day_button"):
-            self._day_button.setVisible(show_calendar_btns)
-        if hasattr(self, "_week_button"):
-            self._week_button.setVisible(show_calendar_btns)
-        if hasattr(self, "_month_button"):
-            self._month_button.setVisible(show_calendar_btns)
-        if hasattr(self, "_year_button"):
-            self._year_button.setVisible(show_calendar_btns)
+        for btn in getattr(self, "_view_buttons", {}).values():
+            btn.setVisible(show_calendar_btns)
         
         # Refresh the view being switched to with the current date
         if is_dashboard and hasattr(self, "_dashboard"):
@@ -1039,8 +1109,26 @@ class MainWindow(QMainWindow):
         self._sync_title()
 
     def _apply_default_view(self) -> None:
-        # Default to dashboard view
-        self._set_view(0)
+        # Today is the home screen (review §4.6)
+        self._set_view(VIEW_TODAY)
+
+    def _sync_nav_selection(self, stack_index: int) -> None:
+        """Keep the highlighted sidebar item in step with the screen (review A2)."""
+        if not hasattr(self, "_nav_list"):
+            return
+        if stack_index in CALENDAR_VIEWS:
+            row = NAV_CALENDAR
+        else:
+            row = {
+                VIEW_TODAY: NAV_TODAY,
+                VIEW_TASKS: NAV_TASKS,
+                VIEW_REMINDERS: NAV_REMINDERS,
+                VIEW_SETTINGS: NAV_SETTINGS,
+            }.get(stack_index, NAV_TODAY)
+        if self._nav_list.currentRow() != row:
+            self._nav_list.blockSignals(True)
+            self._nav_list.setCurrentRow(row)
+            self._nav_list.blockSignals(False)
 
     def _on_sidebar_date_changed(self) -> None:
         qdate = self._mini_calendar.selectedDate()
@@ -1060,38 +1148,43 @@ class MainWindow(QMainWindow):
         # If date is clicked from dashboard, jump into Day view.
         # Keep Task Board users on Task Board.
         current_idx = self._stack.currentIndex()
-        if current_idx == 0:
-            self._set_view(1)
+        if current_idx == VIEW_TODAY:
+            self._set_view(VIEW_DAY)
 
     def _on_nav_changed(self, index: int) -> None:
-        if index == 0:
-            self._set_view(0)  # Dashboard
-        elif index == 1:
-            self._set_view(1)  # Day view (Todo List)
-        elif index == 2:
-            self._set_view(5)  # Tasks Board
-        elif index == 3:
-            self._set_view(7)  # Reminders dashboard
-        elif index == 4:
-            self._set_view(6)  # Settings (embedded in stack)
+        if index == NAV_TODAY:
+            self._set_view(VIEW_TODAY)
+        elif index == NAV_CALENDAR:
+            self._set_view(self._calendar_view)
+        elif index == NAV_TASKS:
+            self._set_view(VIEW_TASKS)
+        elif index == NAV_REMINDERS:
+            self._set_view(VIEW_REMINDERS)
+        elif index == NAV_SETTINGS:
+            self._settings_view._load_from_settings()
+            self._set_view(VIEW_SETTINGS)
+        elif index == NAV_HELP:
+            QDesktopServices.openUrl(QUrl(HELP_URL))
+            # Help opens in the browser; keep the current screen highlighted.
+            self._sync_nav_selection(self._stack.currentIndex())
 
     # --- Dashboard navigation handlers ------------------------------------
 
     def _on_dashboard_view_tasks(self) -> None:
         """Navigate from dashboard to the Task Board."""
-        self._nav_list.setCurrentRow(2)  # Tasks Board nav item
+        self._set_view(VIEW_TASKS)
 
     def _on_dashboard_open_task(self, task_id: int) -> None:
         """Navigate to Task Board and highlight a specific task."""
-        self._nav_list.setCurrentRow(2)  # Tasks Board nav item
+        self._set_view(VIEW_TASKS)
         # Highlight the specific task card after a short delay for view to load
         QTimer.singleShot(200, lambda: self._task_board.highlight_task(task_id))
         # Also open the edit dialog for the task
         QTimer.singleShot(300, lambda: self._on_task_clicked(task_id))
 
     def _on_dashboard_view_events(self) -> None:
-        """Navigate from dashboard to the Todo/Day view."""
-        self._nav_list.setCurrentRow(1)  # Todo List nav item
+        """Navigate from Today to the calendar's Day view."""
+        self._set_view(VIEW_DAY)
 
     def _on_dashboard_open_event(self, event_date) -> None:
         """Navigate to the Day view for a specific event date."""
@@ -1105,11 +1198,11 @@ class MainWindow(QMainWindow):
 
     def _on_dashboard_view_reminders(self) -> None:
         """Navigate from dashboard to the Reminders view."""
-        self._nav_list.setCurrentRow(3)  # Reminders nav item → index 7
+        self._set_view(VIEW_REMINDERS)
 
     def _on_dashboard_view_overdue(self) -> None:
-        """Navigate from dashboard to the Task Board to see overdue tasks."""
-        self._nav_list.setCurrentRow(2)  # Tasks Board nav item
+        """Navigate from Today to the Task Board to see overdue tasks."""
+        self._set_view(VIEW_TASKS)
 
     # --- Data binding ----------------------------------------------------
 
@@ -1119,8 +1212,10 @@ class MainWindow(QMainWindow):
         self._reload_tasks()
 
     def _on_meetings_changed(self) -> None:
-        self._set_view(0)
+        # Stay on the current screen; just refresh the data everywhere.
         self._reload_current_day()
+        if hasattr(self, "_dashboard"):
+            self._dashboard.refresh()
         # Refresh reminder view to show newly created meeting reminders
         if hasattr(self, "_reminder_view"):
             self._reminder_view.refresh()
@@ -1396,7 +1491,7 @@ class MainWindow(QMainWindow):
         """When a day is clicked in the week grid, jump to that specific day."""
         qdate = QDate(target.year, target.month, target.day)
         self._mini_calendar.setSelectedDate(qdate)
-        self._set_view(0)
+        self._set_view(VIEW_DAY)
 
     def _on_month_day_selected(self, target: date) -> None:
         """When a day is clicked in the month grid, jump to that week focused on that day."""
@@ -1419,7 +1514,6 @@ class MainWindow(QMainWindow):
         self._current_date = target_date
         qdate = QDate(target_date.year, target_date.month, target_date.day)
         self._mini_calendar.setSelectedDate(qdate)
-        self._set_view(0)
         self._reload_current_day()
 
         # Open a new MeetingDialog pre-filled with this date and time.
@@ -1624,7 +1718,7 @@ class MainWindow(QMainWindow):
     def _open_settings(self) -> None:
         """Switch to the settings view in the main stack."""
         self._settings_view._load_from_settings()  # refresh values
-        self._set_view(6)
+        self._set_view(VIEW_SETTINGS)
 
     def _open_meeting_details(self, item) -> None:
         meeting = self._day_view.meeting_for_item(item)
@@ -1632,3 +1726,156 @@ class MainWindow(QMainWindow):
             return
         dlg = MeetingDetailsDialog(meeting, self)
         dlg.exec()
+    # --- Keyboard shortcuts (review §4.6: speed for experienced users) -----
+
+    def _install_shortcuts(self) -> None:
+        def sc(seq: str, fn) -> None:
+            s = QShortcut(QKeySequence(seq), self)
+            s.setContext(Qt.WindowShortcut)
+            s.activated.connect(fn)
+
+        # Ctrl+K on Windows/Linux is Cmd+K on macOS (Qt maps Ctrl to Command).
+        sc("Ctrl+K", self._focus_quick_add)
+        sc("N", self._focus_quick_add)
+        sc("/", lambda: (self._search_input.setFocus(), self._search_input.selectAll()))
+        sc("T", self._go_today_view)
+        sc("D", lambda: self._set_view(VIEW_DAY))
+        sc("W", lambda: self._set_view(VIEW_WEEK))
+        sc("M", lambda: self._set_view(VIEW_MONTH))
+        sc("Y", lambda: self._set_view(VIEW_YEAR))
+        sc("Ctrl+1", lambda: self._set_view(VIEW_TODAY))
+        sc("Ctrl+2", lambda: self._set_view(self._calendar_view))
+        sc("Ctrl+3", lambda: self._set_view(VIEW_TASKS))
+        sc("Ctrl+4", lambda: self._set_view(VIEW_REMINDERS))
+        sc("Ctrl+,", self._open_settings)
+        sc("Ctrl+Q", self._quit_app)
+
+    def _quit_app(self) -> None:
+        self._really_quit = True
+        from PySide6.QtWidgets import QApplication
+        QApplication.quit()
+
+    def _focus_quick_add(self) -> None:
+        self._quick_add.setFocus()
+        self._quick_add.selectAll()
+
+    def _go_today_view(self) -> None:
+        """T: jump to today. In the calendar, stay in the current view."""
+        self._go_today()
+        if self._stack.currentIndex() not in CALENDAR_VIEWS:
+            self._set_view(VIEW_TODAY)
+        else:
+            self._set_view(self._stack.currentIndex())
+
+    # --- Quick add -----------------------------------------------------------
+
+    def _on_quick_add_preview(self, text: str) -> None:
+        result = quick_add.parse(text) if text.strip() else None
+        self._quick_add_hint.setProperty("state", "preview")
+        self._quick_add_hint.setText(result.describe() if result else "")
+        self._quick_add_hint.style().unpolish(self._quick_add_hint)
+        self._quick_add_hint.style().polish(self._quick_add_hint)
+
+    def _on_quick_add_submit(self) -> None:
+        text = self._quick_add.text()
+        result = quick_add.parse(text)
+        if result is None:
+            return
+        try:
+            if result.kind == "event":
+                start = result.start
+                for s in self._generate_recurrence_starts(start, result.repeat):
+                    self._meeting_service.create_meeting(
+                        title=result.title,
+                        start_time=s,
+                        end_time=s + timedelta(minutes=result.duration_minutes),
+                    )
+            elif result.kind == "reminder":
+                ReminderService().create_reminder(
+                    title=result.title,
+                    remind_at=result.start,
+                    repeat_type=result.repeat,
+                )
+            else:
+                due = datetime.combine(result.day, result.at) if result.at else None
+                self._task_controller.create_task(
+                    {
+                        "name": result.title,
+                        "task_date": datetime.combine(result.day, time(9, 0)),
+                        "deadline": due,
+                        "priority": "Medium",
+                    }
+                )
+        except Exception as exc:
+            self._logger.error(f"Quick add failed for {text!r}: {exc}")
+            self._show_quick_add_feedback("Could not add that. Please try again.", error=True)
+            return
+
+        self._quick_add.clear()
+        self._reload_current_day()
+        if hasattr(self, "_dashboard"):
+            self._dashboard.refresh()
+        if hasattr(self, "_reminder_view"):
+            self._reminder_view.refresh()
+        self._show_quick_add_feedback(f"Added · {result.describe()}")
+
+    def _show_quick_add_feedback(self, message: str, error: bool = False) -> None:
+        self._quick_add_hint.setProperty("state", "error" if error else "done")
+        self._quick_add_hint.setText(message)
+        self._quick_add_hint.style().unpolish(self._quick_add_hint)
+        self._quick_add_hint.style().polish(self._quick_add_hint)
+        QTimer.singleShot(
+            4000,
+            lambda: self._quick_add_hint.text() == message and self._quick_add_hint.setText(""),
+        )
+
+    def _apply_preferences(self) -> None:
+        """Re-render everything after theme, week start or clock format change."""
+        from app.core import prefs as _prefs
+        _prefs.reload()
+        self._mini_calendar.setFirstDayOfWeek(_prefs.qt_first_day())
+        if hasattr(self._mini_calendar_widget, "_update_day_formats"):
+            self._mini_calendar_widget._update_day_formats()
+        self._reload_current_day()
+        self._week_view.set_date(self._current_date)
+        self._month_view.set_date(self._current_date)
+        self._year_view.set_date(self._current_date)
+        self._dashboard.refresh()
+        self._reminder_view.refresh()
+        self.update()
+
+    def _prefill_quick_add(self, text: str) -> None:
+        self._quick_add.setText(text)
+        self._quick_add.setFocus()
+        self._quick_add.end(False)
+
+    def _load_sample_data(self) -> None:
+        self._onboarding.load_sample_data()
+        self._after_sample_data_change()
+
+    def clear_sample_data(self) -> None:
+        self._onboarding.clear_sample_data()
+        self._after_sample_data_change()
+
+    def _after_sample_data_change(self) -> None:
+        self._reload_current_day()
+        self._dashboard.set_sample_data_available(not self._onboarding.has_sample_data())
+        self._dashboard.refresh()
+        self._reminder_view.refresh()
+        if hasattr(self._settings_view, "refresh_sample_data"):
+            self._settings_view.refresh_sample_data()
+
+    # --- First run -----------------------------------------------------------
+
+    def _show_welcome(self) -> None:
+        """Three-screen welcome tour with optional sample data (review §4.6)."""
+        dlg = WelcomeDialog(self)
+        dlg.exec()
+        self._onboarding.mark_welcomed()
+        if dlg.load_sample_data:
+            self._load_sample_data()
+        self._focus_quick_add()
+
+    def show_welcome_tour(self) -> None:
+        """Public entry point (Settings → Show welcome tour again)."""
+        self._show_welcome()

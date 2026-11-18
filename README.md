@@ -1,7 +1,7 @@
-Schedora Desktop
+SmartCalender
 ================
 
-Schedora Desktop is a cross-platform desktop calendar and meeting scheduler
+SmartCalender is a cross-platform desktop calendar and meeting scheduler
 built with PySide6, SQLite, and optional REST API integration for login,
 subscription management, and data sync.
 

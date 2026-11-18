@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from app.core import prefs
+from app.core import theme as _theme
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from typing import Dict, List
@@ -103,7 +105,7 @@ class WeekViewWidget(QWidget):
 
     def set_date(self, d: date) -> None:
         """Set the reference date; widget fetches and renders the whole week."""
-        self._week_start = d - timedelta(days=d.weekday())
+        self._week_start = prefs.start_of_week(d)
         week_end = self._week_start + timedelta(days=7)
         self._title.setText(
             f"{self._week_start.strftime('%d %b')} – {(week_end - timedelta(days=1)).strftime('%d %b %Y')}"
@@ -130,8 +132,8 @@ class WeekViewWidget(QWidget):
             t = time(hour=r, minute=0)
             time_item = QTableWidgetItem(t.strftime("%H:%M"))
             time_item.setTextAlignment(Qt.AlignCenter)
-            time_item.setData(Qt.ForegroundRole, QBrush(QColor("#64748B")))
-            time_item.setData(Qt.BackgroundRole, QBrush(QColor("#F8FAFC")))
+            time_item.setData(Qt.ForegroundRole, QBrush(_theme.fg("#64748B")))
+            time_item.setData(Qt.BackgroundRole, QBrush(_theme.bg("#F8FAFC")))
             time_item.setFont(time_font)
             self._table.setItem(r, 0, time_item)
             self._table.setRowHeight(r, 40)
@@ -177,10 +179,10 @@ class WeekViewWidget(QWidget):
                 it.setData(Qt.UserRole, None)
                 d = self._week_start + timedelta(days=c - 1)
                 if d == today:
-                    it.setData(Qt.BackgroundRole, QBrush(QColor("#EFF6FF")))
+                    it.setData(Qt.BackgroundRole, QBrush(_theme.bg("#EFF6FF")))
                 else:
-                    it.setData(Qt.BackgroundRole, QBrush(QColor("#FFFFFF")))
-                it.setData(Qt.ForegroundRole, QBrush(QColor("#334155")))
+                    it.setData(Qt.BackgroundRole, QBrush(_theme.bg("#FFFFFF")))
+                it.setData(Qt.ForegroundRole, QBrush(_theme.fg("#334155")))
 
     def focus_day(self, d: date) -> None:
         self._focused_date = d
@@ -231,7 +233,7 @@ class WeekViewWidget(QWidget):
 
             item.setText(m.title)
             item.setTextAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
-            item.setData(Qt.ForegroundRole, QBrush(QColor("#FFFFFF")))
+            item.setData(Qt.ForegroundRole, QBrush(_theme.fg("#FFFFFF")))
             item.setData(Qt.BackgroundRole, self._brush_for_gradient(getattr(m, "color_gradient", None)))
             font = QFont("Segoe UI", 10, QFont.Bold)
             item.setFont(font)

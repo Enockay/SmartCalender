@@ -4,9 +4,9 @@
 QWidget#LeftSidebar {
     background: qlineargradient(
         x1:0, y1:0, x2:0, y2:1,
-        stop:0   #0D2147,
-        stop:0.6 #102A5A,
-        stop:1   #0F2850
+        stop:0   #0B0F14,
+        stop:0.6 #111827,
+        stop:1   #111827
     );
     border-right: 1px solid rgba(255,255,255,0.05);
 }
@@ -59,8 +59,8 @@ QListWidget#NavList::item:selected,
 QListView#NavList::item:selected {
     background: qlineargradient(
         x1:0, y1:0, x2:1, y2:0,
-        stop:0 #2563EB,
-        stop:1 #3B82F6
+        stop:0 #059669,
+        stop:1 #10B981
     );
     color: #FFFFFF;
     font-size: 16px;
@@ -74,8 +74,8 @@ QListWidget#NavList::item:selected:hover,
 QListView#NavList::item:selected:hover {
     background: qlineargradient(
         x1:0, y1:0, x2:1, y2:0,
-        stop:0 #3B82F6,
-        stop:1 #60A5FA
+        stop:0 #10B981,
+        stop:1 #34D399
     );
 }
 
@@ -106,8 +106,8 @@ QFrame#SidebarUserCard {
 QLabel#SidebarAvatar {
     background: qlineargradient(
         x1:0, y1:0, x2:1, y2:1,
-        stop:0 #3B82F6,
-        stop:1 #8B5CF6
+        stop:0 #10B981,
+        stop:1 #0891B2
     );
     color: #FFFFFF;
     font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;

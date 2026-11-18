@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from app.core import theme as _theme
 import calendar
 from datetime import date, datetime, time
 from pathlib import Path
@@ -69,7 +70,7 @@ class _MiniCalendar(QWidget):
         # ── Day‑of‑week header row ──
         header_font = QFont("Segoe UI", 8, QFont.Bold)
         painter.setFont(header_font)
-        painter.setPen(QColor("#94A3B8"))
+        painter.setPen(_theme.fg("#94A3B8"))
         for col, lbl in enumerate(self._DAY_LABELS):
             r = QRectF(col * cell_w, 0, cell_w, cell_h)
             painter.drawText(r, Qt.AlignCenter, lbl)
@@ -97,16 +98,16 @@ class _MiniCalendar(QWidget):
             # Draw a filled dot behind busy / today days
             if is_today:
                 painter.setPen(Qt.NoPen)
-                painter.setBrush(QColor("#2563EB"))
+                painter.setBrush(_theme.bg("#10B981"))
                 painter.drawEllipse(QRectF(cx - radius, cy - radius, radius * 2, radius * 2))
-                painter.setPen(QColor("#FFFFFF"))
+                painter.setPen(_theme.fg("#FFFFFF"))
             elif is_busy:
                 painter.setPen(Qt.NoPen)
-                painter.setBrush(QColor("#DBEAFE"))
+                painter.setBrush(_theme.bg("#D1FAE5"))
                 painter.drawEllipse(QRectF(cx - radius, cy - radius, radius * 2, radius * 2))
-                painter.setPen(QColor("#1E40AF"))
+                painter.setPen(_theme.fg("#065F46"))
             else:
-                painter.setPen(QColor("#475569"))
+                painter.setPen(_theme.fg("#475569"))
 
             painter.setFont(day_font)
             text_rect = QRectF(col * cell_w, row * cell_h, cell_w, cell_h)
