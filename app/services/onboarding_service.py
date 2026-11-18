@@ -65,8 +65,10 @@ class OnboardingService:
         ]
         for title, off, h, mi, dur, desc in sample_events:
             start = at(off, h, mi)
-            if start < now:  # keep everything in the future so reminders make sense
-                start += timedelta(days=1)
+            if start < now:
+                # Skip events whose time has already passed today, rather than
+                # moving them (moving could clash with the next day's copy).
+                continue
             try:
                 mtg = meetings.create_meeting(
                     title=title,
